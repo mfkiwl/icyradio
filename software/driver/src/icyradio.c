@@ -406,27 +406,11 @@ static int icyradio_mmap(struct file *pFile, struct vm_area_struct *pVMA)
 
         pr_notice("DMA Buffer, Phys start: 0x%016llX, Phys offset: 0x%016llX, map offset: 0x%016lX, map len: 0x%08lX", pDev->ulDMAPhysAddr, ulOffset - pDev->ulDMAPhysAddr, ulOffset, ulLength);
 
-#if defined(__aarch64__) || defined(__arm__)
-        pr_notice("Running on ARM, using dma_mmap_coherent");
-
         ulOffset -= pDev->ulDMAPhysAddr;
 
         pVMA->vm_pgoff = ulOffset >> PAGE_SHIFT;
 
         if(dma_mmap_coherent(&pDev->pPCIDev->dev, pVMA, pDev->pDMAVirtAddr + ulOffset, pDev->ulDMAPhysAddr + ulOffset, ulLength))
-#else
-        pr_notice("Running on x86, using io_remap_pfn_range");
-
-        pVMA->vm_pgoff = ulOffset >> PAGE_SHIFT;
-        pVMA->vm_page_prot = pgprot_noncached(pVMA->vm_page_prot);
-#if(LINUX_VERSION_CODE < KERNEL_VERSION(6, 3, 0))
-        pVMA->vm_flags |= VM_IO;
-#else
-        vm_flags_set(pVMA, VM_IO);
-#endif
-
-        if(io_remap_pfn_range(pVMA, pVMA->vm_start, pVMA->vm_pgoff, ulLength, pVMA->vm_page_prot))
-#endif
         {
             pr_warn("Can't remap DMA buffer range for device %u, aborting", pDev->ulDevID);
 
