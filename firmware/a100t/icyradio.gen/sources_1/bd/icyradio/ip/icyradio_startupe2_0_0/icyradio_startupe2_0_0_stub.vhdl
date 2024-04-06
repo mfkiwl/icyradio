@@ -4,8 +4,8 @@
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
 -- Date        : Wed Mar 27 12:09:42 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode synth_stub
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_startupe2_0_0/icyradio_startupe2_0_0_stub.vhdl
+-- Command     : write_vhdl -force -mode synth_stub -rename_top icyradio_startupe2_0_0 -prefix
+--               icyradio_startupe2_0_0_ icyradio_startupe2_0_0_stub.vhdl
 -- Design      : icyradio_startupe2_0_0
 -- Purpose     : Stub declaration of top-level module interface
 -- Device      : xc7a100tfgg484-2

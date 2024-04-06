@@ -199,7 +199,7 @@ localparam SPI_MMIO_FSM_STATE_CLEAR_IN_BUF_2 = 4'd9;
 localparam SPI_MMIO_FSM_STATE_XFER_DATA = 4'd10;
 
 wire                    spi_sck_i;
-wire                    spi_sck_o;
+reg                     spi_sck_o;
 reg                     spi_sck_t = 1'b0;
 wire [NUM_SLAVES - 1:0] spi_ss_i;
 reg  [NUM_SLAVES - 1:0] spi_ss_o;
@@ -267,7 +267,6 @@ reg                     spi_mmio_cont_read_ready; // Continuous mode is ready, i
 reg              [31:0] spi_mmio_rd_req_cnt; // Metric counter: Number of read requests
 reg              [31:0] spi_mmio_cont_rd_req_cnt; // Metric counter: Number of read requests that did not need to raise CS
 reg              [31:0] spi_mmio_cont_rd_req_cnt_buf; // Metric counter: Number of read requests that did not need to raise CS, buffered register
-reg                     spi_sck_oe; // SPI SCK output enable
 reg                     spi_sck_int; // SPI SCK internal signal (always toggles)
 reg                     spi_sck_div_en; // Enable SCK divider
 reg  [SCK_DIV_SZ - 1:0] spi_sck_div_cnt; // SCK divider counter
@@ -276,7 +275,6 @@ wire                    spi_sck_toggle = (spi_sck_div_cnt == spi_sck_div) & spi_
 wire                    spi_sck_rising = spi_sck_toggle & ~spi_sck_int; // SCK rising edge will happen on next aclk cycle
 wire                    spi_sck_falling = spi_sck_toggle & spi_sck_int; // SCK falling edge will happen on next aclk cycle
 
-assign spi_sck_o = (spi_sck_int & spi_sck_oe) ^ spi_cpol;
 assign spi_io0_o = spi_io_o[0];
 assign spi_io1_o = spi_io_o[1];
 assign spi_io2_o = spi_io_o[2];
@@ -387,6 +385,8 @@ always @(posedge aclk)
     begin
         if(!spi_en)
             begin
+                spi_sck_o <= spi_cpol; // SCK idle state = CPOL
+
                 spi_io_i <= 4'b0000;
                 spi_io_o <= 4'b0000;
                 spi_io_t <= 4'b1111;
@@ -400,8 +400,6 @@ always @(posedge aclk)
                 spi_sr_in_buf_valid <= 1'b0;
                 spi_sr_in_buf <= 8'h00;
                 spi_sr_out_buf_ready <= 1'b0;
-
-                spi_sck_oe <= 1'b0;
             end
         else
             begin
@@ -419,7 +417,7 @@ always @(posedge aclk)
                     SPI_FSM_STATE_WAIT_XFER_REQ:
                         begin
                             // Ensure no bus activity
-                            spi_sck_oe <= 1'b0;
+                            spi_sck_o <= spi_cpol;
                             spi_io_t <= 4'b1111;
                             spi_io_o <= 4'b0000;
 
@@ -459,12 +457,16 @@ always @(posedge aclk)
                         end
                     SPI_FSM_STATE_ACTIVE:
                         begin
+                            // Propagate clock to the output
+                            if(spi_sck_rising)
+                                spi_sck_o <= ~spi_cpol;
+
+                            if(spi_sck_falling)
+                                spi_sck_o <= spi_cpol;
+
                             // In this state, the setup edge always happens first, so we can use that to determine what to do
                             if((spi_cpha && spi_sck_rising) || (~spi_cpha && spi_sck_falling)) // Setup edge
                                 begin
-                                    // Allow the clock to propagate to the output
-                                    spi_sck_oe <= 1'b1;
-
                                     // Set IO direction
                                     if(spi_dir) // Read
                                         begin
@@ -508,7 +510,7 @@ always @(posedge aclk)
                                             // We lost sync, move back to the first state
                                             spi_fsm_state <= SPI_FSM_STATE_WAIT_XFER_REQ;
 
-                                            spi_sck_oe <= 1'b0;
+                                            spi_sck_o <= spi_cpol;
                                             spi_io_t <= 4'b1111;
                                             spi_io_o <= 4'b0000;
                                         end

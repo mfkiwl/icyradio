@@ -1061,7 +1061,7 @@
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>MAX_BURST_LENGTH</spirit:name>
-          <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.M_DEST_AXI.MAX_BURST_LENGTH">16</spirit:value>
+          <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.M_DEST_AXI.MAX_BURST_LENGTH">32</spirit:value>
           <spirit:vendorExtensions>
             <xilinx:parameterInfo>
               <xilinx:parameterUsage>none</xilinx:parameterUsage>
@@ -2830,7 +2830,7 @@
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>FREQ_HZ</spirit:name>
-          <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.S_AXIS_ACLK.FREQ_HZ">100000000</spirit:value>
+          <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.S_AXIS_ACLK.FREQ_HZ">49152000</spirit:value>
           <spirit:vendorExtensions>
             <xilinx:parameterInfo>
               <xilinx:parameterUsage>none</xilinx:parameterUsage>
@@ -2857,7 +2857,7 @@
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>CLK_DOMAIN</spirit:name>
-          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.S_AXIS_ACLK.CLK_DOMAIN"/>
+          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.S_AXIS_ACLK.CLK_DOMAIN">icyradio_FPGA_CLK1</spirit:value>
           <spirit:vendorExtensions>
             <xilinx:parameterInfo>
               <xilinx:parameterUsage>none</xilinx:parameterUsage>
@@ -2866,7 +2866,7 @@
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ASSOCIATED_BUSIF</spirit:name>
-          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.S_AXIS_ACLK.ASSOCIATED_BUSIF"/>
+          <spirit:value spirit:resolve="generated" spirit:id="BUSIFPARAM_VALUE.S_AXIS_ACLK.ASSOCIATED_BUSIF">s_axis</spirit:value>
           <spirit:vendorExtensions>
             <xilinx:parameterInfo>
               <xilinx:parameterUsage>none</xilinx:parameterUsage>
@@ -3935,11 +3935,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Fri Mar 15 18:08:36 UTC 2024</spirit:value>
+            <spirit:value>Wed Mar 27 13:00:20 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:bc5fb4d0</spirit:value>
+            <spirit:value>9:447cb848</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -3960,11 +3960,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Fri Mar 15 18:08:36 UTC 2024</spirit:value>
+            <spirit:value>Wed Mar 27 13:00:20 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:8ca1dad3</spirit:value>
+            <spirit:value>9:19cd1e03</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -3978,11 +3978,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Wed Mar 27 12:09:22 UTC 2024</spirit:value>
+            <spirit:value>Wed Apr 03 11:19:03 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:8ca1dad3</spirit:value>
+            <spirit:value>9:19cd1e03</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -3993,7 +3993,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:8ca1dad3</spirit:value>
+            <spirit:value>9:19cd1e03</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -4009,11 +4009,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Fri Mar 15 18:08:36 UTC 2024</spirit:value>
+            <spirit:value>Wed Apr 03 11:18:20 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:bc5fb4d0</spirit:value>
+            <spirit:value>9:447cb848</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -4029,11 +4029,11 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>GENtimestamp</spirit:name>
-            <spirit:value>Fri Mar 15 18:08:36 UTC 2024</spirit:value>
+            <spirit:value>Wed Apr 03 11:18:20 UTC 2024</spirit:value>
           </spirit:parameter>
           <spirit:parameter>
             <spirit:name>outputProductCRC</spirit:name>
-            <spirit:value>9:8ca1dad3</spirit:value>
+            <spirit:value>9:19cd1e03</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -8307,7 +8307,7 @@
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>MAX_BYTES_PER_BURST</spirit:name>
         <spirit:displayName>Max Bytes Per Burst</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.MAX_BYTES_PER_BURST">128</spirit:value>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.MAX_BYTES_PER_BURST">256</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
         <spirit:name>FIFO_SIZE</spirit:name>
@@ -8984,7 +8984,7 @@
     <spirit:parameter>
       <spirit:name>MAX_BYTES_PER_BURST</spirit:name>
       <spirit:displayName>Maximum Bytes per Burst</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.MAX_BYTES_PER_BURST">128</spirit:value>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.MAX_BYTES_PER_BURST">256</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
       <spirit:name>FIFO_SIZE</spirit:name>
@@ -9265,6 +9265,7 @@
         <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.DMA_TYPE_DEST" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.DMA_TYPE_SRC" xilinx:valueSource="user"/>
         <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.ID" xilinx:valueSource="user"/>
+        <xilinx:configElementInfo xilinx:referenceId="PARAM_VALUE.MAX_BYTES_PER_BURST" xilinx:valueSource="user"/>
       </xilinx:configElementInfos>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>

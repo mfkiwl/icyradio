@@ -2,10 +2,10 @@
 -- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
--- Date        : Wed Mar 27 12:07:05 2024
+-- Date        : Wed Mar 27 12:07:04 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_ad9361_adc_packer_rx1_0/icyradio_ad9361_adc_packer_rx1_0_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_ad9361_adc_packer_rx1_0 -prefix
+--               icyradio_ad9361_adc_packer_rx1_0_ icyradio_ad9361_adc_packer_rx1_0_sim_netlist.vhdl
 -- Design      : icyradio_ad9361_adc_packer_rx1_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -22,8 +22,6 @@ entity icyradio_ad9361_adc_packer_rx1_0_pack_interconnect is
     p_0_in : in STD_LOGIC;
     fifo_wr_data_1 : in STD_LOGIC_VECTOR ( 15 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_adc_packer_rx1_0_pack_interconnect : entity is "pack_interconnect";
 end icyradio_ad9361_adc_packer_rx1_0_pack_interconnect;
 
 architecture STRUCTURE of icyradio_ad9361_adc_packer_rx1_0_pack_interconnect is
@@ -398,8 +396,6 @@ entity icyradio_ad9361_adc_packer_rx1_0_pack_network is
     fifo_wr_data_0 : in STD_LOGIC_VECTOR ( 15 downto 0 );
     fifo_wr_data_1 : in STD_LOGIC_VECTOR ( 15 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_adc_packer_rx1_0_pack_network : entity is "pack_network";
 end icyradio_ad9361_adc_packer_rx1_0_pack_network;
 
 architecture STRUCTURE of icyradio_ad9361_adc_packer_rx1_0_pack_network is
@@ -462,8 +458,6 @@ entity icyradio_ad9361_adc_packer_rx1_0_pack_shell is
     fifo_wr_data_0 : in STD_LOGIC_VECTOR ( 15 downto 0 );
     fifo_wr_data_1 : in STD_LOGIC_VECTOR ( 15 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_adc_packer_rx1_0_pack_shell : entity is "pack_shell";
 end icyradio_ad9361_adc_packer_rx1_0_pack_shell;
 
 architecture STRUCTURE of icyradio_ad9361_adc_packer_rx1_0_pack_shell is
@@ -834,8 +828,6 @@ entity icyradio_ad9361_adc_packer_rx1_0_util_cpack2_impl is
     fifo_wr_data_0 : in STD_LOGIC_VECTOR ( 15 downto 0 );
     fifo_wr_data_1 : in STD_LOGIC_VECTOR ( 15 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_adc_packer_rx1_0_util_cpack2_impl : entity is "util_cpack2_impl";
 end icyradio_ad9361_adc_packer_rx1_0_util_cpack2_impl;
 
 architecture STRUCTURE of icyradio_ad9361_adc_packer_rx1_0_util_cpack2_impl is
@@ -1250,8 +1242,6 @@ entity icyradio_ad9361_adc_packer_rx1_0_util_cpack2 is
     fifo_wr_data_0 : in STD_LOGIC_VECTOR ( 15 downto 0 );
     fifo_wr_data_1 : in STD_LOGIC_VECTOR ( 15 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_adc_packer_rx1_0_util_cpack2 : entity is "util_cpack2";
 end icyradio_ad9361_adc_packer_rx1_0_util_cpack2;
 
 architecture STRUCTURE of icyradio_ad9361_adc_packer_rx1_0_util_cpack2 is

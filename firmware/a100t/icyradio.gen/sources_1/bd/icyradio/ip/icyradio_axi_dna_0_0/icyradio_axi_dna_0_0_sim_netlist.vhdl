@@ -4,8 +4,8 @@
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
 -- Date        : Wed Mar 27 12:09:41 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_axi_dna_0_0/icyradio_axi_dna_0_0_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_axi_dna_0_0 -prefix
+--               icyradio_axi_dna_0_0_ icyradio_axi_dna_0_0_sim_netlist.vhdl
 -- Design      : icyradio_axi_dna_0_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -36,8 +36,6 @@ entity icyradio_axi_dna_0_0_axi_dna is
     s_axi_awvalid : in STD_LOGIC;
     s_axi_araddr : in STD_LOGIC_VECTOR ( 2 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_axi_dna_0_0_axi_dna : entity is "axi_dna";
 end icyradio_axi_dna_0_0_axi_dna;
 
 architecture STRUCTURE of icyradio_axi_dna_0_0_axi_dna is

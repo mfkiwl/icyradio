@@ -161,7 +161,7 @@ xpm_cdc_handshake #(
     .DEST_SYNC_FF(4),
     .INIT_SYNC_FF(1),
     .SIM_ASSERT_CHK(1),
-    .SRC_SYNC_FF(2),
+    .SRC_SYNC_FF(4),
     .WIDTH(16 + MCLK_DIV_SZ + BCLK_DIV_SZ + LRCLK_DIV_SZ)
 )
 aclk_to_i2s_src_clk_sync
@@ -185,10 +185,10 @@ wire         sync_i2s_src_clk_to_aclk_dst_req;   // Synchronization request sign
 
 xpm_cdc_handshake #(
     .DEST_EXT_HSK(0),
-    .DEST_SYNC_FF(2),
+    .DEST_SYNC_FF(4),
     .INIT_SYNC_FF(1),
     .SIM_ASSERT_CHK(1),
-    .SRC_SYNC_FF(2),
+    .SRC_SYNC_FF(4),
     .WIDTH(2)
 )
 i2s_src_clk_to_aclk_sync

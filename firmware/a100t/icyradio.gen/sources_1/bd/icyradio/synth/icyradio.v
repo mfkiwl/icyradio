@@ -2,7 +2,7 @@
 //Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
-//Date        : Tue Mar 26 17:38:26 2024
+//Date        : Wed Apr  3 17:15:21 2024
 //Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
 //Command     : generate_target icyradio.bd
 //Design      : icyradio
@@ -448,7 +448,7 @@ module i02_couplers_imp_1LN01S9
   assign i02_couplers_to_i02_couplers_WVALID = S_AXI_wvalid[0];
 endmodule
 
-(* CORE_GENERATION_INFO = "icyradio,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=icyradio,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=186,numReposBlks=142,numNonXlnxBlks=12,numHierBlks=44,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=12,numPkgbdBlks=0,bdsource=USER,synth_mode=Hierarchical}" *) (* HW_HANDOFF = "icyradio.hwdef" *) 
+(* CORE_GENERATION_INFO = "icyradio,IP_Integrator,{x_ipVendor=xilinx.com,x_ipLibrary=BlockDiagram,x_ipName=icyradio,x_ipVersion=1.00.a,x_ipLanguage=VERILOG,numBlks=189,numReposBlks=145,numNonXlnxBlks=12,numHierBlks=44,maxHierDepth=0,numSysgenBlks=0,numHlsBlks=0,numHdlrefBlks=12,numPkgbdBlks=0,bdsource=USER,synth_mode=Hierarchical}" *) (* HW_HANDOFF = "icyradio.hwdef" *) 
 module icyradio
    (ADCIN_MAIN_v_n,
     ADCIN_MAIN_v_p,
@@ -665,10 +665,10 @@ module icyradio
   input TRX_5V0_BIAS_T2_OCn;
   input TRX_5V0_PA1_OCn;
   input TRX_5V0_PA2_OCn;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.TRX_CLK_OUT CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.TRX_CLK_OUT, CLK_DOMAIN icyradio_TRX_CLK_OUT, FREQ_HZ 100000000, FREQ_TOLERANCE_HZ 0, INSERT_VIP 0, PHASE 0.0" *) input TRX_CLK_OUT;
+  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.TRX_CLK_OUT CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.TRX_CLK_OUT, CLK_DOMAIN icyradio_TRX_CLK_OUT, FREQ_HZ 320000000, FREQ_TOLERANCE_HZ 0, INSERT_VIP 0, PHASE 0.0" *) input TRX_CLK_OUT;
   output [3:0]TRX_CTRL_IN;
   input [7:0]TRX_CTRL_OUT;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.TRX_DATA_CLK CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.TRX_DATA_CLK, CLK_DOMAIN icyradio_TRX_DATA_CLK, FREQ_HZ 61440000, FREQ_TOLERANCE_HZ 0, INSERT_VIP 0, PHASE 0.0" *) input TRX_DATA_CLK;
+  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.TRX_DATA_CLK CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.TRX_DATA_CLK, CLK_DOMAIN icyradio_TRX_DATA_CLK, FREQ_HZ 122880000, FREQ_TOLERANCE_HZ 0, INSERT_VIP 0, PHASE 0.0" *) input TRX_DATA_CLK;
   output TRX_EN;
   output [0:0]TRX_EN_AGC;
   (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 CLK.TRX_FBCLK CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME CLK.TRX_FBCLK, FREQ_HZ 100000000, FREQ_TOLERANCE_HZ 0, INSERT_VIP 0, PHASE 0.0" *) output TRX_FBCLK;
@@ -1650,8 +1650,7 @@ module icyradio
   wire axi_rf_timestamping_0_irq;
   wire [1:0]axi_rf_timestamping_0_rx_enable;
   wire [1:0]axi_rf_timestamping_0_tx_enable;
-  wire axi_rf_timestamping_ts_clk_rx_en;
-  wire axi_rf_timestamping_ts_clk_tx_en;
+  wire [1:0]axi_rf_timestamping_tx_flush;
   wire axi_spi_0_irq;
   wire axi_spi_0_spi1_IO0_I;
   wire axi_spi_0_spi1_IO0_O;
@@ -1762,6 +1761,10 @@ module icyradio
   wire [0:0]tx_enable_slice_tx1_Dout;
   wire [1:0]tx_fifo_underflow_concat_concat_dout;
   wire [1:0]tx_fifo_underflow_concat_dout;
+  wire [0:0]tx_flush_combiner_tx0_Res;
+  wire [0:0]tx_flush_combiner_tx1_Res;
+  wire [0:0]tx_flush_slice_tx0_Dout;
+  wire [0:0]tx_flush_slice_tx1_Dout;
   wire [31:0]util_cpack2_0_packed_fifo_wr_DATA;
   wire util_cpack2_0_packed_fifo_wr_EN;
   wire util_cpack2_0_packed_fifo_wr_OVERFLOW;
@@ -2515,7 +2518,7 @@ module icyradio
        (.irq(axi_dmac_rf_tx0_irq),
         .m_axis_aclk(axi_ad9361_0_l_clk),
         .m_axis_data(axi_dmac_rf_tx_m_axis_data),
-        .m_axis_ready(ad9361_dac_unpacker_s_axis_ready),
+        .m_axis_ready(tx_flush_combiner_tx0_Res),
         .m_axis_valid(axi_dmac_rf_tx_m_axis_valid),
         .m_axis_xfer_req(axi_dmac_rf_tx_m_axis_xfer_req),
         .m_src_axi_aclk(axi_pcie_0_axi_aclk_out),
@@ -2558,7 +2561,7 @@ module icyradio
        (.irq(axi_dmac_rf_tx1_irq),
         .m_axis_aclk(axi_ad9361_0_l_clk),
         .m_axis_data(axi_dmac_rf_tx1_m_axis_data),
-        .m_axis_ready(ad9361_dac_unpacker_tx1_s_axis_ready),
+        .m_axis_ready(tx_flush_combiner_tx1_Res),
         .m_axis_valid(axi_dmac_rf_tx1_m_axis_valid),
         .m_axis_xfer_req(axi_dmac_rf_tx1_m_axis_xfer_req),
         .m_src_axi_aclk(axi_pcie_0_axi_aclk_out),
@@ -3810,13 +3813,12 @@ module icyradio
         .s_axi_wstrb(axi_peripheral_interconnect_M17_AXI_WSTRB),
         .s_axi_wvalid(axi_peripheral_interconnect_M17_AXI_WVALID),
         .ts_clk(axi_ad9361_0_l_clk),
-        .ts_clk_rx_en(axi_rf_timestamping_ts_clk_rx_en),
-        .ts_clk_tx_en(axi_rf_timestamping_ts_clk_tx_en),
         .ts_resetn(rst_axi_ad9361_61M44_peripheral_aresetn),
         .tx_data_ready(tx_data_ready_concat_dout),
         .tx_dma_data_ready(tx_fifo_underflow_concat_concat_dout),
         .tx_enable(axi_rf_timestamping_0_tx_enable),
-        .tx_fifo_underflow(tx_fifo_underflow_concat_dout));
+        .tx_fifo_underflow(tx_fifo_underflow_concat_dout),
+        .tx_flush(axi_rf_timestamping_tx_flush));
   icyradio_axi_spi_0_0 axi_spi_0
        (.aclk(axi_pcie_0_axi_aclk_out),
         .aresetn(rst_axi_pcie_0_125M_peripheral_aresetn),
@@ -4025,25 +4027,6 @@ module icyradio
   icyradio_gpio_slice_trx_up_txnrx_0 gpio_slice_trx_up_txnrx
        (.Din(axi_gpio_0_gpio_io_o),
         .Dout(gpio_slice_trx_up_txnrx_Dout));
-  icyradio_ila_0_0 ila_0
-       (.clk(axi_ad9361_0_l_clk),
-        .probe0(axi_rf_timestamping_ts_clk_tx_en),
-        .probe1(tx_fifo_underflow_concat_concat_dout),
-        .probe10(axi_dmac_rf_tx_m_axis_valid),
-        .probe11(ad9361_dac_unpacker_s_axis_ready),
-        .probe12(axi_dmac_rf_tx1_m_axis_valid),
-        .probe13(ad9361_dac_unpacker_tx1_s_axis_ready),
-        .probe14(axi_rf_timestamping_ts_clk_rx_en),
-        .probe15(axi_dmac_rf_tx_m_axis_xfer_req),
-        .probe16(axi_dmac_rf_tx1_m_axis_xfer_req),
-        .probe2(rx_dma_xfer_req_concat_dout),
-        .probe3(tx_data_ready_concat_dout),
-        .probe4(rx_data_ready_concat_dout),
-        .probe5(tx_fifo_underflow_concat_dout),
-        .probe6(rx_fifo_overflow_concat_dout),
-        .probe7(rst_axi_ad9361_61M44_peripheral_aresetn),
-        .probe8(axi_rf_timestamping_0_tx_enable),
-        .probe9(axi_rf_timestamping_0_rx_enable));
   icyradio_irq_concat_0_0 irq_concat_0
        (.In0(axi_dmac_rf_tx0_irq),
         .In1(axi_dmac_rf_tx1_irq),
@@ -4275,6 +4258,20 @@ module icyradio
        (.In0(ad9361_dac_unpacker_tx0_fifo_rd_underflow),
         .In1(ad9361_dac_unpacker_tx1_fifo_rd_underflow),
         .dout(tx_fifo_underflow_concat_dout));
+  icyradio_dac_unpacker_reset_combiner_tx0_1 tx_flush_combiner_tx0
+       (.Op1(ad9361_dac_unpacker_s_axis_ready),
+        .Op2(tx_flush_slice_tx0_Dout),
+        .Res(tx_flush_combiner_tx0_Res));
+  icyradio_tx_flush_combiner_tx0_0 tx_flush_combiner_tx1
+       (.Op1(ad9361_dac_unpacker_tx1_s_axis_ready),
+        .Op2(tx_flush_slice_tx1_Dout),
+        .Res(tx_flush_combiner_tx1_Res));
+  icyradio_rx_enable_slice_rx0_1 tx_flush_slice_tx0
+       (.Din(axi_rf_timestamping_tx_flush),
+        .Dout(tx_flush_slice_tx0_Dout));
+  icyradio_tx_flush_slice_tx0_0 tx_flush_slice_tx1
+       (.Din(axi_rf_timestamping_tx_flush),
+        .Dout(tx_flush_slice_tx1_Dout));
   icyradio_util_ds_buf_0_0 util_ds_buf_0
        (.IBUF_DS_N(PCIe_REFCLK_1_CLK_N),
         .IBUF_DS_P(PCIe_REFCLK_1_CLK_P),
@@ -16258,7 +16255,7 @@ module s00_couplers_imp_12AR84V
   assign s00_data_fifo_to_s00_couplers_RLAST = M_AXI_rlast;
   assign s00_data_fifo_to_s00_couplers_RRESP = M_AXI_rresp[1:0];
   assign s00_data_fifo_to_s00_couplers_RVALID = M_AXI_rvalid;
-  icyradio_s00_data_fifo_72 s00_data_fifo
+  icyradio_s00_data_fifo_98 s00_data_fifo
        (.aclk(M_ACLK_1),
         .aresetn(M_ARESETN_1),
         .m_axi_araddr(s00_data_fifo_to_s00_couplers_ARADDR),
@@ -16613,7 +16610,7 @@ module s00_couplers_imp_1OK54OW
   assign s00_data_fifo_to_s00_couplers_RRESP = M_AXI_rresp[1:0];
   assign s00_data_fifo_to_s00_couplers_RVALID = M_AXI_rvalid;
   assign s00_data_fifo_to_s00_couplers_WREADY = M_AXI_wready;
-  icyradio_s00_data_fifo_73 s00_data_fifo
+  icyradio_s00_data_fifo_99 s00_data_fifo
        (.aclk(M_ACLK_1),
         .aresetn(M_ARESETN_1),
         .m_axi_araddr(s00_data_fifo_to_s00_couplers_ARADDR),
@@ -17175,7 +17172,7 @@ module s01_couplers_imp_EQ149T
   assign s01_data_fifo_to_s01_couplers_RRESP = M_AXI_rresp[1:0];
   assign s01_data_fifo_to_s01_couplers_RVALID = M_AXI_rvalid;
   assign s01_data_fifo_to_s01_couplers_WREADY = M_AXI_wready;
-  icyradio_s01_data_fifo_73 s01_data_fifo
+  icyradio_s01_data_fifo_99 s01_data_fifo
        (.aclk(M_ACLK_1),
         .aresetn(M_ARESETN_1),
         .m_axi_araddr(s01_data_fifo_to_s01_couplers_ARADDR),
@@ -17375,7 +17372,7 @@ module s01_couplers_imp_S4EEJ2
   assign s01_data_fifo_to_s01_couplers_RLAST = M_AXI_rlast;
   assign s01_data_fifo_to_s01_couplers_RRESP = M_AXI_rresp[1:0];
   assign s01_data_fifo_to_s01_couplers_RVALID = M_AXI_rvalid;
-  icyradio_s01_data_fifo_72 s01_data_fifo
+  icyradio_s01_data_fifo_98 s01_data_fifo
        (.aclk(M_ACLK_1),
         .aresetn(M_ARESETN_1),
         .m_axi_araddr(s01_data_fifo_to_s01_couplers_ARADDR),

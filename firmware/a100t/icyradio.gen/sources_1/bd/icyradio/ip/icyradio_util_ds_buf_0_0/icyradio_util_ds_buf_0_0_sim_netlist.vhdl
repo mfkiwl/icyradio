@@ -4,8 +4,8 @@
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
 -- Date        : Wed Mar 27 12:07:57 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_util_ds_buf_0_0/icyradio_util_ds_buf_0_0_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_util_ds_buf_0_0 -prefix
+--               icyradio_util_ds_buf_0_0_ icyradio_util_ds_buf_0_0_sim_netlist.vhdl
 -- Design      : icyradio_util_ds_buf_0_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -141,8 +141,6 @@ entity icyradio_util_ds_buf_0_0_util_ds_buf is
   attribute C_SIM_DEVICE of icyradio_util_ds_buf_0_0_util_ds_buf : entity is "VERSAL_AI_CORE_ES1";
   attribute C_SIZE : integer;
   attribute C_SIZE of icyradio_util_ds_buf_0_0_util_ds_buf : entity is 1;
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_util_ds_buf_0_0_util_ds_buf : entity is "util_ds_buf";
 end icyradio_util_ds_buf_0_0_util_ds_buf;
 
 architecture STRUCTURE of icyradio_util_ds_buf_0_0_util_ds_buf is

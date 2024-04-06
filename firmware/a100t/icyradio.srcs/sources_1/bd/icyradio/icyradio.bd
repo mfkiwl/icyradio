@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x620F373EF1EAB037",
+      "boundary_crc": "0x620F373E98563907",
       "device": "xc7a100tfgg484-2",
       "gen_directory": "../../../../icyradio.gen/sources_1/bd/icyradio",
       "name": "icyradio",
@@ -206,12 +206,15 @@
       "adc_dovf_gate_rx0": "",
       "adc_dovf_combiner": "",
       "adc_dovf_gate_rx1": "",
-      "ila_0": "",
       "startupe2": "",
       "GND_21": "",
       "VCC_2": "",
       "rf_reset_combiner": "",
-      "gpio_slice_rf_reset": ""
+      "gpio_slice_rf_reset": "",
+      "tx_flush_combiner_tx0": "",
+      "tx_flush_combiner_tx1": "",
+      "tx_flush_slice_tx0": "",
+      "tx_flush_slice_tx1": ""
     },
     "interface_ports": {
       "PCIe_REFCLK": {
@@ -774,7 +777,7 @@
             "value_src": "default"
           },
           "FREQ_HZ": {
-            "value": "61440000"
+            "value": "122880000"
           },
           "FREQ_TOLERANCE_HZ": {
             "value": "0",
@@ -871,7 +874,7 @@
             "value_src": "default"
           },
           "FREQ_HZ": {
-            "value": "100000000"
+            "value": "320000000"
           },
           "FREQ_TOLERANCE_HZ": {
             "value": "0",
@@ -5787,8 +5790,8 @@
               "s00_data_fifo": {
                 "vlnv": "xilinx.com:ip:axi_data_fifo:2.1",
                 "ip_revision": "28",
-                "xci_name": "icyradio_s00_data_fifo_72",
-                "xci_path": "ip/icyradio_s00_data_fifo_72/icyradio_s00_data_fifo_72.xci",
+                "xci_name": "icyradio_s00_data_fifo_98",
+                "xci_path": "ip/icyradio_s00_data_fifo_98/icyradio_s00_data_fifo_98.xci",
                 "inst_hier_path": "axi_cpu_dma_interconnect/s00_couplers/s00_data_fifo",
                 "interface_ports": {
                   "S_AXI": {
@@ -5881,8 +5884,8 @@
               "s01_data_fifo": {
                 "vlnv": "xilinx.com:ip:axi_data_fifo:2.1",
                 "ip_revision": "28",
-                "xci_name": "icyradio_s01_data_fifo_72",
-                "xci_path": "ip/icyradio_s01_data_fifo_72/icyradio_s01_data_fifo_72.xci",
+                "xci_name": "icyradio_s01_data_fifo_98",
+                "xci_path": "ip/icyradio_s01_data_fifo_98/icyradio_s01_data_fifo_98.xci",
                 "inst_hier_path": "axi_cpu_dma_interconnect/s01_couplers/s01_data_fifo",
                 "interface_ports": {
                   "S_AXI": {
@@ -8693,8 +8696,8 @@
               "s00_data_fifo": {
                 "vlnv": "xilinx.com:ip:axi_data_fifo:2.1",
                 "ip_revision": "28",
-                "xci_name": "icyradio_s00_data_fifo_73",
-                "xci_path": "ip/icyradio_s00_data_fifo_73/icyradio_s00_data_fifo_73.xci",
+                "xci_name": "icyradio_s00_data_fifo_99",
+                "xci_path": "ip/icyradio_s00_data_fifo_99/icyradio_s00_data_fifo_99.xci",
                 "inst_hier_path": "axi_pcie_interconnect/s00_couplers/s00_data_fifo",
                 "interface_ports": {
                   "S_AXI": {
@@ -8787,8 +8790,8 @@
               "s01_data_fifo": {
                 "vlnv": "xilinx.com:ip:axi_data_fifo:2.1",
                 "ip_revision": "28",
-                "xci_name": "icyradio_s01_data_fifo_73",
-                "xci_path": "ip/icyradio_s01_data_fifo_73/icyradio_s01_data_fifo_73.xci",
+                "xci_name": "icyradio_s01_data_fifo_99",
+                "xci_path": "ip/icyradio_s01_data_fifo_99/icyradio_s01_data_fifo_99.xci",
                 "inst_hier_path": "axi_pcie_interconnect/s01_couplers/s01_data_fifo",
                 "interface_ports": {
                   "S_AXI": {
@@ -11418,6 +11421,11 @@
               }
             }
           },
+          "tx_flush": {
+            "direction": "O",
+            "left": "1",
+            "right": "0"
+          },
           "tx_enable": {
             "direction": "O",
             "left": "1",
@@ -11523,6 +11531,9 @@
           },
           "ID": {
             "value": "5"
+          },
+          "MAX_BYTES_PER_BURST": {
+            "value": "256"
           }
         },
         "interface_ports": {
@@ -11573,6 +11584,9 @@
           },
           "ID": {
             "value": "2"
+          },
+          "MAX_BYTES_PER_BURST": {
+            "value": "256"
           },
           "SYNC_TRANSFER_START": {
             "value": "true"
@@ -11635,6 +11649,9 @@
           },
           "ID": {
             "value": "4"
+          },
+          "MAX_BYTES_PER_BURST": {
+            "value": "1024"
           }
         },
         "interface_ports": {
@@ -11697,6 +11714,9 @@
           },
           "ID": {
             "value": "0"
+          },
+          "MAX_BYTES_PER_BURST": {
+            "value": "1024"
           }
         },
         "interface_ports": {
@@ -11759,6 +11779,9 @@
           },
           "ID": {
             "value": "1"
+          },
+          "MAX_BYTES_PER_BURST": {
+            "value": "1024"
           }
         },
         "interface_ports": {
@@ -11809,6 +11832,9 @@
           },
           "ID": {
             "value": "3"
+          },
+          "MAX_BYTES_PER_BURST": {
+            "value": "256"
           },
           "SYNC_TRANSFER_START": {
             "value": "true"
@@ -12135,54 +12161,6 @@
           }
         }
       },
-      "ila_0": {
-        "vlnv": "xilinx.com:ip:ila:6.2",
-        "ip_revision": "14",
-        "xci_name": "icyradio_ila_0_0",
-        "xci_path": "ip/icyradio_ila_0_0/icyradio_ila_0_0.xci",
-        "inst_hier_path": "ila_0",
-        "parameters": {
-          "C_ADV_TRIGGER": {
-            "value": "true"
-          },
-          "C_DATA_DEPTH": {
-            "value": "8192"
-          },
-          "C_EN_STRG_QUAL": {
-            "value": "1"
-          },
-          "C_MONITOR_TYPE": {
-            "value": "Native"
-          },
-          "C_NUM_OF_PROBES": {
-            "value": "17"
-          },
-          "C_PROBE1_WIDTH": {
-            "value": "2"
-          },
-          "C_PROBE2_WIDTH": {
-            "value": "2"
-          },
-          "C_PROBE3_WIDTH": {
-            "value": "2"
-          },
-          "C_PROBE4_WIDTH": {
-            "value": "2"
-          },
-          "C_PROBE5_WIDTH": {
-            "value": "2"
-          },
-          "C_PROBE6_WIDTH": {
-            "value": "2"
-          },
-          "C_PROBE8_WIDTH": {
-            "value": "2"
-          },
-          "C_PROBE9_WIDTH": {
-            "value": "2"
-          }
-        }
-      },
       "startupe2": {
         "vlnv": "xilinx.com:module_ref:startupe2:1.0",
         "ip_revision": "1",
@@ -12279,6 +12257,72 @@
           },
           "DOUT_WIDTH": {
             "value": "1"
+          }
+        }
+      },
+      "tx_flush_combiner_tx0": {
+        "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
+        "ip_revision": "3",
+        "xci_name": "icyradio_dac_unpacker_reset_combiner_tx0_1",
+        "xci_path": "ip/icyradio_dac_unpacker_reset_combiner_tx0_1/icyradio_dac_unpacker_reset_combiner_tx0_1.xci",
+        "inst_hier_path": "tx_flush_combiner_tx0",
+        "parameters": {
+          "C_OPERATION": {
+            "value": "or"
+          },
+          "C_SIZE": {
+            "value": "1"
+          }
+        }
+      },
+      "tx_flush_combiner_tx1": {
+        "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
+        "ip_revision": "3",
+        "xci_name": "icyradio_tx_flush_combiner_tx0_0",
+        "xci_path": "ip/icyradio_tx_flush_combiner_tx0_0/icyradio_tx_flush_combiner_tx0_0.xci",
+        "inst_hier_path": "tx_flush_combiner_tx1",
+        "parameters": {
+          "C_OPERATION": {
+            "value": "or"
+          },
+          "C_SIZE": {
+            "value": "1"
+          }
+        }
+      },
+      "tx_flush_slice_tx0": {
+        "vlnv": "xilinx.com:ip:xlslice:1.0",
+        "ip_revision": "3",
+        "xci_name": "icyradio_rx_enable_slice_rx0_1",
+        "xci_path": "ip/icyradio_rx_enable_slice_rx0_1/icyradio_rx_enable_slice_rx0_1.xci",
+        "inst_hier_path": "tx_flush_slice_tx0",
+        "parameters": {
+          "DIN_FROM": {
+            "value": "0"
+          },
+          "DIN_TO": {
+            "value": "0"
+          },
+          "DIN_WIDTH": {
+            "value": "2"
+          }
+        }
+      },
+      "tx_flush_slice_tx1": {
+        "vlnv": "xilinx.com:ip:xlslice:1.0",
+        "ip_revision": "3",
+        "xci_name": "icyradio_tx_flush_slice_tx0_0",
+        "xci_path": "ip/icyradio_tx_flush_slice_tx0_0/icyradio_tx_flush_slice_tx0_0.xci",
+        "inst_hier_path": "tx_flush_slice_tx1",
+        "parameters": {
+          "DIN_FROM": {
+            "value": "1"
+          },
+          "DIN_TO": {
+            "value": "1"
+          },
+          "DIN_WIDTH": {
+            "value": "2"
           }
         }
       }
@@ -12881,8 +12925,7 @@
       "ad9361_dac_unpacker_s_axis_ready": {
         "ports": [
           "ad9361_dac_unpacker_tx0/s_axis_ready",
-          "axi_dmac_rf_tx0/m_axis_ready",
-          "ila_0/probe11"
+          "tx_flush_combiner_tx0/Op1"
         ]
       },
       "ad9361_dac_unpacker_tx0_fifo_rd_underflow": {
@@ -12914,8 +12957,7 @@
       "ad9361_dac_unpacker_tx1_s_axis_ready": {
         "ports": [
           "ad9361_dac_unpacker_tx1/s_axis_ready",
-          "axi_dmac_rf_tx1/m_axis_ready",
-          "ila_0/probe13"
+          "tx_flush_combiner_tx1/Op1"
         ]
       },
       "adc_dovf_combiner_Res": {
@@ -13049,7 +13091,6 @@
           "axi_dmac_rf_rx1/fifo_wr_clk",
           "ad9361_dac_unpacker_tx1/clk",
           "ad9361_adc_packer_rx1/clk",
-          "ila_0/clk",
           "axi_rf_timestamping/ts_clk"
         ]
       },
@@ -13163,15 +13204,13 @@
         "ports": [
           "axi_dmac_rf_tx1/m_axis_valid",
           "tx_enable_gate_tx1/Op2",
-          "tx_dma_data_ready_concat/In1",
-          "ila_0/probe12"
+          "tx_dma_data_ready_concat/In1"
         ]
       },
       "axi_dmac_rf_tx1_m_axis_xfer_req": {
         "ports": [
           "axi_dmac_rf_tx1/m_axis_xfer_req",
-          "tx_dma_xfer_req_not_tx1/Op1",
-          "ila_0/probe16"
+          "tx_dma_xfer_req_not_tx1/Op1"
         ]
       },
       "axi_dmac_rf_tx_m_axis_data": {
@@ -13184,15 +13223,13 @@
         "ports": [
           "axi_dmac_rf_tx0/m_axis_valid",
           "tx_enable_gate_tx0/Op2",
-          "tx_dma_data_ready_concat/In0",
-          "ila_0/probe10"
+          "tx_dma_data_ready_concat/In0"
         ]
       },
       "axi_dmac_rf_tx_m_axis_xfer_req": {
         "ports": [
           "axi_dmac_rf_tx0/m_axis_xfer_req",
-          "tx_dma_xfer_req_not_tx0/Op1",
-          "ila_0/probe15"
+          "tx_dma_xfer_req_not_tx0/Op1"
         ]
       },
       "axi_gpio_0_gpio_io_o": {
@@ -13365,12 +13402,12 @@
           "axi_gpio_0/aclk",
           "axi_gpio_1/aclk",
           "axi_gpio_2/aclk",
-          "axi_rf_timestamping/aclk",
-          "axi_spi_0/aclk",
-          "axi_spi_1/aclk",
-          "axi_qspi_mm_0/aclk",
+          "axi_dna_0/aclk",
           "axi_i2s/aclk",
-          "axi_dna_0/aclk"
+          "axi_rf_timestamping/aclk",
+          "axi_qspi_mm_0/aclk",
+          "axi_spi_0/aclk",
+          "axi_spi_1/aclk"
         ]
       },
       "axi_pcie_0_interrupt_out": {
@@ -13410,28 +13447,21 @@
         "ports": [
           "axi_rf_timestamping/rx_enable",
           "rx_enable_slice_rx1/Din",
-          "rx_enable_slice_rx0/Din",
-          "ila_0/probe9"
+          "rx_enable_slice_rx0/Din"
         ]
       },
       "axi_rf_timestamping_0_tx_enable": {
         "ports": [
           "axi_rf_timestamping/tx_enable",
           "tx_enable_slice_tx1/Din",
-          "tx_enable_slice_tx0/Din",
-          "ila_0/probe8"
+          "tx_enable_slice_tx0/Din"
         ]
       },
-      "axi_rf_timestamping_ts_clk_rx_en": {
+      "axi_rf_timestamping_tx_flush": {
         "ports": [
-          "axi_rf_timestamping/ts_clk_rx_en",
-          "ila_0/probe14"
-        ]
-      },
-      "axi_rf_timestamping_ts_clk_tx_en": {
-        "ports": [
-          "axi_rf_timestamping/ts_clk_tx_en",
-          "ila_0/probe0"
+          "axi_rf_timestamping/tx_flush",
+          "tx_flush_slice_tx0/Din",
+          "tx_flush_slice_tx1/Din"
         ]
       },
       "axi_spi_0_irq": {
@@ -13770,7 +13800,6 @@
         "ports": [
           "rst_axi_ad9361_61M44/peripheral_aresetn",
           "gpio_concat_0/In6",
-          "ila_0/probe7",
           "axi_rf_timestamping/ts_resetn"
         ]
       },
@@ -13861,12 +13890,12 @@
           "axi_gpio_0/aresetn",
           "axi_gpio_1/aresetn",
           "axi_gpio_2/aresetn",
-          "axi_rf_timestamping/aresetn",
-          "axi_spi_0/aresetn",
-          "axi_spi_1/aresetn",
-          "axi_qspi_mm_0/aresetn",
+          "axi_dna_0/aresetn",
           "axi_i2s/aresetn",
-          "axi_dna_0/aresetn"
+          "axi_rf_timestamping/aresetn",
+          "axi_qspi_mm_0/aresetn",
+          "axi_spi_0/aresetn",
+          "axi_spi_1/aresetn"
         ]
       },
       "rst_mig_7series_0_166M_peripheral_aresetn": {
@@ -13892,14 +13921,12 @@
       "rx_data_ready_concat_dout": {
         "ports": [
           "rx_data_ready_concat/dout",
-          "ila_0/probe4",
           "axi_rf_timestamping/rx_data_ready"
         ]
       },
       "rx_dma_xfer_req_concat_dout": {
         "ports": [
           "rx_dma_xfer_req_concat/dout",
-          "ila_0/probe2",
           "axi_rf_timestamping/rx_dma_xfer_req"
         ]
       },
@@ -13918,14 +13945,12 @@
       "rx_fifo_overflow_concat_dout": {
         "ports": [
           "rx_fifo_overflow_concat/dout",
-          "ila_0/probe6",
           "axi_rf_timestamping/rx_fifo_overflow"
         ]
       },
       "tx_data_ready_concat_dout": {
         "ports": [
           "tx_data_ready_concat/dout",
-          "ila_0/probe3",
           "axi_rf_timestamping/tx_data_ready"
         ]
       },
@@ -13944,15 +13969,37 @@
       "tx_fifo_underflow_concat_concat_dout": {
         "ports": [
           "tx_dma_data_ready_concat/dout",
-          "ila_0/probe1",
           "axi_rf_timestamping/tx_dma_data_ready"
         ]
       },
       "tx_fifo_underflow_concat_dout": {
         "ports": [
           "tx_fifo_underflow_concat/dout",
-          "ila_0/probe5",
           "axi_rf_timestamping/tx_fifo_underflow"
+        ]
+      },
+      "tx_flush_combiner_tx0_Res": {
+        "ports": [
+          "tx_flush_combiner_tx0/Res",
+          "axi_dmac_rf_tx0/m_axis_ready"
+        ]
+      },
+      "tx_flush_combiner_tx1_Res": {
+        "ports": [
+          "tx_flush_combiner_tx1/Res",
+          "axi_dmac_rf_tx1/m_axis_ready"
+        ]
+      },
+      "tx_flush_slice_tx0_Dout": {
+        "ports": [
+          "tx_flush_slice_tx0/Dout",
+          "tx_flush_combiner_tx0/Op2"
+        ]
+      },
+      "tx_flush_slice_tx1_Dout": {
+        "ports": [
+          "tx_flush_slice_tx1/Dout",
+          "tx_flush_combiner_tx1/Op2"
         ]
       },
       "util_ds_buf_0_IBUF_OUT": {

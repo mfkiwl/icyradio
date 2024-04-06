@@ -2,10 +2,10 @@
 -- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
--- Date        : Wed Mar 27 12:08:26 2024
+-- Date        : Mon Apr  1 20:29:08 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_axi_i2s_0/icyradio_axi_i2s_0_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_axi_i2s_0 -prefix
+--               icyradio_axi_i2s_0_ icyradio_axi_i2s_0_sim_netlist.vhdl
 -- Design      : icyradio_axi_i2s_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -26,8 +26,6 @@ entity icyradio_axi_i2s_0_xpm_cdc_single is
   attribute DEST_SYNC_FF of icyradio_axi_i2s_0_xpm_cdc_single : entity is 4;
   attribute INIT_SYNC_FF : integer;
   attribute INIT_SYNC_FF of icyradio_axi_i2s_0_xpm_cdc_single : entity is 1;
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_axi_i2s_0_xpm_cdc_single : entity is "xpm_cdc_single";
   attribute SIM_ASSERT_CHK : integer;
   attribute SIM_ASSERT_CHK of icyradio_axi_i2s_0_xpm_cdc_single : entity is 0;
   attribute SRC_INPUT_REG : integer;
@@ -102,7 +100,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
-entity \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ is
+entity \icyradio_axi_i2s_0_xpm_cdc_single__4\ is
   port (
     src_clk : in STD_LOGIC;
     src_in : in STD_LOGIC;
@@ -110,27 +108,27 @@ entity \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ is
     dest_out : out STD_LOGIC
   );
   attribute DEST_SYNC_FF : integer;
-  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is 2;
+  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is 4;
   attribute INIT_SYNC_FF : integer;
-  attribute INIT_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is 1;
+  attribute INIT_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is 1;
   attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is "xpm_cdc_single";
+  attribute ORIG_REF_NAME of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is "xpm_cdc_single";
   attribute SIM_ASSERT_CHK : integer;
-  attribute SIM_ASSERT_CHK of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is 0;
+  attribute SIM_ASSERT_CHK of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is 0;
   attribute SRC_INPUT_REG : integer;
-  attribute SRC_INPUT_REG of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is 0;
+  attribute SRC_INPUT_REG of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is 0;
   attribute VERSION : integer;
-  attribute VERSION of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is 0;
+  attribute VERSION of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is 0;
   attribute XPM_MODULE : string;
-  attribute XPM_MODULE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is "TRUE";
+  attribute XPM_MODULE of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is "TRUE";
   attribute keep_hierarchy : string;
-  attribute keep_hierarchy of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is "true";
+  attribute keep_hierarchy of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is "true";
   attribute xpm_cdc : string;
-  attribute xpm_cdc of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ : entity is "SINGLE";
-end \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\;
+  attribute xpm_cdc of \icyradio_axi_i2s_0_xpm_cdc_single__4\ : entity is "SINGLE";
+end \icyradio_axi_i2s_0_xpm_cdc_single__4\;
 
-architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ is
-  signal syncstages_ff : STD_LOGIC_VECTOR ( 1 downto 0 );
+architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__4\ is
+  signal syncstages_ff : STD_LOGIC_VECTOR ( 3 downto 0 );
   attribute RTL_KEEP : string;
   attribute RTL_KEEP of syncstages_ff : signal is "true";
   attribute async_reg : string;
@@ -144,8 +142,14 @@ architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\ is
   attribute ASYNC_REG_boolean of \syncstages_ff_reg[1]\ : label is std.standard.true;
   attribute KEEP of \syncstages_ff_reg[1]\ : label is "true";
   attribute XPM_CDC of \syncstages_ff_reg[1]\ : label is "SINGLE";
+  attribute ASYNC_REG_boolean of \syncstages_ff_reg[2]\ : label is std.standard.true;
+  attribute KEEP of \syncstages_ff_reg[2]\ : label is "true";
+  attribute XPM_CDC of \syncstages_ff_reg[2]\ : label is "SINGLE";
+  attribute ASYNC_REG_boolean of \syncstages_ff_reg[3]\ : label is std.standard.true;
+  attribute KEEP of \syncstages_ff_reg[3]\ : label is "true";
+  attribute XPM_CDC of \syncstages_ff_reg[3]\ : label is "SINGLE";
 begin
-  dest_out <= syncstages_ff(1);
+  dest_out <= syncstages_ff(3);
 \syncstages_ff_reg[0]\: unisim.vcomponents.FDRE
      port map (
       C => dest_clk,
@@ -160,6 +164,22 @@ begin
       CE => '1',
       D => syncstages_ff(0),
       Q => syncstages_ff(1),
+      R => '0'
+    );
+\syncstages_ff_reg[2]\: unisim.vcomponents.FDRE
+     port map (
+      C => dest_clk,
+      CE => '1',
+      D => syncstages_ff(1),
+      Q => syncstages_ff(2),
+      R => '0'
+    );
+\syncstages_ff_reg[3]\: unisim.vcomponents.FDRE
+     port map (
+      C => dest_clk,
+      CE => '1',
+      D => syncstages_ff(2),
+      Q => syncstages_ff(3),
       R => '0'
     );
 end STRUCTURE;
@@ -167,7 +187,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
-entity \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ is
+entity \icyradio_axi_i2s_0_xpm_cdc_single__5\ is
   port (
     src_clk : in STD_LOGIC;
     src_in : in STD_LOGIC;
@@ -175,27 +195,27 @@ entity \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ is
     dest_out : out STD_LOGIC
   );
   attribute DEST_SYNC_FF : integer;
-  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is 2;
+  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is 4;
   attribute INIT_SYNC_FF : integer;
-  attribute INIT_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is 1;
+  attribute INIT_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is 1;
   attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is "xpm_cdc_single";
+  attribute ORIG_REF_NAME of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is "xpm_cdc_single";
   attribute SIM_ASSERT_CHK : integer;
-  attribute SIM_ASSERT_CHK of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is 0;
+  attribute SIM_ASSERT_CHK of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is 0;
   attribute SRC_INPUT_REG : integer;
-  attribute SRC_INPUT_REG of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is 0;
+  attribute SRC_INPUT_REG of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is 0;
   attribute VERSION : integer;
-  attribute VERSION of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is 0;
+  attribute VERSION of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is 0;
   attribute XPM_MODULE : string;
-  attribute XPM_MODULE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is "TRUE";
+  attribute XPM_MODULE of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is "TRUE";
   attribute keep_hierarchy : string;
-  attribute keep_hierarchy of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is "true";
+  attribute keep_hierarchy of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is "true";
   attribute xpm_cdc : string;
-  attribute xpm_cdc of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ : entity is "SINGLE";
-end \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\;
+  attribute xpm_cdc of \icyradio_axi_i2s_0_xpm_cdc_single__5\ : entity is "SINGLE";
+end \icyradio_axi_i2s_0_xpm_cdc_single__5\;
 
-architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\ is
-  signal syncstages_ff : STD_LOGIC_VECTOR ( 1 downto 0 );
+architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__5\ is
+  signal syncstages_ff : STD_LOGIC_VECTOR ( 3 downto 0 );
   attribute RTL_KEEP : string;
   attribute RTL_KEEP of syncstages_ff : signal is "true";
   attribute async_reg : string;
@@ -209,8 +229,14 @@ architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\
   attribute ASYNC_REG_boolean of \syncstages_ff_reg[1]\ : label is std.standard.true;
   attribute KEEP of \syncstages_ff_reg[1]\ : label is "true";
   attribute XPM_CDC of \syncstages_ff_reg[1]\ : label is "SINGLE";
+  attribute ASYNC_REG_boolean of \syncstages_ff_reg[2]\ : label is std.standard.true;
+  attribute KEEP of \syncstages_ff_reg[2]\ : label is "true";
+  attribute XPM_CDC of \syncstages_ff_reg[2]\ : label is "SINGLE";
+  attribute ASYNC_REG_boolean of \syncstages_ff_reg[3]\ : label is std.standard.true;
+  attribute KEEP of \syncstages_ff_reg[3]\ : label is "true";
+  attribute XPM_CDC of \syncstages_ff_reg[3]\ : label is "SINGLE";
 begin
-  dest_out <= syncstages_ff(1);
+  dest_out <= syncstages_ff(3);
 \syncstages_ff_reg[0]\: unisim.vcomponents.FDRE
      port map (
       C => dest_clk,
@@ -225,6 +251,22 @@ begin
       CE => '1',
       D => syncstages_ff(0),
       Q => syncstages_ff(1),
+      R => '0'
+    );
+\syncstages_ff_reg[2]\: unisim.vcomponents.FDRE
+     port map (
+      C => dest_clk,
+      CE => '1',
+      D => syncstages_ff(1),
+      Q => syncstages_ff(2),
+      R => '0'
+    );
+\syncstages_ff_reg[3]\: unisim.vcomponents.FDRE
+     port map (
+      C => dest_clk,
+      CE => '1',
+      D => syncstages_ff(2),
+      Q => syncstages_ff(3),
       R => '0'
     );
 end STRUCTURE;
@@ -232,7 +274,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
-entity \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ is
+entity \icyradio_axi_i2s_0_xpm_cdc_single__6\ is
   port (
     src_clk : in STD_LOGIC;
     src_in : in STD_LOGIC;
@@ -240,27 +282,27 @@ entity \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ is
     dest_out : out STD_LOGIC
   );
   attribute DEST_SYNC_FF : integer;
-  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is 2;
+  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is 4;
   attribute INIT_SYNC_FF : integer;
-  attribute INIT_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is 1;
+  attribute INIT_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is 1;
   attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is "xpm_cdc_single";
+  attribute ORIG_REF_NAME of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is "xpm_cdc_single";
   attribute SIM_ASSERT_CHK : integer;
-  attribute SIM_ASSERT_CHK of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is 0;
+  attribute SIM_ASSERT_CHK of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is 0;
   attribute SRC_INPUT_REG : integer;
-  attribute SRC_INPUT_REG of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is 0;
+  attribute SRC_INPUT_REG of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is 0;
   attribute VERSION : integer;
-  attribute VERSION of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is 0;
+  attribute VERSION of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is 0;
   attribute XPM_MODULE : string;
-  attribute XPM_MODULE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is "TRUE";
+  attribute XPM_MODULE of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is "TRUE";
   attribute keep_hierarchy : string;
-  attribute keep_hierarchy of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is "true";
+  attribute keep_hierarchy of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is "true";
   attribute xpm_cdc : string;
-  attribute xpm_cdc of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ : entity is "SINGLE";
-end \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\;
+  attribute xpm_cdc of \icyradio_axi_i2s_0_xpm_cdc_single__6\ : entity is "SINGLE";
+end \icyradio_axi_i2s_0_xpm_cdc_single__6\;
 
-architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\ is
-  signal syncstages_ff : STD_LOGIC_VECTOR ( 1 downto 0 );
+architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__6\ is
+  signal syncstages_ff : STD_LOGIC_VECTOR ( 3 downto 0 );
   attribute RTL_KEEP : string;
   attribute RTL_KEEP of syncstages_ff : signal is "true";
   attribute async_reg : string;
@@ -274,8 +316,14 @@ architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\
   attribute ASYNC_REG_boolean of \syncstages_ff_reg[1]\ : label is std.standard.true;
   attribute KEEP of \syncstages_ff_reg[1]\ : label is "true";
   attribute XPM_CDC of \syncstages_ff_reg[1]\ : label is "SINGLE";
+  attribute ASYNC_REG_boolean of \syncstages_ff_reg[2]\ : label is std.standard.true;
+  attribute KEEP of \syncstages_ff_reg[2]\ : label is "true";
+  attribute XPM_CDC of \syncstages_ff_reg[2]\ : label is "SINGLE";
+  attribute ASYNC_REG_boolean of \syncstages_ff_reg[3]\ : label is std.standard.true;
+  attribute KEEP of \syncstages_ff_reg[3]\ : label is "true";
+  attribute XPM_CDC of \syncstages_ff_reg[3]\ : label is "SINGLE";
 begin
-  dest_out <= syncstages_ff(1);
+  dest_out <= syncstages_ff(3);
 \syncstages_ff_reg[0]\: unisim.vcomponents.FDRE
      port map (
       C => dest_clk,
@@ -290,6 +338,22 @@ begin
       CE => '1',
       D => syncstages_ff(0),
       Q => syncstages_ff(1),
+      R => '0'
+    );
+\syncstages_ff_reg[2]\: unisim.vcomponents.FDRE
+     port map (
+      C => dest_clk,
+      CE => '1',
+      D => syncstages_ff(1),
+      Q => syncstages_ff(2),
+      R => '0'
+    );
+\syncstages_ff_reg[3]\: unisim.vcomponents.FDRE
+     port map (
+      C => dest_clk,
+      CE => '1',
+      D => syncstages_ff(2),
+      Q => syncstages_ff(3),
       R => '0'
     );
 end STRUCTURE;
@@ -314,12 +378,10 @@ entity icyradio_axi_i2s_0_xpm_cdc_handshake is
   attribute DEST_SYNC_FF of icyradio_axi_i2s_0_xpm_cdc_handshake : entity is 4;
   attribute INIT_SYNC_FF : integer;
   attribute INIT_SYNC_FF of icyradio_axi_i2s_0_xpm_cdc_handshake : entity is 1;
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_axi_i2s_0_xpm_cdc_handshake : entity is "xpm_cdc_handshake";
   attribute SIM_ASSERT_CHK : integer;
   attribute SIM_ASSERT_CHK of icyradio_axi_i2s_0_xpm_cdc_handshake : entity is 1;
   attribute SRC_SYNC_FF : integer;
-  attribute SRC_SYNC_FF of icyradio_axi_i2s_0_xpm_cdc_handshake : entity is 2;
+  attribute SRC_SYNC_FF of icyradio_axi_i2s_0_xpm_cdc_handshake : entity is 4;
   attribute VERSION : integer;
   attribute VERSION of icyradio_axi_i2s_0_xpm_cdc_handshake : entity is 0;
   attribute WIDTH : integer;
@@ -442,7 +504,7 @@ architecture STRUCTURE of icyradio_axi_i2s_0_xpm_cdc_handshake is
   attribute XPM_CDC of \dest_hsdata_ff_reg[8]\ : label is "HANDSHAKE";
   attribute KEEP of \dest_hsdata_ff_reg[9]\ : label is "true";
   attribute XPM_CDC of \dest_hsdata_ff_reg[9]\ : label is "HANDSHAKE";
-  attribute DEST_SYNC_FF of xpm_cdc_single_dest2src_inst : label is 2;
+  attribute DEST_SYNC_FF of xpm_cdc_single_dest2src_inst : label is 4;
   attribute INIT_SYNC_FF of xpm_cdc_single_dest2src_inst : label is 1;
   attribute SIM_ASSERT_CHK of xpm_cdc_single_dest2src_inst : label is 0;
   attribute SRC_INPUT_REG : integer;
@@ -1268,14 +1330,14 @@ src_sendd_ff_reg: unisim.vcomponents.FDRE
       Q => src_sendd_ff,
       R => '0'
     );
-xpm_cdc_single_dest2src_inst: entity work.\icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3\
+xpm_cdc_single_dest2src_inst: entity work.\icyradio_axi_i2s_0_xpm_cdc_single__5\
      port map (
       dest_clk => src_clk,
       dest_out => src_rcv,
       src_clk => '0',
       src_in => dest_req_ff
     );
-xpm_cdc_single_src2dest_inst: entity work.icyradio_axi_i2s_0_xpm_cdc_single
+xpm_cdc_single_src2dest_inst: entity work.\icyradio_axi_i2s_0_xpm_cdc_single__4\
      port map (
       dest_clk => dest_clk,
       dest_out => dest_req_nxt,
@@ -1301,7 +1363,7 @@ entity \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ is
   attribute DEST_EXT_HSK : integer;
   attribute DEST_EXT_HSK of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 0;
   attribute DEST_SYNC_FF : integer;
-  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 2;
+  attribute DEST_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 4;
   attribute INIT_SYNC_FF : integer;
   attribute INIT_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 1;
   attribute ORIG_REF_NAME : string;
@@ -1309,7 +1371,7 @@ entity \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ is
   attribute SIM_ASSERT_CHK : integer;
   attribute SIM_ASSERT_CHK of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 1;
   attribute SRC_SYNC_FF : integer;
-  attribute SRC_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 2;
+  attribute SRC_SYNC_FF of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 4;
   attribute VERSION : integer;
   attribute VERSION of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\ : entity is 0;
   attribute WIDTH : integer;
@@ -1344,7 +1406,7 @@ architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\
   attribute SOFT_HLUTNM : string;
   attribute SOFT_HLUTNM of \src_hsdata_ff[0]_i_1\ : label is "soft_lutpair0";
   attribute SOFT_HLUTNM of \src_hsdata_ff[1]_i_1\ : label is "soft_lutpair0";
-  attribute DEST_SYNC_FF of xpm_cdc_single_dest2src_inst : label is 2;
+  attribute DEST_SYNC_FF of xpm_cdc_single_dest2src_inst : label is 4;
   attribute INIT_SYNC_FF of xpm_cdc_single_dest2src_inst : label is 1;
   attribute SIM_ASSERT_CHK of xpm_cdc_single_dest2src_inst : label is 0;
   attribute SRC_INPUT_REG : integer;
@@ -1352,7 +1414,7 @@ architecture STRUCTURE of \icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\
   attribute VERSION of xpm_cdc_single_dest2src_inst : label is 0;
   attribute XPM_CDC of xpm_cdc_single_dest2src_inst : label is "SINGLE";
   attribute XPM_MODULE of xpm_cdc_single_dest2src_inst : label is "TRUE";
-  attribute DEST_SYNC_FF of xpm_cdc_single_src2dest_inst : label is 2;
+  attribute DEST_SYNC_FF of xpm_cdc_single_src2dest_inst : label is 4;
   attribute INIT_SYNC_FF of xpm_cdc_single_src2dest_inst : label is 1;
   attribute SIM_ASSERT_CHK of xpm_cdc_single_src2dest_inst : label is 0;
   attribute SRC_INPUT_REG of xpm_cdc_single_src2dest_inst : label is 0;
@@ -1446,14 +1508,14 @@ src_sendd_ff_reg: unisim.vcomponents.FDRE
       Q => src_sendd_ff,
       R => '0'
     );
-xpm_cdc_single_dest2src_inst: entity work.\icyradio_axi_i2s_0_xpm_cdc_single__parameterized0\
+xpm_cdc_single_dest2src_inst: entity work.icyradio_axi_i2s_0_xpm_cdc_single
      port map (
       dest_clk => src_clk,
       dest_out => src_rcv,
       src_clk => '0',
       src_in => dest_req_ff
     );
-xpm_cdc_single_src2dest_inst: entity work.\icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4\
+xpm_cdc_single_src2dest_inst: entity work.\icyradio_axi_i2s_0_xpm_cdc_single__6\
      port map (
       dest_clk => dest_clk,
       dest_out => dest_req_nxt,
@@ -1497,8 +1559,6 @@ entity icyradio_axi_i2s_0_axi_i2s is
     s_axis_tdata : in STD_LOGIC_VECTOR ( 31 downto 0 );
     s_axis_tvalid : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_axi_i2s_0_axi_i2s : entity is "axi_i2s";
 end icyradio_axi_i2s_0_axi_i2s;
 
 architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
@@ -1799,7 +1859,7 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   attribute SIM_ASSERT_CHK : integer;
   attribute SIM_ASSERT_CHK of aclk_to_i2s_src_clk_sync : label is 1;
   attribute SRC_SYNC_FF : integer;
-  attribute SRC_SYNC_FF of aclk_to_i2s_src_clk_sync : label is 2;
+  attribute SRC_SYNC_FF of aclk_to_i2s_src_clk_sync : label is 4;
   attribute VERSION : integer;
   attribute VERSION of aclk_to_i2s_src_clk_sync : label is 0;
   attribute WIDTH : integer;
@@ -1882,10 +1942,10 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   attribute SOFT_HLUTNM of \i2s_sdata_out_sr_bit_cnt[4]_i_2\ : label is "soft_lutpair8";
   attribute SOFT_HLUTNM of \i2s_sdata_out_sr_bit_cnt[5]_i_3\ : label is "soft_lutpair18";
   attribute DEST_EXT_HSK of i2s_src_clk_to_aclk_sync : label is 0;
-  attribute DEST_SYNC_FF of i2s_src_clk_to_aclk_sync : label is 2;
+  attribute DEST_SYNC_FF of i2s_src_clk_to_aclk_sync : label is 4;
   attribute INIT_SYNC_FF of i2s_src_clk_to_aclk_sync : label is 1;
   attribute SIM_ASSERT_CHK of i2s_src_clk_to_aclk_sync : label is 1;
-  attribute SRC_SYNC_FF of i2s_src_clk_to_aclk_sync : label is 2;
+  attribute SRC_SYNC_FF of i2s_src_clk_to_aclk_sync : label is 4;
   attribute VERSION of i2s_src_clk_to_aclk_sync : label is 0;
   attribute WIDTH of i2s_src_clk_to_aclk_sync : label is 2;
   attribute XPM_CDC of i2s_src_clk_to_aclk_sync : label is "HANDSHAKE";

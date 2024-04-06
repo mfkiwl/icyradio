@@ -4,8 +4,8 @@
 // Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
 // Date        : Wed Mar 27 12:07:03 2024
 // Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
-// Command     : write_verilog -force -mode synth_stub
-//               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_adc_packer_reset_combiner_rx1_0/icyradio_adc_packer_reset_combiner_rx1_0_stub.v
+// Command     : write_verilog -force -mode synth_stub -rename_top icyradio_adc_packer_reset_combiner_rx1_0 -prefix
+//               icyradio_adc_packer_reset_combiner_rx1_0_ icyradio_adc_packer_reset_combiner_rx1_0_stub.v
 // Design      : icyradio_adc_packer_reset_combiner_rx1_0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a100tfgg484-2

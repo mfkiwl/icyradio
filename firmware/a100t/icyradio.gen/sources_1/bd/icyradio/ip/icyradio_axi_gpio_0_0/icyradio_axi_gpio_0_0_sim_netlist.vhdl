@@ -4,8 +4,8 @@
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
 -- Date        : Wed Mar 27 12:09:26 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_axi_gpio_0_0/icyradio_axi_gpio_0_0_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_axi_gpio_0_0 -prefix
+--               icyradio_axi_gpio_0_0_ icyradio_axi_gpio_0_0_sim_netlist.vhdl
 -- Design      : icyradio_axi_gpio_0_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -26,8 +26,6 @@ entity icyradio_axi_gpio_0_0_xpm_cdc_array_single is
   attribute DEST_SYNC_FF of icyradio_axi_gpio_0_0_xpm_cdc_array_single : entity is 3;
   attribute INIT_SYNC_FF : integer;
   attribute INIT_SYNC_FF of icyradio_axi_gpio_0_0_xpm_cdc_array_single : entity is 1;
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_axi_gpio_0_0_xpm_cdc_array_single : entity is "xpm_cdc_array_single";
   attribute SIM_ASSERT_CHK : integer;
   attribute SIM_ASSERT_CHK of icyradio_axi_gpio_0_0_xpm_cdc_array_single : entity is 1;
   attribute SRC_INPUT_REG : integer;
@@ -1148,8 +1146,6 @@ entity icyradio_axi_gpio_0_0_axi_gpio is
     s_axi_awvalid : in STD_LOGIC;
     s_axi_wvalid : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_axi_gpio_0_0_axi_gpio : entity is "axi_gpio";
 end icyradio_axi_gpio_0_0_axi_gpio;
 
 architecture STRUCTURE of icyradio_axi_gpio_0_0_axi_gpio is

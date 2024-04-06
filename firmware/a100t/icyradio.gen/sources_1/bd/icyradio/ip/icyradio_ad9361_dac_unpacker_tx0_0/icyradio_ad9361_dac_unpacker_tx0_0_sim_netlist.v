@@ -2,10 +2,10 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
-// Date        : Wed Mar 27 12:07:05 2024
+// Date        : Wed Mar 27 12:07:04 2024
 // Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
-// Command     : write_verilog -force -mode funcsim
-//               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_ad9361_dac_unpacker_tx0_0/icyradio_ad9361_dac_unpacker_tx0_0_sim_netlist.v
+// Command     : write_verilog -force -mode funcsim -rename_top icyradio_ad9361_dac_unpacker_tx0_0 -prefix
+//               icyradio_ad9361_dac_unpacker_tx0_0_ icyradio_ad9361_dac_unpacker_tx0_0_sim_netlist.v
 // Design      : icyradio_ad9361_dac_unpacker_tx0_0
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -69,7 +69,6 @@ module icyradio_ad9361_dac_unpacker_tx0_0
         .s_axis_valid(s_axis_valid));
 endmodule
 
-(* ORIG_REF_NAME = "pack_interconnect" *) 
 module icyradio_ad9361_dac_unpacker_tx0_0_pack_interconnect
    (D,
     s_axis_data,
@@ -340,7 +339,6 @@ module icyradio_ad9361_dac_unpacker_tx0_0_pack_interconnect
         .O(D[9]));
 endmodule
 
-(* ORIG_REF_NAME = "pack_network" *) 
 module icyradio_ad9361_dac_unpacker_tx0_0_pack_network
    (D,
     clk,
@@ -394,7 +392,6 @@ module icyradio_ad9361_dac_unpacker_tx0_0_pack_network
         .s_axis_data(s_axis_data));
 endmodule
 
-(* ORIG_REF_NAME = "pack_shell" *) 
 module icyradio_ad9361_dac_unpacker_tx0_0_pack_shell
    (reset_data,
     s_axis_ready,
@@ -657,7 +654,6 @@ module icyradio_ad9361_dac_unpacker_tx0_0_pack_shell
         .R(1'b0));
 endmodule
 
-(* ORIG_REF_NAME = "util_upack2" *) 
 module icyradio_ad9361_dac_unpacker_tx0_0_util_upack2
    (Q,
     s_axis_ready,
@@ -708,7 +704,6 @@ module icyradio_ad9361_dac_unpacker_tx0_0_util_upack2
         .s_axis_valid(s_axis_valid));
 endmodule
 
-(* ORIG_REF_NAME = "util_upack2_impl" *) 
 module icyradio_ad9361_dac_unpacker_tx0_0_util_upack2_impl
    (Q,
     s_axis_ready,

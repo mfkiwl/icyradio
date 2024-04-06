@@ -2,10 +2,10 @@
 -- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
--- Date        : Wed Mar 27 12:09:43 2024
+-- Date        : Wed Mar 27 12:09:42 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_startupe2_0_0/icyradio_startupe2_0_0_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_startupe2_0_0 -prefix
+--               icyradio_startupe2_0_0_ icyradio_startupe2_0_0_sim_netlist.vhdl
 -- Design      : icyradio_startupe2_0_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -27,8 +27,6 @@ entity icyradio_startupe2_0_0_startupe2 is
     usrdone : in STD_LOGIC;
     usrdone_oen : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_startupe2_0_0_startupe2 : entity is "startupe2";
 end icyradio_startupe2_0_0_startupe2;
 
 architecture STRUCTURE of icyradio_startupe2_0_0_startupe2 is

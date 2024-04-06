@@ -2,10 +2,10 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
-// Date        : Wed Mar 27 12:08:26 2024
+// Date        : Mon Apr  1 20:29:08 2024
 // Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
-// Command     : write_verilog -force -mode funcsim
-//               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_axi_i2s_0/icyradio_axi_i2s_0_sim_netlist.v
+// Command     : write_verilog -force -mode funcsim -rename_top icyradio_axi_i2s_0 -prefix
+//               icyradio_axi_i2s_0_ icyradio_axi_i2s_0_sim_netlist.v
 // Design      : icyradio_axi_i2s_0
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -13,167 +13,6 @@
 // --------------------------------------------------------------------------------
 `timescale 1 ps / 1 ps
 
-(* CHECK_LICENSE_TYPE = "icyradio_axi_i2s_0,axi_i2s,{}" *) (* DowngradeIPIdentifiedWarnings = "yes" *) (* IP_DEFINITION_SOURCE = "module_ref" *) 
-(* X_CORE_INFO = "axi_i2s,Vivado 2023.2" *) 
-(* NotValidForBitStream *)
-module icyradio_axi_i2s_0
-   (aclk,
-    aresetn,
-    s_axi_awaddr,
-    s_axi_awprot,
-    s_axi_awvalid,
-    s_axi_awready,
-    s_axi_wdata,
-    s_axi_wstrb,
-    s_axi_wvalid,
-    s_axi_wready,
-    s_axi_bresp,
-    s_axi_bvalid,
-    s_axi_bready,
-    s_axi_araddr,
-    s_axi_arprot,
-    s_axi_arvalid,
-    s_axi_arready,
-    s_axi_rdata,
-    s_axi_rresp,
-    s_axi_rvalid,
-    s_axi_rready,
-    irq,
-    i2s_src_clk,
-    i2s_src_resetn,
-    m_axis_tready,
-    m_axis_tvalid,
-    m_axis_tdata,
-    s_axis_tready,
-    s_axis_tvalid,
-    s_axis_tdata,
-    i2s_mclk,
-    i2s_bclk,
-    i2s_lrclk,
-    i2s_sdata_out,
-    i2s_sdata_in);
-  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 aclk CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME aclk, ASSOCIATED_BUSIF s_axi, ASSOCIATED_RESET aresetn, FREQ_HZ 125000000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN icyradio_axi_pcie_0_0_axi_aclk_out, INSERT_VIP 0" *) input aclk;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 aresetn RST" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME aresetn, POLARITY ACTIVE_LOW, INSERT_VIP 0" *) input aresetn;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWADDR" *) input [4:0]s_axi_awaddr;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWPROT" *) input [2:0]s_axi_awprot;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWVALID" *) input s_axi_awvalid;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWREADY" *) output s_axi_awready;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WDATA" *) input [31:0]s_axi_wdata;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WSTRB" *) input [3:0]s_axi_wstrb;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WVALID" *) input s_axi_wvalid;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WREADY" *) output s_axi_wready;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi BRESP" *) output [1:0]s_axi_bresp;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi BVALID" *) output s_axi_bvalid;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi BREADY" *) input s_axi_bready;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARADDR" *) input [4:0]s_axi_araddr;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARPROT" *) input [2:0]s_axi_arprot;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARVALID" *) input s_axi_arvalid;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARREADY" *) output s_axi_arready;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RDATA" *) output [31:0]s_axi_rdata;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RRESP" *) output [1:0]s_axi_rresp;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RVALID" *) output s_axi_rvalid;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RREADY" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME s_axi, DATA_WIDTH 32, PROTOCOL AXI4LITE, FREQ_HZ 125000000, ID_WIDTH 0, ADDR_WIDTH 5, AWUSER_WIDTH 0, ARUSER_WIDTH 0, WUSER_WIDTH 0, RUSER_WIDTH 0, BUSER_WIDTH 0, READ_WRITE_MODE READ_WRITE, HAS_BURST 0, HAS_LOCK 0, HAS_PROT 1, HAS_CACHE 0, HAS_QOS 0, HAS_REGION 0, HAS_WSTRB 1, HAS_BRESP 1, HAS_RRESP 1, SUPPORTS_NARROW_BURST 0, NUM_READ_OUTSTANDING 1, NUM_WRITE_OUTSTANDING 1, MAX_BURST_LENGTH 1, PHASE 0.0, CLK_DOMAIN icyradio_axi_pcie_0_0_axi_aclk_out, NUM_READ_THREADS 1, NUM_WRITE_THREADS 1, RUSER_BITS_PER_BYTE 0, WUSER_BITS_PER_BYTE 0, INSERT_VIP 0" *) input s_axi_rready;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 irq INTERRUPT" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME irq, SENSITIVITY LEVEL_HIGH, PortWidth 1" *) output irq;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 i2s_src_clk CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME i2s_src_clk, ASSOCIATED_RESET i2s_src_resetn, ASSOCIATED_BUSIF m_axis:s_axis, FREQ_HZ 49152000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN icyradio_FPGA_CLK1, INSERT_VIP 0" *) input i2s_src_clk;
-  (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 i2s_src_resetn RST" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME i2s_src_resetn, POLARITY ACTIVE_LOW, INSERT_VIP 0" *) input i2s_src_resetn;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TREADY" *) input m_axis_tready;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TVALID" *) output m_axis_tvalid;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TDATA" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME m_axis, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 0, HAS_TLAST 0, FREQ_HZ 49152000, PHASE 0.0, CLK_DOMAIN icyradio_FPGA_CLK1, LAYERED_METADATA undef, INSERT_VIP 0" *) output [31:0]m_axis_tdata;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TREADY" *) output s_axis_tready;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TVALID" *) input s_axis_tvalid;
-  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TDATA" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME s_axis, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 0, HAS_TLAST 0, FREQ_HZ 49152000, PHASE 0.0, CLK_DOMAIN icyradio_FPGA_CLK1, LAYERED_METADATA undef, INSERT_VIP 0" *) input [31:0]s_axis_tdata;
-  output i2s_mclk;
-  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s BCLK" *) output i2s_bclk;
-  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s LRCLK" *) output i2s_lrclk;
-  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s SDATA_OUT" *) output i2s_sdata_out;
-  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s SDATA_IN" *) input i2s_sdata_in;
-
-  wire \<const0> ;
-  wire aclk;
-  wire aresetn;
-  wire i2s_bclk;
-  wire i2s_lrclk;
-  wire i2s_mclk;
-  wire i2s_sdata_in;
-  wire i2s_sdata_out;
-  wire i2s_src_clk;
-  wire i2s_src_resetn;
-  wire [31:0]m_axis_tdata;
-  wire m_axis_tready;
-  wire m_axis_tvalid;
-  wire [4:0]s_axi_araddr;
-  wire s_axi_arready;
-  wire s_axi_arvalid;
-  wire [4:0]s_axi_awaddr;
-  wire s_axi_awvalid;
-  wire s_axi_bready;
-  wire s_axi_bvalid;
-  wire [31:0]\^s_axi_rdata ;
-  wire s_axi_rready;
-  wire s_axi_rvalid;
-  wire [31:0]s_axi_wdata;
-  wire s_axi_wready;
-  wire [3:0]s_axi_wstrb;
-  wire s_axi_wvalid;
-  wire [31:0]s_axis_tdata;
-  wire s_axis_tready;
-  wire s_axis_tvalid;
-
-  assign irq = \<const0> ;
-  assign s_axi_awready = s_axi_wready;
-  assign s_axi_bresp[1] = \<const0> ;
-  assign s_axi_bresp[0] = \<const0> ;
-  assign s_axi_rdata[31] = \^s_axi_rdata [31];
-  assign s_axi_rdata[30] = \<const0> ;
-  assign s_axi_rdata[29] = \<const0> ;
-  assign s_axi_rdata[28] = \<const0> ;
-  assign s_axi_rdata[27] = \<const0> ;
-  assign s_axi_rdata[26] = \<const0> ;
-  assign s_axi_rdata[25] = \<const0> ;
-  assign s_axi_rdata[24] = \<const0> ;
-  assign s_axi_rdata[23] = \<const0> ;
-  assign s_axi_rdata[22] = \<const0> ;
-  assign s_axi_rdata[21] = \<const0> ;
-  assign s_axi_rdata[20] = \^s_axi_rdata [20];
-  assign s_axi_rdata[19] = \<const0> ;
-  assign s_axi_rdata[18:0] = \^s_axi_rdata [18:0];
-  assign s_axi_rresp[1] = \<const0> ;
-  assign s_axi_rresp[0] = \<const0> ;
-  GND GND
-       (.G(\<const0> ));
-  icyradio_axi_i2s_0_axi_i2s inst
-       (.aclk(aclk),
-        .aresetn(aresetn),
-        .i2s_bclk_reg_0(i2s_bclk),
-        .i2s_lrclk(i2s_lrclk),
-        .i2s_mclk(i2s_mclk),
-        .i2s_sdata_in(i2s_sdata_in),
-        .i2s_sdata_out(i2s_sdata_out),
-        .i2s_src_clk(i2s_src_clk),
-        .i2s_src_resetn(i2s_src_resetn),
-        .m_axis_tdata(m_axis_tdata),
-        .m_axis_tready(m_axis_tready),
-        .m_axis_tvalid_reg_0(m_axis_tvalid),
-        .s_axi_araddr(s_axi_araddr[4:2]),
-        .s_axi_arready(s_axi_arready),
-        .s_axi_arvalid(s_axi_arvalid),
-        .s_axi_awaddr(s_axi_awaddr[4:2]),
-        .s_axi_awvalid(s_axi_awvalid),
-        .s_axi_bready(s_axi_bready),
-        .s_axi_bvalid(s_axi_bvalid),
-        .s_axi_rdata({\^s_axi_rdata [31],\^s_axi_rdata [20],\^s_axi_rdata [18:0]}),
-        .s_axi_rready(s_axi_rready),
-        .s_axi_rvalid_reg_0(s_axi_rvalid),
-        .s_axi_wdata({s_axi_wdata[20],s_axi_wdata[18:0]}),
-        .s_axi_wready(s_axi_wready),
-        .s_axi_wstrb(s_axi_wstrb[2:0]),
-        .s_axi_wvalid(s_axi_wvalid),
-        .s_axis_tdata(s_axis_tdata),
-        .s_axis_tready_reg_0(s_axis_tready),
-        .s_axis_tvalid(s_axis_tvalid));
-endmodule
-
-(* ORIG_REF_NAME = "axi_i2s" *) 
 module icyradio_axi_i2s_0_axi_i2s
    (s_axi_rvalid_reg_0,
     s_axi_wready,
@@ -704,7 +543,7 @@ module icyradio_axi_i2s_0_axi_i2s
   (* DEST_SYNC_FF = "4" *) 
   (* INIT_SYNC_FF = "1" *) 
   (* SIM_ASSERT_CHK = "1" *) 
-  (* SRC_SYNC_FF = "2" *) 
+  (* SRC_SYNC_FF = "4" *) 
   (* VERSION = "0" *) 
   (* WIDTH = "48" *) 
   (* XPM_CDC = "HANDSHAKE" *) 
@@ -3456,10 +3295,10 @@ module icyradio_axi_i2s_0_axi_i2s
         .Q(\i2s_sdata_out_sr_reg_n_0_[9] ),
         .R(m_axis_tvalid_i_1_n_0));
   (* DEST_EXT_HSK = "0" *) 
-  (* DEST_SYNC_FF = "2" *) 
+  (* DEST_SYNC_FF = "4" *) 
   (* INIT_SYNC_FF = "1" *) 
   (* SIM_ASSERT_CHK = "1" *) 
-  (* SRC_SYNC_FF = "2" *) 
+  (* SRC_SYNC_FF = "4" *) 
   (* VERSION = "0" *) 
   (* WIDTH = "2" *) 
   (* XPM_CDC = "HANDSHAKE" *) 
@@ -4536,10 +4375,170 @@ module icyradio_axi_i2s_0_axi_i2s
         .R(1'b0));
 endmodule
 
+(* CHECK_LICENSE_TYPE = "icyradio_axi_i2s_0,axi_i2s,{}" *) (* DowngradeIPIdentifiedWarnings = "yes" *) (* IP_DEFINITION_SOURCE = "module_ref" *) 
+(* X_CORE_INFO = "axi_i2s,Vivado 2023.2" *) 
+(* NotValidForBitStream *)
+module icyradio_axi_i2s_0
+   (aclk,
+    aresetn,
+    s_axi_awaddr,
+    s_axi_awprot,
+    s_axi_awvalid,
+    s_axi_awready,
+    s_axi_wdata,
+    s_axi_wstrb,
+    s_axi_wvalid,
+    s_axi_wready,
+    s_axi_bresp,
+    s_axi_bvalid,
+    s_axi_bready,
+    s_axi_araddr,
+    s_axi_arprot,
+    s_axi_arvalid,
+    s_axi_arready,
+    s_axi_rdata,
+    s_axi_rresp,
+    s_axi_rvalid,
+    s_axi_rready,
+    irq,
+    i2s_src_clk,
+    i2s_src_resetn,
+    m_axis_tready,
+    m_axis_tvalid,
+    m_axis_tdata,
+    s_axis_tready,
+    s_axis_tvalid,
+    s_axis_tdata,
+    i2s_mclk,
+    i2s_bclk,
+    i2s_lrclk,
+    i2s_sdata_out,
+    i2s_sdata_in);
+  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 aclk CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME aclk, ASSOCIATED_BUSIF s_axi, ASSOCIATED_RESET aresetn, FREQ_HZ 125000000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN icyradio_axi_pcie_0_0_axi_aclk_out, INSERT_VIP 0" *) input aclk;
+  (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 aresetn RST" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME aresetn, POLARITY ACTIVE_LOW, INSERT_VIP 0" *) input aresetn;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWADDR" *) input [4:0]s_axi_awaddr;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWPROT" *) input [2:0]s_axi_awprot;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWVALID" *) input s_axi_awvalid;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi AWREADY" *) output s_axi_awready;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WDATA" *) input [31:0]s_axi_wdata;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WSTRB" *) input [3:0]s_axi_wstrb;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WVALID" *) input s_axi_wvalid;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi WREADY" *) output s_axi_wready;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi BRESP" *) output [1:0]s_axi_bresp;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi BVALID" *) output s_axi_bvalid;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi BREADY" *) input s_axi_bready;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARADDR" *) input [4:0]s_axi_araddr;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARPROT" *) input [2:0]s_axi_arprot;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARVALID" *) input s_axi_arvalid;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi ARREADY" *) output s_axi_arready;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RDATA" *) output [31:0]s_axi_rdata;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RRESP" *) output [1:0]s_axi_rresp;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RVALID" *) output s_axi_rvalid;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 s_axi RREADY" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME s_axi, DATA_WIDTH 32, PROTOCOL AXI4LITE, FREQ_HZ 125000000, ID_WIDTH 0, ADDR_WIDTH 5, AWUSER_WIDTH 0, ARUSER_WIDTH 0, WUSER_WIDTH 0, RUSER_WIDTH 0, BUSER_WIDTH 0, READ_WRITE_MODE READ_WRITE, HAS_BURST 0, HAS_LOCK 0, HAS_PROT 1, HAS_CACHE 0, HAS_QOS 0, HAS_REGION 0, HAS_WSTRB 1, HAS_BRESP 1, HAS_RRESP 1, SUPPORTS_NARROW_BURST 0, NUM_READ_OUTSTANDING 1, NUM_WRITE_OUTSTANDING 1, MAX_BURST_LENGTH 1, PHASE 0.0, CLK_DOMAIN icyradio_axi_pcie_0_0_axi_aclk_out, NUM_READ_THREADS 1, NUM_WRITE_THREADS 1, RUSER_BITS_PER_BYTE 0, WUSER_BITS_PER_BYTE 0, INSERT_VIP 0" *) input s_axi_rready;
+  (* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 irq INTERRUPT" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME irq, SENSITIVITY LEVEL_HIGH, PortWidth 1" *) output irq;
+  (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 i2s_src_clk CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME i2s_src_clk, ASSOCIATED_RESET i2s_src_resetn, ASSOCIATED_BUSIF m_axis:s_axis, FREQ_HZ 49152000, FREQ_TOLERANCE_HZ 0, PHASE 0.0, CLK_DOMAIN icyradio_FPGA_CLK1, INSERT_VIP 0" *) input i2s_src_clk;
+  (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 i2s_src_resetn RST" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME i2s_src_resetn, POLARITY ACTIVE_LOW, INSERT_VIP 0" *) input i2s_src_resetn;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TREADY" *) input m_axis_tready;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TVALID" *) output m_axis_tvalid;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 m_axis TDATA" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME m_axis, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 0, HAS_TLAST 0, FREQ_HZ 49152000, PHASE 0.0, CLK_DOMAIN icyradio_FPGA_CLK1, LAYERED_METADATA undef, INSERT_VIP 0" *) output [31:0]m_axis_tdata;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TREADY" *) output s_axis_tready;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TVALID" *) input s_axis_tvalid;
+  (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 s_axis TDATA" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME s_axis, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 0, HAS_TLAST 0, FREQ_HZ 49152000, PHASE 0.0, CLK_DOMAIN icyradio_FPGA_CLK1, LAYERED_METADATA undef, INSERT_VIP 0" *) input [31:0]s_axis_tdata;
+  output i2s_mclk;
+  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s BCLK" *) output i2s_bclk;
+  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s LRCLK" *) output i2s_lrclk;
+  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s SDATA_OUT" *) output i2s_sdata_out;
+  (* X_INTERFACE_INFO = "analog.com:interface:i2s:1.0 i2s SDATA_IN" *) input i2s_sdata_in;
+
+  wire \<const0> ;
+  wire aclk;
+  wire aresetn;
+  wire i2s_bclk;
+  wire i2s_lrclk;
+  wire i2s_mclk;
+  wire i2s_sdata_in;
+  wire i2s_sdata_out;
+  wire i2s_src_clk;
+  wire i2s_src_resetn;
+  wire [31:0]m_axis_tdata;
+  wire m_axis_tready;
+  wire m_axis_tvalid;
+  wire [4:0]s_axi_araddr;
+  wire s_axi_arready;
+  wire s_axi_arvalid;
+  wire [4:0]s_axi_awaddr;
+  wire s_axi_awvalid;
+  wire s_axi_bready;
+  wire s_axi_bvalid;
+  wire [31:0]\^s_axi_rdata ;
+  wire s_axi_rready;
+  wire s_axi_rvalid;
+  wire [31:0]s_axi_wdata;
+  wire s_axi_wready;
+  wire [3:0]s_axi_wstrb;
+  wire s_axi_wvalid;
+  wire [31:0]s_axis_tdata;
+  wire s_axis_tready;
+  wire s_axis_tvalid;
+
+  assign irq = \<const0> ;
+  assign s_axi_awready = s_axi_wready;
+  assign s_axi_bresp[1] = \<const0> ;
+  assign s_axi_bresp[0] = \<const0> ;
+  assign s_axi_rdata[31] = \^s_axi_rdata [31];
+  assign s_axi_rdata[30] = \<const0> ;
+  assign s_axi_rdata[29] = \<const0> ;
+  assign s_axi_rdata[28] = \<const0> ;
+  assign s_axi_rdata[27] = \<const0> ;
+  assign s_axi_rdata[26] = \<const0> ;
+  assign s_axi_rdata[25] = \<const0> ;
+  assign s_axi_rdata[24] = \<const0> ;
+  assign s_axi_rdata[23] = \<const0> ;
+  assign s_axi_rdata[22] = \<const0> ;
+  assign s_axi_rdata[21] = \<const0> ;
+  assign s_axi_rdata[20] = \^s_axi_rdata [20];
+  assign s_axi_rdata[19] = \<const0> ;
+  assign s_axi_rdata[18:0] = \^s_axi_rdata [18:0];
+  assign s_axi_rresp[1] = \<const0> ;
+  assign s_axi_rresp[0] = \<const0> ;
+  GND GND
+       (.G(\<const0> ));
+  icyradio_axi_i2s_0_axi_i2s inst
+       (.aclk(aclk),
+        .aresetn(aresetn),
+        .i2s_bclk_reg_0(i2s_bclk),
+        .i2s_lrclk(i2s_lrclk),
+        .i2s_mclk(i2s_mclk),
+        .i2s_sdata_in(i2s_sdata_in),
+        .i2s_sdata_out(i2s_sdata_out),
+        .i2s_src_clk(i2s_src_clk),
+        .i2s_src_resetn(i2s_src_resetn),
+        .m_axis_tdata(m_axis_tdata),
+        .m_axis_tready(m_axis_tready),
+        .m_axis_tvalid_reg_0(m_axis_tvalid),
+        .s_axi_araddr(s_axi_araddr[4:2]),
+        .s_axi_arready(s_axi_arready),
+        .s_axi_arvalid(s_axi_arvalid),
+        .s_axi_awaddr(s_axi_awaddr[4:2]),
+        .s_axi_awvalid(s_axi_awvalid),
+        .s_axi_bready(s_axi_bready),
+        .s_axi_bvalid(s_axi_bvalid),
+        .s_axi_rdata({\^s_axi_rdata [31],\^s_axi_rdata [20],\^s_axi_rdata [18:0]}),
+        .s_axi_rready(s_axi_rready),
+        .s_axi_rvalid_reg_0(s_axi_rvalid),
+        .s_axi_wdata({s_axi_wdata[20],s_axi_wdata[18:0]}),
+        .s_axi_wready(s_axi_wready),
+        .s_axi_wstrb(s_axi_wstrb[2:0]),
+        .s_axi_wvalid(s_axi_wvalid),
+        .s_axis_tdata(s_axis_tdata),
+        .s_axis_tready_reg_0(s_axis_tready),
+        .s_axis_tvalid(s_axis_tvalid));
+endmodule
+
 (* DEST_EXT_HSK = "0" *) (* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "1" *) 
-(* ORIG_REF_NAME = "xpm_cdc_handshake" *) (* SIM_ASSERT_CHK = "1" *) (* SRC_SYNC_FF = "2" *) 
-(* VERSION = "0" *) (* WIDTH = "48" *) (* XPM_MODULE = "TRUE" *) 
-(* keep_hierarchy = "true" *) (* xpm_cdc = "HANDSHAKE" *) 
+(* SIM_ASSERT_CHK = "1" *) (* SRC_SYNC_FF = "4" *) (* VERSION = "0" *) 
+(* WIDTH = "48" *) (* XPM_MODULE = "TRUE" *) (* keep_hierarchy = "true" *) 
+(* xpm_cdc = "HANDSHAKE" *) 
 module icyradio_axi_i2s_0_xpm_cdc_handshake
    (src_clk,
     src_in,
@@ -5274,14 +5273,14 @@ module icyradio_axi_i2s_0_xpm_cdc_handshake
         .D(src_send),
         .Q(src_sendd_ff),
         .R(1'b0));
-  (* DEST_SYNC_FF = "2" *) 
+  (* DEST_SYNC_FF = "4" *) 
   (* INIT_SYNC_FF = "1" *) 
   (* SIM_ASSERT_CHK = "0" *) 
   (* SRC_INPUT_REG = "0" *) 
   (* VERSION = "0" *) 
   (* XPM_CDC = "SINGLE" *) 
   (* XPM_MODULE = "TRUE" *) 
-  icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3 xpm_cdc_single_dest2src_inst
+  icyradio_axi_i2s_0_xpm_cdc_single__5 xpm_cdc_single_dest2src_inst
        (.dest_clk(src_clk),
         .dest_out(src_rcv),
         .src_clk(1'b0),
@@ -5293,15 +5292,15 @@ module icyradio_axi_i2s_0_xpm_cdc_handshake
   (* VERSION = "0" *) 
   (* XPM_CDC = "SINGLE" *) 
   (* XPM_MODULE = "TRUE" *) 
-  icyradio_axi_i2s_0_xpm_cdc_single xpm_cdc_single_src2dest_inst
+  icyradio_axi_i2s_0_xpm_cdc_single__4 xpm_cdc_single_src2dest_inst
        (.dest_clk(dest_clk),
         .dest_out(dest_req_nxt),
         .src_clk(1'b0),
         .src_in(src_sendd_ff));
 endmodule
 
-(* DEST_EXT_HSK = "0" *) (* DEST_SYNC_FF = "2" *) (* INIT_SYNC_FF = "1" *) 
-(* ORIG_REF_NAME = "xpm_cdc_handshake" *) (* SIM_ASSERT_CHK = "1" *) (* SRC_SYNC_FF = "2" *) 
+(* DEST_EXT_HSK = "0" *) (* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "1" *) 
+(* ORIG_REF_NAME = "xpm_cdc_handshake" *) (* SIM_ASSERT_CHK = "1" *) (* SRC_SYNC_FF = "4" *) 
 (* VERSION = "0" *) (* WIDTH = "2" *) (* XPM_MODULE = "TRUE" *) 
 (* keep_hierarchy = "true" *) (* xpm_cdc = "HANDSHAKE" *) 
 module icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0
@@ -5406,35 +5405,35 @@ module icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0
         .D(src_send),
         .Q(src_sendd_ff),
         .R(1'b0));
-  (* DEST_SYNC_FF = "2" *) 
+  (* DEST_SYNC_FF = "4" *) 
   (* INIT_SYNC_FF = "1" *) 
   (* SIM_ASSERT_CHK = "0" *) 
   (* SRC_INPUT_REG = "0" *) 
   (* VERSION = "0" *) 
   (* XPM_CDC = "SINGLE" *) 
   (* XPM_MODULE = "TRUE" *) 
-  icyradio_axi_i2s_0_xpm_cdc_single__parameterized0 xpm_cdc_single_dest2src_inst
+  icyradio_axi_i2s_0_xpm_cdc_single xpm_cdc_single_dest2src_inst
        (.dest_clk(src_clk),
         .dest_out(src_rcv),
         .src_clk(1'b0),
         .src_in(dest_req_ff));
-  (* DEST_SYNC_FF = "2" *) 
+  (* DEST_SYNC_FF = "4" *) 
   (* INIT_SYNC_FF = "1" *) 
   (* SIM_ASSERT_CHK = "0" *) 
   (* SRC_INPUT_REG = "0" *) 
   (* VERSION = "0" *) 
   (* XPM_CDC = "SINGLE" *) 
   (* XPM_MODULE = "TRUE" *) 
-  icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4 xpm_cdc_single_src2dest_inst
+  icyradio_axi_i2s_0_xpm_cdc_single__6 xpm_cdc_single_src2dest_inst
        (.dest_clk(dest_clk),
         .dest_out(dest_req_nxt),
         .src_clk(1'b0),
         .src_in(src_sendd_ff));
 endmodule
 
-(* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "1" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
-(* SIM_ASSERT_CHK = "0" *) (* SRC_INPUT_REG = "0" *) (* VERSION = "0" *) 
-(* XPM_MODULE = "TRUE" *) (* keep_hierarchy = "true" *) (* xpm_cdc = "SINGLE" *) 
+(* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "1" *) (* SIM_ASSERT_CHK = "0" *) 
+(* SRC_INPUT_REG = "0" *) (* VERSION = "0" *) (* XPM_MODULE = "TRUE" *) 
+(* keep_hierarchy = "true" *) (* xpm_cdc = "SINGLE" *) 
 module icyradio_axi_i2s_0_xpm_cdc_single
    (src_clk,
     src_in,
@@ -5488,10 +5487,10 @@ module icyradio_axi_i2s_0_xpm_cdc_single
         .R(1'b0));
 endmodule
 
-(* DEST_SYNC_FF = "2" *) (* INIT_SYNC_FF = "1" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
+(* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "1" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
 (* SIM_ASSERT_CHK = "0" *) (* SRC_INPUT_REG = "0" *) (* VERSION = "0" *) 
 (* XPM_MODULE = "TRUE" *) (* keep_hierarchy = "true" *) (* xpm_cdc = "SINGLE" *) 
-module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0
+module icyradio_axi_i2s_0_xpm_cdc_single__4
    (src_clk,
     src_in,
     dest_clk,
@@ -5503,9 +5502,9 @@ module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0
 
   wire dest_clk;
   wire src_in;
-  (* RTL_KEEP = "true" *) (* async_reg = "true" *) (* xpm_cdc = "SINGLE" *) wire [1:0]syncstages_ff;
+  (* RTL_KEEP = "true" *) (* async_reg = "true" *) (* xpm_cdc = "SINGLE" *) wire [3:0]syncstages_ff;
 
-  assign dest_out = syncstages_ff[1];
+  assign dest_out = syncstages_ff[3];
   (* ASYNC_REG *) 
   (* KEEP = "true" *) 
   (* XPM_CDC = "SINGLE" *) 
@@ -5523,13 +5522,31 @@ module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0
         .CE(1'b1),
         .D(syncstages_ff[0]),
         .Q(syncstages_ff[1]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[2] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[1]),
+        .Q(syncstages_ff[2]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[3] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[2]),
+        .Q(syncstages_ff[3]),
         .R(1'b0));
 endmodule
 
-(* DEST_SYNC_FF = "2" *) (* INIT_SYNC_FF = "1" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
+(* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "1" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
 (* SIM_ASSERT_CHK = "0" *) (* SRC_INPUT_REG = "0" *) (* VERSION = "0" *) 
 (* XPM_MODULE = "TRUE" *) (* keep_hierarchy = "true" *) (* xpm_cdc = "SINGLE" *) 
-module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3
+module icyradio_axi_i2s_0_xpm_cdc_single__5
    (src_clk,
     src_in,
     dest_clk,
@@ -5541,9 +5558,9 @@ module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3
 
   wire dest_clk;
   wire src_in;
-  (* RTL_KEEP = "true" *) (* async_reg = "true" *) (* xpm_cdc = "SINGLE" *) wire [1:0]syncstages_ff;
+  (* RTL_KEEP = "true" *) (* async_reg = "true" *) (* xpm_cdc = "SINGLE" *) wire [3:0]syncstages_ff;
 
-  assign dest_out = syncstages_ff[1];
+  assign dest_out = syncstages_ff[3];
   (* ASYNC_REG *) 
   (* KEEP = "true" *) 
   (* XPM_CDC = "SINGLE" *) 
@@ -5561,13 +5578,31 @@ module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__3
         .CE(1'b1),
         .D(syncstages_ff[0]),
         .Q(syncstages_ff[1]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[2] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[1]),
+        .Q(syncstages_ff[2]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[3] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[2]),
+        .Q(syncstages_ff[3]),
         .R(1'b0));
 endmodule
 
-(* DEST_SYNC_FF = "2" *) (* INIT_SYNC_FF = "1" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
+(* DEST_SYNC_FF = "4" *) (* INIT_SYNC_FF = "1" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
 (* SIM_ASSERT_CHK = "0" *) (* SRC_INPUT_REG = "0" *) (* VERSION = "0" *) 
 (* XPM_MODULE = "TRUE" *) (* keep_hierarchy = "true" *) (* xpm_cdc = "SINGLE" *) 
-module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4
+module icyradio_axi_i2s_0_xpm_cdc_single__6
    (src_clk,
     src_in,
     dest_clk,
@@ -5579,9 +5614,9 @@ module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4
 
   wire dest_clk;
   wire src_in;
-  (* RTL_KEEP = "true" *) (* async_reg = "true" *) (* xpm_cdc = "SINGLE" *) wire [1:0]syncstages_ff;
+  (* RTL_KEEP = "true" *) (* async_reg = "true" *) (* xpm_cdc = "SINGLE" *) wire [3:0]syncstages_ff;
 
-  assign dest_out = syncstages_ff[1];
+  assign dest_out = syncstages_ff[3];
   (* ASYNC_REG *) 
   (* KEEP = "true" *) 
   (* XPM_CDC = "SINGLE" *) 
@@ -5599,6 +5634,24 @@ module icyradio_axi_i2s_0_xpm_cdc_single__parameterized0__4
         .CE(1'b1),
         .D(syncstages_ff[0]),
         .Q(syncstages_ff[1]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[2] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[1]),
+        .Q(syncstages_ff[2]),
+        .R(1'b0));
+  (* ASYNC_REG *) 
+  (* KEEP = "true" *) 
+  (* XPM_CDC = "SINGLE" *) 
+  FDRE \syncstages_ff_reg[3] 
+       (.C(dest_clk),
+        .CE(1'b1),
+        .D(syncstages_ff[2]),
+        .Q(syncstages_ff[3]),
         .R(1'b0));
 endmodule
 `ifndef GLBL

@@ -87,6 +87,7 @@ module icyradio_axi_rf_timestamping_0 (
   rx_data_ready,
   tx_fifo_underflow,
   rx_fifo_overflow,
+  tx_flush,
   tx_enable,
   rx_enable
 );
@@ -154,6 +155,7 @@ input wire [1 : 0] tx_data_ready;
 input wire [1 : 0] rx_data_ready;
 input wire [1 : 0] tx_fifo_underflow;
 input wire [1 : 0] rx_fifo_overflow;
+output wire [1 : 0] tx_flush;
 output wire [1 : 0] tx_enable;
 output wire [1 : 0] rx_enable;
 
@@ -190,6 +192,7 @@ output wire [1 : 0] rx_enable;
     .rx_data_ready(rx_data_ready),
     .tx_fifo_underflow(tx_fifo_underflow),
     .rx_fifo_overflow(rx_fifo_overflow),
+    .tx_flush(tx_flush),
     .tx_enable(tx_enable),
     .rx_enable(rx_enable)
   );

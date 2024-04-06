@@ -2,10 +2,10 @@
 -- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
--- Date        : Wed Mar 27 12:09:38 2024
+-- Date        : Mon Apr  1 20:29:13 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode synth_stub
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_axi_rf_timestamping_0/icyradio_axi_rf_timestamping_0_stub.vhdl
+-- Command     : write_vhdl -force -mode synth_stub -rename_top icyradio_axi_rf_timestamping_0 -prefix
+--               icyradio_axi_rf_timestamping_0_ icyradio_axi_rf_timestamping_0_stub.vhdl
 -- Design      : icyradio_axi_rf_timestamping_0
 -- Purpose     : Stub declaration of top-level module interface
 -- Device      : xc7a100tfgg484-2
@@ -47,6 +47,7 @@ entity icyradio_axi_rf_timestamping_0 is
     rx_data_ready : in STD_LOGIC_VECTOR ( 1 downto 0 );
     tx_fifo_underflow : in STD_LOGIC_VECTOR ( 1 downto 0 );
     rx_fifo_overflow : in STD_LOGIC_VECTOR ( 1 downto 0 );
+    tx_flush : out STD_LOGIC_VECTOR ( 1 downto 0 );
     tx_enable : out STD_LOGIC_VECTOR ( 1 downto 0 );
     rx_enable : out STD_LOGIC_VECTOR ( 1 downto 0 )
   );
@@ -57,7 +58,7 @@ architecture stub of icyradio_axi_rf_timestamping_0 is
 attribute syn_black_box : boolean;
 attribute black_box_pad_pin : string;
 attribute syn_black_box of stub : architecture is true;
-attribute black_box_pad_pin of stub : architecture is "aclk,aresetn,s_axi_awaddr[6:0],s_axi_awprot[2:0],s_axi_awvalid,s_axi_awready,s_axi_wdata[31:0],s_axi_wstrb[3:0],s_axi_wvalid,s_axi_wready,s_axi_bresp[1:0],s_axi_bvalid,s_axi_bready,s_axi_araddr[6:0],s_axi_arprot[2:0],s_axi_arvalid,s_axi_arready,s_axi_rdata[31:0],s_axi_rresp[1:0],s_axi_rvalid,s_axi_rready,irq,ts_clk,ts_resetn,ts_clk_tx_en,ts_clk_rx_en,tx_dma_data_ready[1:0],rx_dma_xfer_req[1:0],tx_data_ready[1:0],rx_data_ready[1:0],tx_fifo_underflow[1:0],rx_fifo_overflow[1:0],tx_enable[1:0],rx_enable[1:0]";
+attribute black_box_pad_pin of stub : architecture is "aclk,aresetn,s_axi_awaddr[6:0],s_axi_awprot[2:0],s_axi_awvalid,s_axi_awready,s_axi_wdata[31:0],s_axi_wstrb[3:0],s_axi_wvalid,s_axi_wready,s_axi_bresp[1:0],s_axi_bvalid,s_axi_bready,s_axi_araddr[6:0],s_axi_arprot[2:0],s_axi_arvalid,s_axi_arready,s_axi_rdata[31:0],s_axi_rresp[1:0],s_axi_rvalid,s_axi_rready,irq,ts_clk,ts_resetn,ts_clk_tx_en,ts_clk_rx_en,tx_dma_data_ready[1:0],rx_dma_xfer_req[1:0],tx_data_ready[1:0],rx_data_ready[1:0],tx_fifo_underflow[1:0],rx_fifo_overflow[1:0],tx_flush[1:0],tx_enable[1:0],rx_enable[1:0]";
 attribute X_CORE_INFO : string;
 attribute X_CORE_INFO of stub : architecture is "axi_rf_timestamping,Vivado 2023.2";
 begin

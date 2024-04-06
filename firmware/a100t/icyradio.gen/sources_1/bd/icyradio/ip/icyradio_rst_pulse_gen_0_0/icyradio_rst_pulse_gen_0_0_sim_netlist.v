@@ -2,10 +2,10 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
-// Date        : Wed Mar 27 12:07:06 2024
+// Date        : Wed Mar 27 12:07:05 2024
 // Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
-// Command     : write_verilog -force -mode funcsim
-//               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_rst_pulse_gen_0_0/icyradio_rst_pulse_gen_0_0_sim_netlist.v
+// Command     : write_verilog -force -mode funcsim -rename_top icyradio_rst_pulse_gen_0_0 -prefix
+//               icyradio_rst_pulse_gen_0_0_ icyradio_rst_pulse_gen_0_0_sim_netlist.v
 // Design      : icyradio_rst_pulse_gen_0_0
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -34,7 +34,6 @@ module icyradio_rst_pulse_gen_0_0
         .trigger(trigger));
 endmodule
 
-(* ORIG_REF_NAME = "rst_pulse_gen" *) 
 module icyradio_rst_pulse_gen_0_0_rst_pulse_gen
    (rst_out,
     trigger,

@@ -78,6 +78,10 @@ module axi_rf_timestamping
     (* X_INTERFACE_IGNORE = "true" *)
     input  [1:0] rx_fifo_overflow,    // RX FIFO overflow
 
+    // TX flush signals
+    (* X_INTERFACE_IGNORE = "true" *)
+    output [1:0] tx_flush,           // Flushes TX DMA when high, i.e., removes back-pressure
+
     // TX/RX enable signals
     (* X_INTERFACE_IGNORE = "true" *)
     output [1:0] tx_enable,           // Use to gate data to TRX, allow data to pass when high
@@ -155,6 +159,9 @@ reg  [1:0] tx_fifo_underflow_stky_a;      // Sticky TX FIFO underflow signal (AX
 reg  [1:0] rx_fifo_overflow_a;            // RX FIFO overflow (AXI-Lite clock domain)
 reg  [1:0] rx_fifo_overflow_stky_a;       // Sticky RX FIFO overflow signal (AXI-Lite clock domain)
 
+reg  [1:0] tx_flush_a;          // TX flush (AXI-Lite clock domain)
+reg  [1:0] tx_flush;            // TX flush
+
 reg  [1:0] tx_enable_a;         // TX enable (AXI-Lite clock domain)
 reg  [1:0] tx_enable;           // TX enable
 reg  [1:0] tx_enable_man_a;     // Manual TX enable (AXI-Lite clock domain)
@@ -210,8 +217,8 @@ reg   [1:0] cnt_latch_valid_rd;      // Latch invalidation signal, indicates tha
 reg  ts_resetn_a; // Timestamping reset (AXI-Lite clock domain)
 
 // Synchronization logic (aclk -> ts_clk)
-wire [351:0] sync_aclk_to_ts_clk_out;       // Synchtonized signals aclk -> ts_clk output in ts_clk domain
-wire [351:0] sync_aclk_to_ts_clk_in;        // Synchtonized signals aclk -> ts_clk input in aclk domain
+wire [353:0] sync_aclk_to_ts_clk_out;       // Synchtonized signals aclk -> ts_clk output in ts_clk domain
+wire [353:0] sync_aclk_to_ts_clk_in;        // Synchtonized signals aclk -> ts_clk input in aclk domain
 wire         sync_aclk_to_ts_clk_src_done;  // Synchronization done signal for aclk -> ts_clk
 reg          sync_aclk_to_ts_clk_src_req;   // Synchronization request signal for aclk -> ts_clk
 wire         sync_aclk_to_ts_clk_dst_req;   // Synchronization request signal for aclk -> ts_clk output in ts_clk domain
@@ -221,8 +228,8 @@ xpm_cdc_handshake #(
     .DEST_SYNC_FF(4),
     .INIT_SYNC_FF(1),
     .SIM_ASSERT_CHK(1),
-    .SRC_SYNC_FF(2),
-    .WIDTH(352)
+    .SRC_SYNC_FF(4),
+    .WIDTH(354)
 )
 aclk_to_ts_clk_sync
 (
@@ -245,10 +252,10 @@ wire         sync_ts_clk_to_aclk_dst_req;   // Synchronization request signal fo
 
 xpm_cdc_handshake #(
     .DEST_EXT_HSK(0),
-    .DEST_SYNC_FF(2),
+    .DEST_SYNC_FF(4),
     .INIT_SYNC_FF(1),
     .SIM_ASSERT_CHK(1),
-    .SRC_SYNC_FF(2),
+    .SRC_SYNC_FF(4),
     .WIDTH(228)
 )
 ts_clk_to_aclk_sync
@@ -550,6 +557,8 @@ always @(posedge aclk)
                 tx_fifo_underflow_stky_a <= 2'b00;
                 rx_fifo_overflow_stky_a <= 2'b00;
 
+                tx_flush_a <= 2'b00;
+
                 tx_enable_man_a <= 2'b00;
                 rx_enable_man_a <= 2'b00;
 
@@ -678,10 +687,10 @@ always @(posedge aclk)
                             5'h4:    {cnt_a_rd_buf, s_axi_rdata} <= cnt_a; // Buffered register low word
                             5'h5:    s_axi_rdata <= cnt_a_rd_buf; // Buffered register high word (from the buffer)
 
-                            5'h8:    s_axi_rdata <= {10'd0, |rx_enable_man_a, |tx_enable_man_a, |cnt_rx_en_a, |cnt_tx_en_a, |rx_enable_a, |tx_enable_a, 16'd0}; // Same as write to Registers 16 and 24 simultaneously, reads enable status if either channel is enabled
+                            5'h8:    s_axi_rdata <= {9'd0, |tx_flush_a, |rx_enable_man_a, |tx_enable_man_a, |cnt_rx_en_a, |cnt_tx_en_a, |rx_enable_a, |tx_enable_a, 16'd0}; // Same as write to Registers 16 and 24 simultaneously, reads enable status if either channel is enabled
                             5'h9:    s_axi_rdata <= {S_AXI_DSZ{1'b0}}; // Same as write to Registers 17 and 25 simultaneously, write-only
 
-                            5'h10:   s_axi_rdata <= {4'd0, cnt_latch_valid_rd_a[0], cnt_latch_valid_a[0], cnt_latch_armed_a[0], cnt_latch_arm_req_a[0], 2'b0, rx_enable_man_a[0], tx_enable_man_a[0], cnt_rx_en_a[0], cnt_tx_en_a[0], rx_enable_a[0], tx_enable_a[0], 16'd0};
+                            5'h10:   s_axi_rdata <= {4'd0, cnt_latch_valid_rd_a[0], cnt_latch_valid_a[0], cnt_latch_armed_a[0], cnt_latch_arm_req_a[0], 1'b0, tx_flush_a[0], rx_enable_man_a[0], tx_enable_man_a[0], cnt_rx_en_a[0], cnt_tx_en_a[0], rx_enable_a[0], tx_enable_a[0], 16'd0};
                             5'h11:   {rx_fifo_overflow_stky_a[0], tx_fifo_underflow_stky_a[0], rx_data_ready_stky_a[0], tx_data_ready_stky_a[0], rx_dma_xfer_req_stky_a[0], tx_dma_data_ready_stky_a[0], s_axi_rdata} <= {16'd0, rx_fifo_overflow_stky_a[0], tx_fifo_underflow_stky_a[0], rx_data_ready_stky_a[0], tx_data_ready_stky_a[0], rx_dma_xfer_req_stky_a[0], tx_dma_data_ready_stky_a[0], rx_data_ready_ovr_a[0], tx_data_ready_ovr_a[0], rx_dma_xfer_req_ovr_a[0], tx_dma_data_ready_ovr_a[0], rx_data_ready_a[0], tx_data_ready_a[0], rx_dma_xfer_req_a[0], tx_dma_data_ready_a[0], rx_data_ready_ovr_val_a[0], rx_data_ready_ovr_en_a[0], tx_data_ready_ovr_val_a[0], tx_data_ready_ovr_en_a[0], rx_dma_xfer_req_ovr_val_a[0], rx_dma_xfer_req_ovr_en_a[0], tx_dma_data_ready_ovr_val_a[0], tx_dma_data_ready_ovr_en_a[0]};
                             5'h12:   s_axi_rdata <= cnt_tx0_a[31:0];
                             5'h13:   s_axi_rdata <= cnt_tx0_a[63:32];
@@ -690,7 +699,7 @@ always @(posedge aclk)
                             5'h16:   {cnt_latch_valid_rd_a[0], cnt_latched0_a_rd_buf, s_axi_rdata} <= {cnt_latch_valid_a[0], cnt_latched0_a};
                             5'h17:   s_axi_rdata <= cnt_latched0_a_rd_buf;
 
-                            5'h18:   s_axi_rdata <= {4'd0, cnt_latch_valid_rd_a[1], cnt_latch_valid_a[1], cnt_latch_armed_a[1], cnt_latch_arm_req_a[1], 2'b0, rx_enable_man_a[1], tx_enable_man_a[1], cnt_rx_en_a[1], cnt_tx_en_a[1], rx_enable_a[1], tx_enable_a[1], 16'd0};
+                            5'h18:   s_axi_rdata <= {4'd0, cnt_latch_valid_rd_a[1], cnt_latch_valid_a[1], cnt_latch_armed_a[1], cnt_latch_arm_req_a[1], 1'b0, tx_flush_a[1], rx_enable_man_a[1], tx_enable_man_a[1], cnt_rx_en_a[1], cnt_tx_en_a[1], rx_enable_a[1], tx_enable_a[1], 16'd0};
                             5'h19:   {rx_fifo_overflow_stky_a[1], tx_fifo_underflow_stky_a[1], rx_data_ready_stky_a[1], tx_data_ready_stky_a[1], rx_dma_xfer_req_stky_a[1], tx_dma_data_ready_stky_a[1], s_axi_rdata} <= {16'd0, rx_fifo_overflow_stky_a[1], tx_fifo_underflow_stky_a[1], rx_data_ready_stky_a[1], tx_data_ready_stky_a[1], rx_dma_xfer_req_stky_a[1], tx_dma_data_ready_stky_a[1], rx_data_ready_ovr_a[1], tx_data_ready_ovr_a[1], rx_dma_xfer_req_ovr_a[1], tx_dma_data_ready_ovr_a[1], rx_data_ready_a[1], tx_data_ready_a[1], rx_dma_xfer_req_a[1], tx_dma_data_ready_a[1], rx_data_ready_ovr_val_a[1], rx_data_ready_ovr_en_a[1], tx_data_ready_ovr_val_a[1], tx_data_ready_ovr_en_a[1], rx_dma_xfer_req_ovr_val_a[1], rx_dma_xfer_req_ovr_en_a[1], tx_dma_data_ready_ovr_val_a[1], tx_dma_data_ready_ovr_en_a[1]};
                             5'h1A:   s_axi_rdata <= cnt_tx1_a[31:0];
                             5'h1B:   s_axi_rdata <= cnt_tx1_a[63:32];
@@ -916,11 +925,21 @@ always @(posedge aclk)
                                             else if(s_axi_wdata[8])
                                                 cnt_latch_arm_req_a[0] <= 1'b1;
 
+                                            if(s_axi_wdata[11]) // Disabling takes priority over enabling
+                                                tx_flush_a[0] <= 1'b0;
+                                            else if(s_axi_wdata[10] && !cnt_tx_en_a[0] && !tx_enable_a[0])
+                                                tx_flush_a[0] <= 1'b1;
+
                                             // Channel 1
                                             if(s_axi_wdata[9]) // Disabling takes priority over enabling
                                                 cnt_latch_arm_req_a[1] <= 1'b0;
                                             else if(s_axi_wdata[8])
                                                 cnt_latch_arm_req_a[1] <= 1'b1;
+
+                                            if(s_axi_wdata[11]) // Disabling takes priority over enabling
+                                                tx_flush_a[1] <= 1'b0;
+                                            else if(s_axi_wdata[10] && !cnt_tx_en_a[1] && !tx_enable_a[1])
+                                                tx_flush_a[1] <= 1'b1;
                                         end
 
                                     // if(s_axi_wstrb[2] == 1'b1) // s_axi_wdata[23:16]
@@ -1006,6 +1025,11 @@ always @(posedge aclk)
                                                 cnt_latch_arm_req_a[0] <= 1'b0;
                                             else if(s_axi_wdata[8])
                                                 cnt_latch_arm_req_a[0] <= 1'b1;
+
+                                            if(s_axi_wdata[11]) // Disabling takes priority over enabling
+                                                tx_flush_a[0] <= 1'b0;
+                                            else if(s_axi_wdata[10] && !cnt_tx_en_a[0] && !tx_enable_a[0])
+                                                tx_flush_a[0] <= 1'b1;
                                         end
 
                                     if(s_axi_wstrb[2] == 1'b1) // s_axi_wdata[23:16]
@@ -1016,6 +1040,7 @@ always @(posedge aclk)
                                             // s_axi_wdata[19] - cnt_rx_en_a[0], Read-only
                                             // s_axi_wdata[20] - tx_enable_man_a[0], Read-only
                                             // s_axi_wdata[21] - rx_enable_man_a[0], Read-only
+                                            // s_axi_wdata[22] - tx_flush_a[0], Read-only
                                         end
 
                                     if(s_axi_wstrb[3] == 1'b1) // s_axi_wdata[31:24]
@@ -1180,6 +1205,11 @@ always @(posedge aclk)
                                                 cnt_latch_arm_req_a[1] <= 1'b0;
                                             else if(s_axi_wdata[8])
                                                 cnt_latch_arm_req_a[1] <= 1'b1;
+
+                                            if(s_axi_wdata[11]) // Disabling takes priority over enabling
+                                                tx_flush_a[1] <= 1'b0;
+                                            else if(s_axi_wdata[10] && !cnt_tx_en_a[1] && !tx_enable_a[1])
+                                                tx_flush_a[1] <= 1'b1;
                                         end
 
                                     if(s_axi_wstrb[2] == 1'b1) // s_axi_wdata[23:16]
@@ -1190,6 +1220,7 @@ always @(posedge aclk)
                                             // s_axi_wdata[19] - cnt_rx_en_a[1], Read-only
                                             // s_axi_wdata[20] - tx_enable_man_a[1], Read-only
                                             // s_axi_wdata[21] - rx_enable_man_a[1], Read-only
+                                            // s_axi_wdata[22] - tx_flush_a[1], Read-only
                                         end
 
                                     if(s_axi_wstrb[3] == 1'b1) // s_axi_wdata[31:24]
@@ -1333,6 +1364,7 @@ assign sync_aclk_to_ts_clk_in = {
     tx_data_ready_ovr_val_a,
     rx_data_ready_ovr_en_a,
     rx_data_ready_ovr_val_a,
+    tx_flush_a,
     tx_enable_man_a,
     rx_enable_man_a,
     cnt_wr_a,
@@ -1364,6 +1396,7 @@ always @(posedge ts_clk)
             tx_data_ready_ovr_val,
             rx_data_ready_ovr_en,
             rx_data_ready_ovr_val,
+            tx_flush,
             tx_enable_man,
             rx_enable_man,
             cnt_wr,

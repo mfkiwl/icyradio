@@ -2,10 +2,10 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
-// Date        : Wed Mar 27 12:09:13 2024
+// Date        : Wed Mar 27 12:09:12 2024
 // Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
-// Command     : write_verilog -force -mode funcsim
-//               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_picorv32_0_0/icyradio_picorv32_0_0_sim_netlist.v
+// Command     : write_verilog -force -mode funcsim -rename_top icyradio_picorv32_0_0 -prefix
+//               icyradio_picorv32_0_0_ icyradio_picorv32_0_0_sim_netlist.v
 // Design      : icyradio_picorv32_0_0
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -123,7 +123,6 @@ module icyradio_picorv32_0_0
         .trap(trap));
 endmodule
 
-(* ORIG_REF_NAME = "picorv32" *) 
 module icyradio_picorv32_0_0_picorv32
    (instr_lui0,
     instr_sub,
@@ -24759,7 +24758,6 @@ module icyradio_picorv32_0_0_picorv32
         .O(mem_valid_reg_0));
 endmodule
 
-(* ORIG_REF_NAME = "picorv32_axi" *) 
 module icyradio_picorv32_0_0_picorv32_axi
    (mem_axi_rready,
     \mem_wstrb_reg[2] ,
@@ -25191,7 +25189,6 @@ module icyradio_picorv32_0_0_picorv32_axi
         .O(prefetched_high_word_i_1_n_0));
 endmodule
 
-(* ORIG_REF_NAME = "picorv32_axi_adapter" *) 
 module icyradio_picorv32_0_0_picorv32_axi_adapter
    (xfer_done,
     ack_awvalid,
@@ -25293,7 +25290,6 @@ module icyradio_picorv32_0_0_picorv32_axi_adapter
         .R(1'b0));
 endmodule
 
-(* ORIG_REF_NAME = "picorv32_pcpi_div" *) 
 module icyradio_picorv32_0_0_picorv32_pcpi_div
    (resetn_0,
     D,
@@ -30531,7 +30527,6 @@ module icyradio_picorv32_0_0_picorv32_pcpi_div
         .R(1'b0));
 endmodule
 
-(* ORIG_REF_NAME = "picorv32_pcpi_fast_mul" *) 
 module icyradio_picorv32_0_0_picorv32_pcpi_fast_mul
    (\mem_axi_rdata[17] ,
     mem_la_secondword_reg,

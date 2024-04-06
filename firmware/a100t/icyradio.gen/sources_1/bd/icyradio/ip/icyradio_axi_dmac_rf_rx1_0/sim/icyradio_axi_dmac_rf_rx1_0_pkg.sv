@@ -32,7 +32,7 @@ package icyradio_axi_dmac_rf_rx1_0_pkg;
   parameter icyradio_axi_dmac_rf_rx1_0_DMA_TYPE_DEST           = 0;
   parameter icyradio_axi_dmac_rf_rx1_0_DMA_TYPE_SRC            = 2;
   parameter icyradio_axi_dmac_rf_rx1_0_DMA_AXI_ADDR_WIDTH      = 32;
-  parameter icyradio_axi_dmac_rf_rx1_0_MAX_BYTES_PER_BURST     = 128;
+  parameter icyradio_axi_dmac_rf_rx1_0_MAX_BYTES_PER_BURST     = 256;
   parameter icyradio_axi_dmac_rf_rx1_0_FIFO_SIZE               = 8;
   parameter icyradio_axi_dmac_rf_rx1_0_AXI_ID_WIDTH_SRC        = 1;
   parameter icyradio_axi_dmac_rf_rx1_0_AXI_ID_WIDTH_DEST       = 1;

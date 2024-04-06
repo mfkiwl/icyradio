@@ -125,7 +125,9 @@ set_property PACKAGE_PIN K18 [get_ports TRX_DATA_CLK]
 set_property PACKAGE_PIN J19 [get_ports TRX_FBCLK]
 set_property PACKAGE_PIN J20 [get_ports TRX_CLK_OUT]
 
-create_clock -name TRX_DATA_CLK -period 16.27 [get_ports TRX_DATA_CLK]
+# Change to 16.27 ns for 61.44 MHz TRX_DATA_CLK
+create_clock -name TRX_DATA_CLK -period 8.13 [get_ports TRX_DATA_CLK]
+#create_clock -name TRX_CLK_OUT -period 3.125 [get_ports TRX_CLK_OUT]
 
 # Control IOs
 set_property IOSTANDARD LVCMOS25 [get_ports {TRX_RESETn[0]}]

@@ -2,10 +2,10 @@
 -- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
--- Date        : Wed Mar 27 12:07:05 2024
+-- Date        : Wed Mar 27 12:07:04 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
--- Command     : write_vhdl -force -mode funcsim
---               /home/joao/icyradio/firmware/a100t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_ad9361_dac_unpacker_tx0_0/icyradio_ad9361_dac_unpacker_tx0_0_sim_netlist.vhdl
+-- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_ad9361_dac_unpacker_tx0_0 -prefix
+--               icyradio_ad9361_dac_unpacker_tx0_0_ icyradio_ad9361_dac_unpacker_tx0_0_sim_netlist.vhdl
 -- Design      : icyradio_ad9361_dac_unpacker_tx0_0
 -- Purpose     : This VHDL netlist is a functional simulation representation of the design and should not be modified or
 --               synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -21,8 +21,6 @@ entity icyradio_ad9361_dac_unpacker_tx0_0_pack_interconnect is
     s_axis_data : in STD_LOGIC_VECTOR ( 31 downto 0 );
     p_0_in : in STD_LOGIC
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_dac_unpacker_tx0_0_pack_interconnect : entity is "pack_interconnect";
 end icyradio_ad9361_dac_unpacker_tx0_0_pack_interconnect;
 
 architecture STRUCTURE of icyradio_ad9361_dac_unpacker_tx0_0_pack_interconnect is
@@ -396,8 +394,6 @@ entity icyradio_ad9361_dac_unpacker_tx0_0_pack_network is
     s_axis_valid : in STD_LOGIC;
     s_axis_data : in STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_dac_unpacker_tx0_0_pack_network : entity is "pack_network";
 end icyradio_ad9361_dac_unpacker_tx0_0_pack_network;
 
 architecture STRUCTURE of icyradio_ad9361_dac_unpacker_tx0_0_pack_network is
@@ -454,8 +450,6 @@ entity icyradio_ad9361_dac_unpacker_tx0_0_pack_shell is
     reset : in STD_LOGIC;
     s_axis_data : in STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_dac_unpacker_tx0_0_pack_shell : entity is "pack_shell";
 end icyradio_ad9361_dac_unpacker_tx0_0_pack_shell;
 
 architecture STRUCTURE of icyradio_ad9361_dac_unpacker_tx0_0_pack_shell is
@@ -774,8 +768,6 @@ entity icyradio_ad9361_dac_unpacker_tx0_0_util_upack2_impl is
     s_axis_valid : in STD_LOGIC;
     s_axis_data : in STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_dac_unpacker_tx0_0_util_upack2_impl : entity is "util_upack2_impl";
 end icyradio_ad9361_dac_unpacker_tx0_0_util_upack2_impl;
 
 architecture STRUCTURE of icyradio_ad9361_dac_unpacker_tx0_0_util_upack2_impl is
@@ -1101,8 +1093,6 @@ entity icyradio_ad9361_dac_unpacker_tx0_0_util_upack2 is
     s_axis_valid : in STD_LOGIC;
     s_axis_data : in STD_LOGIC_VECTOR ( 31 downto 0 )
   );
-  attribute ORIG_REF_NAME : string;
-  attribute ORIG_REF_NAME of icyradio_ad9361_dac_unpacker_tx0_0_util_upack2 : entity is "util_upack2";
 end icyradio_ad9361_dac_unpacker_tx0_0_util_upack2;
 
 architecture STRUCTURE of icyradio_ad9361_dac_unpacker_tx0_0_util_upack2 is

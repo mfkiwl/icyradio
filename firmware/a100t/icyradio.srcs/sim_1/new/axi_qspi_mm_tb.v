@@ -296,7 +296,7 @@ always @(posedge aclk)
     begin
         sim_periods <= sim_periods + 1;
 
-        if(sim_periods < 5100 && sim_periods % 1000 == 250)
+        if(sim_periods < 5100 && sim_periods % 500 == 150)
             begin
                 // Read to clear FIFO
                 axi_lite_read(32'h18, dummy);
@@ -304,35 +304,38 @@ always @(posedge aclk)
                 axi_lite_write(32'h14, 32'h000001A5);
             end
 
-        if(sim_periods < 5100 && sim_periods % 1000 == 750)
+        if(sim_periods < 5100 && sim_periods % 500 == 350)
             begin
                 // Request read
                 axi_lite_write(32'h14, (1 << 9));
             end
-
-
 
         if(sim_periods == 100)
             begin
                 axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 0, enable clock & serdes
             end
 
-        if(sim_periods == 1100)
+        if(sim_periods == 600)
             begin
                 axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 1, enable clock & serdes
             end
 
-        if(sim_periods == 2100)
+        if(sim_periods == 1100)
+            begin
+                axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (2 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 2, enable clock & serdes
+            end
+
+        if(sim_periods == 1600)
             begin
                 axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (3 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 3, enable clock & serdes
             end
 
-        if(sim_periods == 3100)
+        if(sim_periods == 2100)
             begin
                 axi_lite_write(32'h04, (0 << 8) | (2 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Dual IO, Mode 0, enable clock & serdes
             end
 
-        if(sim_periods == 4100)
+        if(sim_periods == 2600)
             begin
                 axi_lite_write(32'h04, (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
             end
