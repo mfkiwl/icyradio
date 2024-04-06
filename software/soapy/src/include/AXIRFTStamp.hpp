@@ -58,12 +58,15 @@
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_RX_DIS                BIT(7)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_LATCH_ARM_REQ         BIT(8)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_LATCH_ARM_UNREQ       BIT(9)
+#define AXI_RF_TSTAMP_REG_CH_CTL_STAT_TX_FLUSH_EN               BIT(10)
+#define AXI_RF_TSTAMP_REG_CH_CTL_STAT_TX_FLUSH_DIS              BIT(11)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_TX_STAT                   BIT(16)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_RX_STAT                   BIT(17)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_TX_STAT               BIT(18)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_RX_STAT               BIT(19)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_TX_MAN_STAT               BIT(20)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_RX_MAN_STAT               BIT(21)
+#define AXI_RF_TSTAMP_REG_CH_CTL_STAT_TX_FLUSH_STAT             BIT(22)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_LATCH_ARM_REQ_STAT    BIT(24)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_LATCH_ARMED           BIT(25)
 #define AXI_RF_TSTAMP_REG_CH_CTL_STAT_CNT_LATCH_VALID           BIT(26)
@@ -143,6 +146,9 @@ public:
     void waitForClockSync(uint32_t timeout_ms = 0);
     void triggerClockResync(bool wait = false, uint32_t timeout_ms = 0);
 
+    void flushTX(uint32_t timeout_ms = 0);
+    void flushTX(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
+
     void enableTX(bool enable = true);
     void enableTX(AXIRFTStamp::Channel ch, bool enable = true);
     inline void disableTX()
@@ -155,6 +161,10 @@ public:
     }
     bool isTXEnabled();
     bool isTXEnabled(AXIRFTStamp::Channel ch);
+    void waitTXEnabled(uint32_t timeout_ms = 0);
+    void waitTXEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
+    void waitTXDisabled(uint32_t timeout_ms = 0);
+    void waitTXDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
     void enableRX(bool enable = true);
     void enableRX(AXIRFTStamp::Channel ch, bool enable = true);
     inline void disableRX()
@@ -167,6 +177,10 @@ public:
     }
     bool isRXEnabled();
     bool isRXEnabled(AXIRFTStamp::Channel ch);
+    void waitRXEnabled(uint32_t timeout_ms = 0);
+    void waitRXEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
+    void waitRXDisabled(uint32_t timeout_ms = 0);
+    void waitRXDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
 
     void enableCounter(bool enable = true);
     inline void disableCounter()
@@ -187,6 +201,10 @@ public:
     }
     bool isTXCounterEnabled();
     bool isTXCounterEnabled(AXIRFTStamp::Channel ch);
+    void waitTXCounterEnabled(uint32_t timeout_ms = 0);
+    void waitTXCounterEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
+    void waitTXCounterDisabled(uint32_t timeout_ms = 0);
+    void waitTXCounterDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
     void enableRXCounter(bool enable = true);
     void enableRXCounter(AXIRFTStamp::Channel ch, bool enable = true);
     inline void disableRXCounter()
@@ -199,6 +217,10 @@ public:
     }
     bool isRXCounterEnabled();
     bool isRXCounterEnabled(AXIRFTStamp::Channel ch);
+    void waitRXCounterEnabled(uint32_t timeout_ms = 0);
+    void waitRXCounterEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
+    void waitRXCounterDisabled(uint32_t timeout_ms = 0);
+    void waitRXCounterDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms = 0);
 
     void armCounterLatch(bool req_arm = true);
     void armCounterLatch(AXIRFTStamp::Channel ch, bool req_arm = true);

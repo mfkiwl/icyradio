@@ -55,7 +55,10 @@ SoapySDR::KwargsList findIcyRadio(const SoapySDR::Kwargs &args)
 
         if(fd < 0)
         {
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "Failed to open device %s: %s", path.c_str(), strerror(errno));
+            if(fd == -EBUSY)
+                continue; // Silent fail due to the device being open by another process
+
+            DLOGF(SOAPY_SDR_DEBUG, "Failed to open device %s: %s", path.c_str(), std::strerror(errno));
 
             continue;
         }
@@ -64,7 +67,7 @@ SoapySDR::KwargsList findIcyRadio(const SoapySDR::Kwargs &args)
 
         if(ioctl(fd, ICYRADIO_IOCTL_SERIAL_QUERY, &serial) < 0)
         {
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "Failed to query serial number of device %s: %s", path.c_str(), strerror(errno));
+            DLOGF(SOAPY_SDR_DEBUG, "Failed to query serial number of device %s: %s", path.c_str(), std::strerror(errno));
 
             close(fd);
 
@@ -76,7 +79,6 @@ SoapySDR::KwargsList findIcyRadio(const SoapySDR::Kwargs &args)
         char _serial[16];
         snprintf(_serial, sizeof(_serial), "%015lX", serial);
 
-        info["path"] = path;
         info["serial"] = _serial;
         info["label"] = "IcyRadio - " + info["serial"];
 
@@ -118,7 +120,7 @@ SoapySDR::Device *makeIcyRadio(const SoapySDR::Kwargs &args)
         // We may end up here if the user did not specify path, device_id or serial
         // Or in the rare case that multiple devices have the same serial number
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "Multiple IcyRadio devices found with given arguments, defaulting to first device");
+        DLOGF(SOAPY_SDR_DEBUG, "Multiple IcyRadio devices found with given arguments, defaulting to first device");
     }
 
     _args["path"] = devices.at(0).at("path");

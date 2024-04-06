@@ -49,6 +49,9 @@ void AXII2S::setMCLKClockFrequency(uint64_t input_freq, uint64_t mclk_freq)
 {
     uint64_t mclk_div = input_freq / mclk_freq;
 
+    if(mclk_div & 1)
+        mclk_div++; // Round up to nearest even number
+
     this->setMCLKClockDivider(mclk_div);
 }
 uint64_t AXII2S::getMCLKClockFrequency(uint64_t input_freq)
@@ -80,6 +83,9 @@ void AXII2S::setBCLKClockFrequency(uint64_t input_freq, uint64_t bclk_freq)
 {
     uint64_t bclk_div = input_freq / bclk_freq;
 
+    if(bclk_div & 1)
+        bclk_div++; // Round up to nearest even number
+
     this->setBCLKClockDivider(bclk_div);
 }
 uint64_t AXII2S::getBCLKClockFrequency(uint64_t input_freq)
@@ -110,6 +116,9 @@ uint64_t AXII2S::getLRCLKClockDivider()
 void AXII2S::setLRCLKClockFrequency(uint64_t input_freq, uint64_t lrclk_freq)
 {
     uint64_t lrclk_div = input_freq / lrclk_freq;
+
+    if(lrclk_div & 1)
+        lrclk_div++; // Round up to nearest even number
 
     this->setLRCLKClockDivider(lrclk_div);
 }
@@ -151,6 +160,15 @@ void AXII2S::setClockFrequencies(uint64_t input_freq, uint64_t mclk_freq, uint64
     uint64_t mclk_div = input_freq / mclk_freq;
     uint64_t bclk_div = input_freq / bclk_freq;
     uint64_t lrclk_div = input_freq / lrclk_freq;
+
+    if(mclk_div & 1)
+        mclk_div++; // Round up to nearest even number
+
+    if(bclk_div & 1)
+        bclk_div++; // Round up to nearest even number
+
+    if(lrclk_div & 1)
+        lrclk_div++; // Round up to nearest even number
 
     this->setClockDividers(mclk_div, bclk_div, lrclk_div);
 }

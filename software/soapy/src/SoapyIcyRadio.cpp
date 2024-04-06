@@ -1,5 +1,96 @@
 #include "SoapyIcyRadio.hpp"
 
+void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
+{
+    SoapySDR::Kwargs c_args = args;
+
+    // Remove identification arguments
+    c_args.erase("driver");
+    c_args.erase("path");
+    c_args.erase("device_id");
+    c_args.erase("serial");
+    c_args.erase("label");
+
+    // Parse configuration
+    DLOGF(SOAPY_SDR_DEBUG, "Parsing configuration string \"%s\"", SoapySDR::KwargsToString(c_args).c_str());
+
+    // use_ext_clk_in
+    if(c_args.count("use_ext_clk_in") > 0)
+    {
+        this->config.use_clkin = true;
+
+        DLOGF(SOAPY_SDR_INFO, "Using external clock input as clock source");
+    }
+    else
+    {
+        this->config.use_clkin = false;
+    }
+
+    // ext_clk_in_freq
+    if(args.count("ext_clk_in_freq") > 0)
+    {
+        double f = std::stod(c_args.at("ext_clk_in_freq"));
+
+        if(f < 0 || f > UINT32_MAX)
+        {
+            this->config.clkin_freq = 10000000U;
+
+            DLOGF(SOAPY_SDR_WARNING, "Invalid external clock input frequency provided (%.6f), using default: 10 MHz", f);
+        }
+        else
+        {
+            this->config.clkin_freq = f;
+
+            DLOGF(SOAPY_SDR_INFO, "External clock input frequency is %u Hz", this->config.clkin_freq);
+        }
+    }
+    else
+    {
+        if(this->config.use_clkin)
+            DLOGF(SOAPY_SDR_WARNING, "External clock input usage requested, but no frequency provided, using default: 10 MHz");
+
+        this->config.clkin_freq = 10000000U;
+    }
+
+    // en_ext_clk_out
+    if(c_args.count("en_ext_clk_out") > 0)
+    {
+        this->config.enable_clkout = true;
+
+        DLOGF(SOAPY_SDR_INFO, "Enabling external clock output");
+    }
+    else
+    {
+        this->config.enable_clkout = false;
+    }
+
+    // ext_clk_out_freq
+    if(args.count("ext_clk_out_freq") > 0)
+    {
+        double f = std::stod(c_args.at("ext_clk_out_freq"));
+
+        if(f < 0 || f > UINT32_MAX)
+        {
+            this->config.clkout_freq = 10000000U;
+
+            DLOGF(SOAPY_SDR_WARNING, "Invalid external clock output frequency provided (%.6f), using default: 10 MHz", f);
+        }
+        else
+        {
+            this->config.clkout_freq = f;
+
+            DLOGF(SOAPY_SDR_INFO, "Requested external clock output frequency is %u Hz", this->config.clkout_freq);
+        }
+    }
+    else
+    {
+        if(this->config.enable_clkout)
+            DLOGF(SOAPY_SDR_WARNING, "External clock output enabled, but no frequency provided, using default: 10 MHz");
+
+        this->config.clkout_freq = 10000000U;
+    }
+}
+
 void SoapyIcyRadio::setupMemoryMaps()
 {
     if(this->fd < 0)
@@ -12,11 +103,11 @@ void SoapyIcyRadio::setupMemoryMaps()
     this->mm_axi_ddr = new MappedRegion(this->fd, AXI_MIG_DDR3_BASE, AXI_MIG_DDR3_SIZE);
     this->mm_axi_periph = new MappedRegion(this->fd, AXI_PERIPH_BASE, AXI_PERIPH_SIZE);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "AXI Flash: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_flash->getPhys(), this->mm_axi_flash->getVirt(), this->mm_axi_flash->getSize());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "AXI BRAM: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_bram->getPhys(), this->mm_axi_bram->getVirt(), this->mm_axi_bram->getSize());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "AXI DNA: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_dna->getPhys(), this->mm_axi_dna->getVirt(), this->mm_axi_dna->getSize());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "AXI DDR: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_ddr->getPhys(), this->mm_axi_ddr->getVirt(), this->mm_axi_ddr->getSize());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "AXI Peripherals: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_periph->getPhys(), this->mm_axi_periph->getVirt(), this->mm_axi_periph->getSize());
+    DLOGF(SOAPY_SDR_TRACE, "AXI Flash: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_flash->getPhys(), this->mm_axi_flash->getVirt(), this->mm_axi_flash->getSize());
+    DLOGF(SOAPY_SDR_TRACE, "AXI BRAM: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_bram->getPhys(), this->mm_axi_bram->getVirt(), this->mm_axi_bram->getSize());
+    DLOGF(SOAPY_SDR_TRACE, "AXI DNA: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_dna->getPhys(), this->mm_axi_dna->getVirt(), this->mm_axi_dna->getSize());
+    DLOGF(SOAPY_SDR_TRACE, "AXI DDR: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_ddr->getPhys(), this->mm_axi_ddr->getVirt(), this->mm_axi_ddr->getSize());
+    DLOGF(SOAPY_SDR_TRACE, "AXI Peripherals: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_axi_periph->getPhys(), this->mm_axi_periph->getVirt(), this->mm_axi_periph->getSize());
 
     // Setup DNA (ROM)
     this->axi_dna = new AXIDNA(this->mm_axi_dna->getVirt(AXI_DNA_BASE));
@@ -47,6 +138,9 @@ void SoapyIcyRadio::setupMemoryMaps()
 
     // Allocate DMA buffer memory
     uint32_t dma_sz = ICYRADIO_DEFAULT_TOTAL_DMA_POOL_SIZE_BYTES; // TODO: make this configurable
+
+    DLOGF(SOAPY_SDR_DEBUG, "Allocating DMA buffer pool of %u bytes", dma_sz);
+
     uint64_t arg = dma_sz;
 
     ioctl(this->fd, ICYRADIO_IOCTL_DMA_FREE); // TODO: Implement getting an existing buffer
@@ -57,7 +151,7 @@ void SoapyIcyRadio::setupMemoryMaps()
     // Map DMA buffer memory
     this->mm_dma_buffer = new MappedRegion(this->fd, arg | BIT(48), dma_sz);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "DMA Buffer: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_dma_buffer->getPhys() & (BIT(48) - 1), this->mm_dma_buffer->getVirt(), this->mm_dma_buffer->getSize());
+    DLOGF(SOAPY_SDR_TRACE, "DMA Buffer: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_dma_buffer->getPhys() & (BIT(48) - 1), this->mm_dma_buffer->getVirt(), this->mm_dma_buffer->getSize());
 }
 void SoapyIcyRadio::freeMemoryMaps()
 {
@@ -202,7 +296,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
     // PCIe
     uint8_t num_bars = this->axi_pcie->getNumBARs();
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Detected %hhu AXI -> PCIe BARs", num_bars);
+    DLOGF(SOAPY_SDR_DEBUG, "Detected %hhu AXI -> PCIe BARs", num_bars);
 
     if(num_bars < 6)
         throw std::runtime_error("AXI PCIe: Not enough BARs detected");
@@ -248,25 +342,25 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
             this->axi_pcie->setBARPCIeAddress(i, 0, 0);
         }
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  BAR #%hhu (%s):", i, this->axi_pcie->isBAR64Bit(i) ? "64-bit" : "32-bit");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    AXI Base: 0x%08lX", this->axi_pcie->getBARAXIAddress(i));
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    AXI Size: 0x%08lX", this->axi_pcie->getBARAXISize(i));
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    PCIe Base: 0x%016llX", this->axi_pcie->getBARPCIeAddress(i));
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    PCIe Size: 0x%08lX", this->axi_pcie->getBARPCIeSize(i));
+        DLOGF(SOAPY_SDR_TRACE, "  BAR #%hhu (%s):", i, this->axi_pcie->isBAR64Bit(i) ? "64-bit" : "32-bit");
+        DLOGF(SOAPY_SDR_TRACE, "    AXI Base: 0x%08lX", this->axi_pcie->getBARAXIAddress(i));
+        DLOGF(SOAPY_SDR_TRACE, "    AXI Size: 0x%08lX", this->axi_pcie->getBARAXISize(i));
+        DLOGF(SOAPY_SDR_TRACE, "    PCIe Base: 0x%016llX", this->axi_pcie->getBARPCIeAddress(i));
+        DLOGF(SOAPY_SDR_TRACE, "    PCIe Size: 0x%08lX", this->axi_pcie->getBARPCIeSize(i));
 
         try
         {
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "    AXI Valid Start: 0x%08lX", this->axi_pcie->getBARAXIAddress(i, this->axi_pcie->getBARPCIeAddress(i)));
+            DLOGF(SOAPY_SDR_TRACE, "    AXI Valid Start: 0x%08lX", this->axi_pcie->getBARAXIAddress(i, this->axi_pcie->getBARPCIeAddress(i)));
 
             if(pcie_done)
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "    AXI Valid End: 0x%08lX", this->axi_pcie->getBARAXIAddress(i, this->axi_pcie->getBARPCIeAddress(i)) + this->axi_pcie->getBARPCIeSize(i) - 1);
+                DLOGF(SOAPY_SDR_TRACE, "    AXI Valid End: 0x%08lX", this->axi_pcie->getBARAXIAddress(i, this->axi_pcie->getBARPCIeAddress(i)) + this->axi_pcie->getBARPCIeSize(i) - 1);
             else
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "    AXI Valid End: 0x%08lX", this->axi_pcie->getBARAXIAddress(i) + this->axi_pcie->getBARAXISize(i) - 1);
+                DLOGF(SOAPY_SDR_TRACE, "    AXI Valid End: 0x%08lX", this->axi_pcie->getBARAXIAddress(i) + this->axi_pcie->getBARAXISize(i) - 1);
         }
         catch(const std::runtime_error &e)
         {
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "    AXI Valid Start: N/A");
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "    AXI Valid End: N/A");
+            DLOGF(SOAPY_SDR_TRACE, "    AXI Valid Start: N/A");
+            DLOGF(SOAPY_SDR_TRACE, "    AXI Valid End: N/A");
         }
     }
 
@@ -275,6 +369,13 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
 
     // IRQ Controller
     this->axi_irq_ctrl->init(this->fd);
+
+    {
+        uint32_t ver = this->axi_irq_ctrl->getIPVersion();
+
+        DLOGF(SOAPY_SDR_TRACE, "AXI IRQ Controller:");
+        DLOGF(SOAPY_SDR_TRACE, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+    }
 
     this->axi_irq_ctrl->configIRQ(AXIIRQCtrl::IRQNumber::AXI_DMAC_RF_TX0, AXIIRQCtrl::IRQMode::LEVEL_HIGH, AXI_IRQ_CTRL_REG_IRQ_CONFIG_IRQ_DEST_PCIE_MSI(0), false);
     this->axi_irq_ctrl->configIRQ(AXIIRQCtrl::IRQNumber::AXI_DMAC_RF_TX1, AXIIRQCtrl::IRQMode::LEVEL_HIGH, AXI_IRQ_CTRL_REG_IRQ_CONFIG_IRQ_DEST_PCIE_MSI(0), false);
@@ -293,19 +394,19 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         uint32_t id = this->axi_dmac[i]->getPeripheralID();
         AXIDMAC::Capabilities caps = this->axi_dmac[i]->getCapabilities();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "DMA Controller #%hhu:", i);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  Hardware ID: %u", id);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  Configuration / Capabilities:");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Destination data bus width: %u bits", caps.dest_data_width);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Destination interface: %s", AXIDMAC::InterfaceTypeToString(caps.dest_interface).c_str());
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Source data bus width: %u bits", caps.src_data_width);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Source interface: %s", AXIDMAC::InterfaceTypeToString(caps.src_interface).c_str());
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Bytes per burst: %u", caps.bytes_per_burst);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Cyclic transfers: %s", caps.cyclic_support ? "Supported" : "Not supported");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Maximum transfer length: %u bytes", caps.max_transfer_size);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Destination address mask: 0x%08X", caps.dest_addr_mask);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Source address mask: 0x%08X", caps.src_addr_mask);
+        DLOGF(SOAPY_SDR_TRACE, "DMA Controller #%hhu:", i);
+        DLOGF(SOAPY_SDR_TRACE, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+        DLOGF(SOAPY_SDR_TRACE, "  Hardware ID: %u", id);
+        DLOGF(SOAPY_SDR_TRACE, "  Configuration / Capabilities:");
+        DLOGF(SOAPY_SDR_TRACE, "    Destination data bus width: %u bits", caps.dest_data_width);
+        DLOGF(SOAPY_SDR_TRACE, "    Destination interface: %s", AXIDMAC::InterfaceTypeToString(caps.dest_interface).c_str());
+        DLOGF(SOAPY_SDR_TRACE, "    Source data bus width: %u bits", caps.src_data_width);
+        DLOGF(SOAPY_SDR_TRACE, "    Source interface: %s", AXIDMAC::InterfaceTypeToString(caps.src_interface).c_str());
+        DLOGF(SOAPY_SDR_TRACE, "    Bytes per burst: %u", caps.bytes_per_burst);
+        DLOGF(SOAPY_SDR_TRACE, "    Cyclic transfers: %s", caps.cyclic_support ? "Supported" : "Not supported");
+        DLOGF(SOAPY_SDR_TRACE, "    Maximum transfer length: %u bytes", caps.max_transfer_size);
+        DLOGF(SOAPY_SDR_TRACE, "    Destination address mask: 0x%08X", caps.dest_addr_mask);
+        DLOGF(SOAPY_SDR_TRACE, "    Source address mask: 0x%08X", caps.src_addr_mask);
     }
 
     this->axi_dmac[AXI_DMAC_RF_TX0_INST]->init(
@@ -350,8 +451,8 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
     {
         uint32_t ver = this->axi_gpio[i]->getIPVersion();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "GPIO Controller #%hhu:", i);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+        DLOGF(SOAPY_SDR_TRACE, "GPIO Controller #%hhu:", i);
+        DLOGF(SOAPY_SDR_TRACE, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
     }
 
     // I2C
@@ -360,82 +461,86 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
     this->axi_iic[AXI_IIC_EXP_INST]->init(AXI_ACLK_FREQ, AXIIIC::Speed::FAST);
 
     // I2C Scan
-    std::vector<uint8_t> addrs;
-
-    auto addrs_to_str = [](std::vector<uint8_t> addrs) -> std::string
+    #ifdef TRACE_I2C
     {
-        std::stringstream s;
+        std::vector<uint8_t> addrs;
 
-        s << "  Found " << addrs.size() << " devices";
-
-        if(addrs.size() > 0)
+        auto addrs_to_str = [](std::vector<uint8_t> addrs) -> std::string
         {
-            s << " (";
+            std::stringstream s;
 
-            for(size_t i = 0; i < addrs.size(); i++)
+            s << "  Found " << addrs.size() << " devices";
+
+            if(addrs.size() > 0)
             {
-                s << "0x" << std::hex << std::setw(2) << std::setfill('0') << std::uppercase << (size_t)addrs[i];
+                s << " (";
 
-                if(i < addrs.size() - 1)
-                    s << ", ";
+                for(size_t i = 0; i < addrs.size(); i++)
+                {
+                    s << "0x" << std::hex << std::setw(2) << std::setfill('0') << std::uppercase << (size_t)addrs[i];
+
+                    if(i < addrs.size() - 1)
+                        s << ", ";
+                }
+
+                s << ")";
             }
 
-            s << ")";
+            return s.str();
+        };
+
+        //// CODEC I2C
+        DLOGF(SOAPY_SDR_TRACE, "Scanning CODEC I2C bus...");
+
+        this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_CODEC_RSTn_BIT, AXIGPIO::Value::HIGH);
+        usleep(500);
+        addrs = this->axi_iic[AXI_IIC_CODEC_INST]->scan();
+        this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_CODEC_RSTn_BIT, AXIGPIO::Value::LOW);
+
+        DLOGF(SOAPY_SDR_TRACE, "%s", addrs_to_str(addrs).c_str());
+
+        //// SYS I2C
+        DLOGF(SOAPY_SDR_TRACE, "Scanning SYS I2C bus...");
+
+        this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_PM_I2C_EN_BIT, AXIGPIO::Value::HIGH);
+        usleep(500);
+        addrs = this->axi_iic[AXI_IIC_SYS_INST]->scan();
+        this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_PM_I2C_EN_BIT, AXIGPIO::Value::LOW);
+
+        DLOGF(SOAPY_SDR_TRACE, "%s", addrs_to_str(addrs).c_str());
+
+        //// EXP I2C
+        DLOGF(SOAPY_SDR_TRACE, "Scanning EXP I2C bus...");
+
+        addrs = this->axi_iic[AXI_IIC_EXP_INST]->scan();
+
+        DLOGF(SOAPY_SDR_TRACE, "%s", addrs_to_str(addrs).c_str());
+
+        ///////////////// EXP TEST
+        if(addrs.size() > 0 && addrs.at(0) == 0x22)
+        {
+            AuxMCU *exp = new AuxMCU(
+                {
+                    .controller = this->axi_iic[AXI_IIC_EXP_INST],
+                    .addr = 0x22,
+                }
+            );
+
+            DLOGF(SOAPY_SDR_DEBUG, "reg0 before %02X", exp->readReg(0x00));
+            exp->writeReg(0x00, 0x01);
+            DLOGF(SOAPY_SDR_DEBUG, "reg0 after %02X", exp->readReg(0x00));
+            DLOGF(SOAPY_SDR_DEBUG, "reg1 before %02X", exp->readReg(0x01));
+            exp->writeReg(0x01, 0x01);
+            DLOGF(SOAPY_SDR_DEBUG, "reg1 after %02X", exp->readReg(0x01));
+
+            DLOGF(SOAPY_SDR_DEBUG, "rom0 %02X", exp->readROM(0x00));
+            DLOGF(SOAPY_SDR_DEBUG, "rom1 %02X", exp->readROM(0x01));
+
+            delete exp;
         }
-
-        return s.str();
-    };
-
-    //// CODEC I2C
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Scanning CODEC I2C bus...");
-
-    this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_CODEC_RSTn_BIT, AXIGPIO::Value::HIGH);
-    usleep(500);
-    addrs = this->axi_iic[AXI_IIC_CODEC_INST]->scan();
-    this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_CODEC_RSTn_BIT, AXIGPIO::Value::LOW);
-
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", addrs_to_str(addrs).c_str());
-
-    //// SYS I2C
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Scanning SYS I2C bus...");
-
-    this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_PM_I2C_EN_BIT, AXIGPIO::Value::HIGH);
-    usleep(500);
-    addrs = this->axi_iic[AXI_IIC_SYS_INST]->scan();
-    this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_PM_I2C_EN_BIT, AXIGPIO::Value::LOW);
-
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", addrs_to_str(addrs).c_str());
-
-    //// EXP I2C
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Scanning EXP I2C bus...");
-
-    addrs = this->axi_iic[AXI_IIC_EXP_INST]->scan();
-
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", addrs_to_str(addrs).c_str());
-
-    ///////////////// EXP TEST
-    if(addrs.size() > 0 && addrs.at(0) == 0x22)
-    {
-        AuxMCU *exp = new AuxMCU(
-            {
-                .controller = this->axi_iic[AXI_IIC_EXP_INST],
-                .addr = 0x22,
-            }
-        );
-
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "reg0 before %02X", exp->readReg(0x00));
-        exp->writeReg(0x00, 0x01);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "reg0 after %02X", exp->readReg(0x00));
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "reg1 before %02X", exp->readReg(0x01));
-        exp->writeReg(0x01, 0x01);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "reg1 after %02X", exp->readReg(0x01));
-
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "rom0 %02X", exp->readROM(0x00));
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "rom1 %02X", exp->readROM(0x01));
-
-        delete exp;
+        ///////////////// EXP TEST
     }
-    ///////////////// EXP TEST
+    #endif
 
     // SPI
     for(uint8_t i = 0; i < AXI_SPI_NUM_INSTANCES; i++)
@@ -443,12 +548,12 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         uint32_t ver = this->axi_spi[i]->getIPVersion();
         AXISPI::Capabilities caps = this->axi_spi[i]->getCapabilities();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "(Q)SPI Controller #%hhu:", i);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  Configuration / Capabilities:");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Dual IO: %s", caps.dual_io_supported ? "Supported" : "Not supported");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Quad IO: %s", caps.quad_io_supported ? "Supported" : "Not supported");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "    Memory-mapped (XIP) accesses: %s", caps.mmio_supported ? "Supported" : "Not supported");
+        DLOGF(SOAPY_SDR_TRACE, "(Q)SPI Controller #%hhu:", i);
+        DLOGF(SOAPY_SDR_TRACE, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+        DLOGF(SOAPY_SDR_TRACE, "  Configuration / Capabilities:");
+        DLOGF(SOAPY_SDR_TRACE, "    Dual IO: %s", caps.dual_io_supported ? "Supported" : "Not supported");
+        DLOGF(SOAPY_SDR_TRACE, "    Quad IO: %s", caps.quad_io_supported ? "Supported" : "Not supported");
+        DLOGF(SOAPY_SDR_TRACE, "    Memory-mapped (XIP) accesses: %s", caps.mmio_supported ? "Supported" : "Not supported");
 
         AXISPI::Mode mode;
         AXISPI::BitOrder bit_order;
@@ -487,7 +592,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
             break;
             default:
             {
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "  Unknown controller, leaving unconfigured");
+                DLOGF(SOAPY_SDR_TRACE, "  Unknown controller, leaving unconfigured");
 
                 continue;
             }
@@ -500,9 +605,9 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         this->axi_spi[i]->enableClock();
         this->axi_spi[i]->enable();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  SCK Divider input frequency: %llu Hz", input_freq);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  Requested SCK frequency: %llu Hz", sck_freq);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "  Achieved SCK frequency: %llu Hz", this->axi_spi[i]->getClockFrequency(input_freq));
+        DLOGF(SOAPY_SDR_TRACE, "  SCK Divider input frequency: %llu Hz", input_freq);
+        DLOGF(SOAPY_SDR_TRACE, "  Requested SCK frequency: %llu Hz", sck_freq);
+        DLOGF(SOAPY_SDR_TRACE, "  Achieved SCK frequency: %llu Hz", this->axi_spi[i]->getClockFrequency(input_freq));
     }
 
     // Peripherals
@@ -516,8 +621,8 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         }
     );
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "PMC Unique ID: %s", this->pmc->getUniqueID().c_str());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "PMC Firmware Version: v%hu", this->pmc->getFirmwareVersion());
+    DLOGF(SOAPY_SDR_DEBUG, "PMC Unique ID: %s", this->pmc->getUniqueID().c_str());
+    DLOGF(SOAPY_SDR_DEBUG, "PMC Firmware Version: v%hu", this->pmc->getFirmwareVersion());
 
     this->vin_reg = new LT7182S(
         {
@@ -532,9 +637,9 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
 
     this->vin_reg->init();
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "VIN Regulator P/N: %s %s", this->vin_reg->readManufacturerID().c_str(), this->vin_reg->readManufacturerModel().c_str());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "VIN Regulator Revision: %hhu", this->vin_reg->readManufacturerRevision());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "VIN Regulator Serial: %s", this->vin_reg->readManufacturerSerial().c_str());
+    DLOGF(SOAPY_SDR_DEBUG, "VIN Regulator P/N: %s %s", this->vin_reg->readManufacturerID().c_str(), this->vin_reg->readManufacturerModel().c_str());
+    DLOGF(SOAPY_SDR_DEBUG, "VIN Regulator Revision: %hhu", this->vin_reg->readManufacturerRevision());
+    DLOGF(SOAPY_SDR_DEBUG, "VIN Regulator Serial: %s", this->vin_reg->readManufacturerSerial().c_str());
 
     this->spi_flash = new SPIFlash(
         {
@@ -543,248 +648,248 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         }
     );
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash JEDEC ID: 0x%06X", this->spi_flash->readJEDECID());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash device name: %s", this->spi_flash->getDeviceName().c_str());
+    DLOGF(SOAPY_SDR_DEBUG, "SPI Flash JEDEC ID: 0x%06X", this->spi_flash->readJEDECID());
+    DLOGF(SOAPY_SDR_DEBUG, "SPI Flash device name: %s", this->spi_flash->getDeviceName().c_str());
 
     //////////////////////// SPI FLASH TEST
-    {
-        uint8_t buf[16 * 4];
-        AXISPI::MMIOConfig mmio;
-        AXISPI::MMIOStats stats;
-        std::stringstream s;
+    // {
+    //     uint8_t buf[16 * 4];
+    //     AXISPI::MMIOConfig mmio;
+    //     AXISPI::MMIOStats stats;
+    //     std::stringstream s;
 
-        // Software read
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
-        this->spi_flash->read(0x000000, buf, sizeof(buf));
+    //     // Software read
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
+    //     this->spi_flash->read(0x000000, buf, sizeof(buf));
 
-        s.str("");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash software read:");
-        for(size_t i = 0; i < sizeof(buf); i++)
-        {
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)buf[i] << " ";
+    //     s.str("");
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash software read:");
+    //     for(size_t i = 0; i < sizeof(buf); i++)
+    //     {
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)buf[i] << " ";
 
-            if(i % 16 == 15)
-            {
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
-                s.str("");
-            }
-        }
+    //         if(i % 16 == 15)
+    //         {
+    //             DLOGF(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
+    //             s.str("");
+    //         }
+    //     }
 
-        // MMIO QIO read
-        mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_QIO;
-        mmio.addr_io_mode = AXISPI::IOMode::QUAD;
-        mmio.addr_bytes = 3;
-        mmio.mode_bits = 0xF0;
-        mmio.mode_bits_en = true;
-        mmio.cont_read_en = false;
-        mmio.dummy_io_mode = AXISPI::IOMode::QUAD;
-        mmio.dummy_bytes = 2;
-        mmio.data_io_mode = AXISPI::IOMode::QUAD;
-        mmio.cs_high_wait = 0;
-        mmio.cs_low_wait = 0;
-        mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
+    //     // MMIO QIO read
+    //     mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_QIO;
+    //     mmio.addr_io_mode = AXISPI::IOMode::QUAD;
+    //     mmio.addr_bytes = 3;
+    //     mmio.mode_bits = 0xF0;
+    //     mmio.mode_bits_en = true;
+    //     mmio.cont_read_en = false;
+    //     mmio.dummy_io_mode = AXISPI::IOMode::QUAD;
+    //     mmio.dummy_bytes = 2;
+    //     mmio.data_io_mode = AXISPI::IOMode::QUAD;
+    //     mmio.cs_high_wait = 0;
+    //     mmio.cs_low_wait = 0;
+    //     mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
 
-        s.str("");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO QIO read:");
-        for(size_t i = 0; i < sizeof(buf); i += 4)
-        {
-            uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
+    //     s.str("");
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO QIO read:");
+    //     for(size_t i = 0; i < sizeof(buf); i += 4)
+    //     {
+    //         uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
 
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
 
-            if(i % 16 == 12)
-            {
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
-                s.str("");
-            }
-        }
+    //         if(i % 16 == 12)
+    //         {
+    //             DLOGF(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
+    //             s.str("");
+    //         }
+    //     }
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
 
-        stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
+    //     stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
 
-        // MMIO QOUT read
-        mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_QOUT;
-        mmio.addr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.addr_bytes = 3;
-        mmio.mode_bits = 0xF0;
-        mmio.mode_bits_en = false;
-        mmio.cont_read_en = false;
-        mmio.dummy_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.dummy_bytes = 1;
-        mmio.data_io_mode = AXISPI::IOMode::QUAD;
-        mmio.cs_high_wait = 0;
-        mmio.cs_low_wait = 0;
-        mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
+    //     // MMIO QOUT read
+    //     mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_QOUT;
+    //     mmio.addr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.addr_bytes = 3;
+    //     mmio.mode_bits = 0xF0;
+    //     mmio.mode_bits_en = false;
+    //     mmio.cont_read_en = false;
+    //     mmio.dummy_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.dummy_bytes = 1;
+    //     mmio.data_io_mode = AXISPI::IOMode::QUAD;
+    //     mmio.cs_high_wait = 0;
+    //     mmio.cs_low_wait = 0;
+    //     mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
 
-        s.str("");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO QOUT read:");
-        for(size_t i = 0; i < sizeof(buf); i += 4)
-        {
-            uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
+    //     s.str("");
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO QOUT read:");
+    //     for(size_t i = 0; i < sizeof(buf); i += 4)
+    //     {
+    //         uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
 
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
 
-            if(i % 16 == 12)
-            {
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
-                s.str("");
-            }
-        }
+    //         if(i % 16 == 12)
+    //         {
+    //             DLOGF(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
+    //             s.str("");
+    //         }
+    //     }
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
 
-        stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
+    //     stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
 
-        // MMIO DIO read
-        mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_DIO;
-        mmio.addr_io_mode = AXISPI::IOMode::DUAL;
-        mmio.addr_bytes = 3;
-        mmio.mode_bits = 0xF0;
-        mmio.mode_bits_en = true;
-        mmio.cont_read_en = false;
-        mmio.dummy_io_mode = AXISPI::IOMode::QUAD;
-        mmio.dummy_bytes = 0;
-        mmio.data_io_mode = AXISPI::IOMode::DUAL;
-        mmio.cs_high_wait = 0;
-        mmio.cs_low_wait = 0;
-        mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
+    //     // MMIO DIO read
+    //     mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_DIO;
+    //     mmio.addr_io_mode = AXISPI::IOMode::DUAL;
+    //     mmio.addr_bytes = 3;
+    //     mmio.mode_bits = 0xF0;
+    //     mmio.mode_bits_en = true;
+    //     mmio.cont_read_en = false;
+    //     mmio.dummy_io_mode = AXISPI::IOMode::QUAD;
+    //     mmio.dummy_bytes = 0;
+    //     mmio.data_io_mode = AXISPI::IOMode::DUAL;
+    //     mmio.cs_high_wait = 0;
+    //     mmio.cs_low_wait = 0;
+    //     mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
 
-        s.str("");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO DIO read:");
-        for(size_t i = 0; i < sizeof(buf); i += 4)
-        {
-            uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
+    //     s.str("");
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO DIO read:");
+    //     for(size_t i = 0; i < sizeof(buf); i += 4)
+    //     {
+    //         uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
 
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
 
-            if(i % 16 == 12)
-            {
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
-                s.str("");
-            }
-        }
+    //         if(i % 16 == 12)
+    //         {
+    //             DLOGF(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
+    //             s.str("");
+    //         }
+    //     }
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
 
-        stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
+    //     stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
 
-        // MMIO DOUT read
-        mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_DOUT;
-        mmio.addr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.addr_bytes = 3;
-        mmio.mode_bits = 0xF0;
-        mmio.mode_bits_en = false;
-        mmio.cont_read_en = false;
-        mmio.dummy_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.dummy_bytes = 1;
-        mmio.data_io_mode = AXISPI::IOMode::DUAL;
-        mmio.cs_high_wait = 0;
-        mmio.cs_low_wait = 0;
-        mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
+    //     // MMIO DOUT read
+    //     mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.rd_instr = SPI_FLASH_CMD_READ_FAST_DOUT;
+    //     mmio.addr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.addr_bytes = 3;
+    //     mmio.mode_bits = 0xF0;
+    //     mmio.mode_bits_en = false;
+    //     mmio.cont_read_en = false;
+    //     mmio.dummy_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.dummy_bytes = 1;
+    //     mmio.data_io_mode = AXISPI::IOMode::DUAL;
+    //     mmio.cs_high_wait = 0;
+    //     mmio.cs_low_wait = 0;
+    //     mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
 
-        s.str("");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO DOUT read:");
-        for(size_t i = 0; i < sizeof(buf); i += 4)
-        {
-            uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
+    //     s.str("");
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO DOUT read:");
+    //     for(size_t i = 0; i < sizeof(buf); i += 4)
+    //     {
+    //         uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
 
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
 
-            if(i % 16 == 12)
-            {
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
-                s.str("");
-            }
-        }
+    //         if(i % 16 == 12)
+    //         {
+    //             DLOGF(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
+    //             s.str("");
+    //         }
+    //     }
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
 
-        stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
+    //     stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
 
-        // MMIO read
-        mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.rd_instr = SPI_FLASH_CMD_READ_FAST;
-        mmio.addr_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.addr_bytes = 3;
-        mmio.mode_bits = 0xF0;
-        mmio.mode_bits_en = false;
-        mmio.cont_read_en = false;
-        mmio.dummy_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.dummy_bytes = 1;
-        mmio.data_io_mode = AXISPI::IOMode::SINGLE;
-        mmio.cs_high_wait = 0;
-        mmio.cs_low_wait = 0;
-        mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
+    //     // MMIO read
+    //     mmio.rd_instr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.rd_instr = SPI_FLASH_CMD_READ_FAST;
+    //     mmio.addr_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.addr_bytes = 3;
+    //     mmio.mode_bits = 0xF0;
+    //     mmio.mode_bits_en = false;
+    //     mmio.cont_read_en = false;
+    //     mmio.dummy_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.dummy_bytes = 1;
+    //     mmio.data_io_mode = AXISPI::IOMode::SINGLE;
+    //     mmio.cs_high_wait = 0;
+    //     mmio.cs_low_wait = 0;
+    //     mmio.cs_mask = AXI_QUAD_SPI_MM0_FLASH_SS;
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->configMMIOMode(mmio);
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->enableMMIO();
 
-        s.str("");
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO read:");
-        for(size_t i = 0; i < sizeof(buf); i += 4)
-        {
-            uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
+    //     s.str("");
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO read:");
+    //     for(size_t i = 0; i < sizeof(buf); i += 4)
+    //     {
+    //         uint32_t word = *reinterpret_cast<uint32_t*>(this->mm_axi_flash->getVirt(i));
 
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
-            s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 0) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 8) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 16) & 0xFF) << " ";
+    //         s << std::hex << std::setw(2) << std::setfill('0') << (size_t)((word >> 24) & 0xFF) << " ";
 
-            if(i % 16 == 12)
-            {
-                SoapySDR_logf(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
-                s.str("");
-            }
-        }
+    //         if(i % 16 == 12)
+    //         {
+    //             DLOGF(SOAPY_SDR_DEBUG, "%s", s.str().c_str());
+    //             s.str("");
+    //         }
+    //     }
 
-        this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
+    //     this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->disableMMIO();
 
-        stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
+    //     stats = this->axi_spi[AXI_QUAD_SPI_MM0_FLASH_INST]->getMMIOStats();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
-    }
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO read request count: %lu", stats.rd_req_cnt);
+    //     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash MMIO continuous read request count: %lu (%.3f %%)", stats.cont_rd_req_cnt, (double)stats.cont_rd_req_cnt / (double)stats.rd_req_cnt * 100.0);
+    // }
     //////////////////////// SPI FLASH TEST
 
     this->clk_mngr = new Si5351(
@@ -803,7 +908,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         }*/
     );
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Si5351 Revision: %hhu", this->clk_mngr->getRevisionID());
+    DLOGF(SOAPY_SDR_DEBUG, "Si5351 Revision: %hhu", this->clk_mngr->getRevisionID());
 
     this->mmw_synth = new IDT8V97003(
         {
@@ -839,8 +944,8 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
 
     this->mmw_synth->powerDown();
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "8V97003 Revision: %hhu", this->mmw_synth->getChipVersion());
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "8V97003 Option: %hhu", this->mmw_synth->getChipOption());
+    DLOGF(SOAPY_SDR_DEBUG, "8V97003 Revision: %hhu", this->mmw_synth->getChipVersion());
+    DLOGF(SOAPY_SDR_DEBUG, "8V97003 Option: %hhu", this->mmw_synth->getChipOption());
 
     this->rf_phy = new AD9361(
         {
@@ -859,7 +964,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         }
     );
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "AD9361 Revision: %hhu", this->rf_phy->getChipRevision());
+    DLOGF(SOAPY_SDR_DEBUG, "AD9361 Revision: %hhu", this->rf_phy->getChipRevision());
 }
 void SoapyIcyRadio::deinitPeripheralsPreClocks()
 {
@@ -916,14 +1021,46 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
     this->rf_phy->init();
     this->axi_ad9361->init(this->rf_phy);
 
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "Doing RF Phy digital interface tuning...");
+    {
+        uint32_t ver = this->axi_ad9361->getIPVersion();
+
+        DLOGF(SOAPY_SDR_TRACE, "AXI AD9361:");
+        DLOGF(SOAPY_SDR_TRACE, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+        DLOGF(SOAPY_SDR_TRACE, "  Channel count: %u", this->axi_ad9361->getChannelCount());
+
+        ver = this->axi_ad9361->adc->getIPVersion();
+
+        DLOGF(SOAPY_SDR_TRACE, "  ADC:");
+        DLOGF(SOAPY_SDR_TRACE, "    IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+        DLOGF(SOAPY_SDR_TRACE, "    Interface clock: %llu Hz", this->axi_ad9361->adc->getInterfaceClockFrequency(AXI_ACLK_FREQ));
+        DLOGF(SOAPY_SDR_TRACE, "    Sampling frequency: %llu Hz", this->axi_ad9361->adc->getSamplingFrequency(AXI_ACLK_FREQ));
+
+        ver = this->axi_ad9361->dac->getIPVersion();
+
+        DLOGF(SOAPY_SDR_TRACE, "  DAC:");
+        DLOGF(SOAPY_SDR_TRACE, "    IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+        DLOGF(SOAPY_SDR_TRACE, "    Interface clock: %llu Hz", this->axi_ad9361->dac->getInterfaceClockFrequency(AXI_ACLK_FREQ));
+        DLOGF(SOAPY_SDR_TRACE, "    Sampling frequency: %llu Hz", this->axi_ad9361->dac->getSamplingFrequency(AXI_ACLK_FREQ));
+    }
+
+    this->axi_ad9361->adc->setDataSource(AXIAD9361::ADC::Channel::RX1_I, AXIAD9361::ADC::DataSource::DATA_SRC_INPUT_DATA);
+    this->axi_ad9361->adc->setDataSource(AXIAD9361::ADC::Channel::RX1_Q, AXIAD9361::ADC::DataSource::DATA_SRC_INPUT_DATA);
+    this->axi_ad9361->adc->setDataSource(AXIAD9361::ADC::Channel::RX2_I, AXIAD9361::ADC::DataSource::DATA_SRC_INPUT_DATA);
+    this->axi_ad9361->adc->setDataSource(AXIAD9361::ADC::Channel::RX2_Q, AXIAD9361::ADC::DataSource::DATA_SRC_INPUT_DATA);
+
+    this->axi_ad9361->dac->setDataSource(AXIAD9361::DAC::Channel::TX1_I, AXIAD9361::DAC::DataSource::DATA_SRC_DMA);
+    this->axi_ad9361->dac->setDataSource(AXIAD9361::DAC::Channel::TX1_Q, AXIAD9361::DAC::DataSource::DATA_SRC_DMA);
+    this->axi_ad9361->dac->setDataSource(AXIAD9361::DAC::Channel::TX2_I, AXIAD9361::DAC::DataSource::DATA_SRC_DMA);
+    this->axi_ad9361->dac->setDataSource(AXIAD9361::DAC::Channel::TX2_Q, AXIAD9361::DAC::DataSource::DATA_SRC_DMA);
+
+    // DLOGF(SOAPY_SDR_DEBUG, "Doing RF Phy digital interface tuning...");
 
     // auto intf_delays = this->axi_ad9361->tuneInterfaceTiming(AXIAD9361::InterfaceTuneFlags::DO_CHIP_RX | AXIAD9361::InterfaceTuneFlags::DO_CHIP_TX);
 
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "RF Phy interface delays:");
+    // DLOGF(SOAPY_SDR_DEBUG, "RF Phy interface delays:");
 
     // for(auto d : intf_delays)
-    //     SoapySDR_logf(SOAPY_SDR_DEBUG, "  %s = %d", d.first.c_str(), d.second);
+    //     DLOGF(SOAPY_SDR_DEBUG, "  %s = %d", d.first.c_str(), d.second);
 
     // Init RF Timestamping
     this->axi_rf_tstamp->init(
@@ -933,24 +1070,17 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
         }
     );
 
+    {
+        uint32_t ver = this->axi_rf_tstamp->getIPVersion();
+
+        DLOGF(SOAPY_SDR_TRACE, "AXI RF Timestamping:");
+        DLOGF(SOAPY_SDR_TRACE, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+    }
+
     this->axi_rf_tstamp->disableClockSyncBypass(); // Disable bypass since we are using both channels
     this->axi_rf_tstamp->triggerClockResync(true, 100); // Wait for sync both channels, 100 ms timeout
 
     this->axi_rf_tstamp->enableCounter();
-
-    // AXIDMAC::Transfer test = {
-    //     .id = 0,
-    //     .size = 8192,
-    //     .flags = AXIDMAC::Transfer::Flags::NONE,
-    //     .src_addr = AXI_MIG_DDR3_BASE,
-    //     .dest_addr = 0,
-    //     .cb = nullptr,
-    //     .cb_arg = nullptr,
-    // };
-
-    // this->axi_dmac[AXI_DMAC_RF_TX0_INST]->enable();
-    // this->axi_dmac[AXI_DMAC_RF_TX0_INST]->submitTransfer(test);
-    // this->axi_dmac[AXI_DMAC_RF_TX0_INST]->disable();
 
     // Probe expansion cards
     // Enable mmWave Synth if present
@@ -981,12 +1111,12 @@ void SoapyIcyRadio::deinitPeripheralsPostClocks()
 
 void SoapyIcyRadio::initClocks()
 {
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Setup clock manager...");
+    DLOGF(SOAPY_SDR_DEBUG, "Setup clock tree...");
 
     this->clk_mngr->init();
 
     // Inputs
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- Inputs ----");
+    DLOGF(SOAPY_SDR_DEBUG, "Clock Inputs:");
 
     this->clk_mngr->configXTAL(26000000UL, Si5351::XTALCapacitance::C_10pF);
 
@@ -995,30 +1125,46 @@ void SoapyIcyRadio::initClocks()
         usleep(1000);
 
     if(!this->clk_mngr->isXTALDetected())
-        throw std::runtime_error("Could not detect XTAL, aborting!");
-
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "XTAL Clock: %.3f MHz", (float)this->clk_mngr->getXTALFrequency() / 1000000);
-
-    if(false) // TODO: Support CLKIN configuration
     {
-        this->clk_mngr->configCLKIN(10000000UL);
+        if(!this->config.use_clkin)
+            throw std::runtime_error("Could not detect a valid clock at the XTAL input, aborting!");
+        else
+            DLOGF(SOAPY_SDR_WARNING, "  Could not detect a valid clock at the XTAL input");
+    }
+
+    DLOGF(SOAPY_SDR_DEBUG, "  XTAL Clock: %.6f MHz", (float)this->clk_mngr->getXTALFrequency() / 1000000);
+
+    if(this->config.use_clkin)
+    {
+        this->clk_mngr->configCLKIN(this->config.clkin_freq);
 
         timeout = 500;
         while(--timeout && !this->clk_mngr->isCLKINDetected())
             usleep(1000);
 
         if(!this->clk_mngr->isCLKINDetected())
-            throw std::runtime_error("Could not detect CLKIN, aborting!");
+        {
+            this->config.use_clkin = false;
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "CLKIN Clock: %.3f MHz", (float)this->clk_mngr->getCLKINFrequency() / 1000000);
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "CLKIN Divided Clock: %.3f MHz", (float)this->clk_mngr->getDividedCLKINFrequency() / 1000000);
+            if(!this->clk_mngr->isXTALDetected())
+                throw std::runtime_error("Could not detect any valid clock at the CLKIN or XTAL input, aborting!");
+            else
+                DLOGF(SOAPY_SDR_WARNING, "  Could not detect a valid clock at the CLKIN input, falling back to XTAL");
+        }
+        else
+        {
+            DLOGF(SOAPY_SDR_DEBUG, "  CLKIN Clock: %.6f MHz", (float)this->clk_mngr->getCLKINFrequency() / 1000000);
+            DLOGF(SOAPY_SDR_DEBUG, "  CLKIN Divided Clock: %.6f MHz", (float)this->clk_mngr->getDividedCLKINFrequency() / 1000000);
+        }
     }
 
     // PLLs
-    //// PLLA
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- PLL A ----");
+    DLOGF(SOAPY_SDR_DEBUG, "Clock PLLs:");
 
-    this->clk_mngr->configPLL(Si5351::PLL::PLLA, 650000000UL, Si5351::PLLSource::PLL_SRC_XTAL);
+    //// PLLA
+    DLOGF(SOAPY_SDR_DEBUG, "  PLL A:");
+
+    this->clk_mngr->configPLL(Si5351::PLL::PLLA, 650000000UL, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
 
     timeout = 500;
     while(--timeout && !this->clk_mngr->isPLLLocked(Si5351::PLL::PLLA))
@@ -1027,13 +1173,13 @@ void SoapyIcyRadio::initClocks()
     if(!this->clk_mngr->isPLLLocked(Si5351::PLL::PLLA))
         throw std::runtime_error("PLLA did not achieve lock, aborting!");
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "PLLA Source Clock: %.3f MHz", (float)this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLA) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "PLLA Clock: %.3f MHz", (float)this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLA) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLA) / 1000000);
+    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLA) / 1000000);
 
     //// PLLB
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- PLL B ----");
+    DLOGF(SOAPY_SDR_DEBUG, "  PLL B:");
 
-    this->clk_mngr->configPLL(Si5351::PLL::PLLB, 800000000UL, Si5351::PLLSource::PLL_SRC_XTAL);
+    this->clk_mngr->configPLL(Si5351::PLL::PLLB, 800000000UL, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
 
     timeout = 500;
     while(--timeout && !this->clk_mngr->isPLLLocked(Si5351::PLL::PLLB))
@@ -1042,14 +1188,15 @@ void SoapyIcyRadio::initClocks()
     if(!this->clk_mngr->isPLLLocked(Si5351::PLL::PLLB))
         throw std::runtime_error("PLLB did not achieve lock, aborting!");
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "PLLB Source Clock: %.3f MHz", (float)this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLB) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "PLLB Clock: %.3f MHz", (float)this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLB) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLB) / 1000000);
+    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLB) / 1000000);
 
     // Clocks
+    DLOGF(SOAPY_SDR_DEBUG, "Clock Outputs:");
     //// FPGA Clock #0
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (FPGA_CLK0) ----", Si5351::ClockOutput::CLK_FPGA_CLK0);
+    DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK0):", Si5351::ClockOutput::CLK_FPGA_CLK0);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK0, 50000000UL, 0.f, Si5351::PLL::PLLA);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK0, 50000000UL, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK0, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK0, Si5351::ClockOutputDriveCurrent::I_8mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK0, true); // Controlled by OE pin
@@ -1057,14 +1204,14 @@ void SoapyIcyRadio::initClocks()
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK0);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK0);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK0, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK0, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_FPGA_CLK0, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK0) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) / 1000000);
+    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK0) / 1000000);
 
     //// FPGA Clock #1
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (FPGA_CLK1) ----", Si5351::ClockOutput::CLK_FPGA_CLK1);
+    DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK1):", Si5351::ClockOutput::CLK_FPGA_CLK1);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK1, 49152000UL, 0.f, Si5351::PLL::PLLA);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK1, 49152000UL, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK1, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK1, Si5351::ClockOutputDriveCurrent::I_8mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK1, true); // Controlled by OE pin
@@ -1072,14 +1219,14 @@ void SoapyIcyRadio::initClocks()
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK1);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK1);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK1, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK1, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_FPGA_CLK1, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK1) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) / 1000000);
+    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK1) / 1000000);
 
     //// FPGA Clock #2
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (FPGA_CLK2) ----", Si5351::ClockOutput::CLK_FPGA_CLK2);
+    // DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK2):", Si5351::ClockOutput::CLK_FPGA_CLK2);
 
-    // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK2, FREQ, 0.f, Si5351::PLL::PLLA);
+    // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK2, FREQ, 0.f, Si5351::PLL::PLLA, false);
     // this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK2, Si5351::ClockOutputDisableState::LOW);
     // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK2, Si5351::ClockOutputDriveCurrent::I_8mA);
     // this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK2, true); // Controlled by OE pin
@@ -1087,14 +1234,14 @@ void SoapyIcyRadio::initClocks()
     // this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK2);
     // this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK2);
 
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK2, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) / 1000000);
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK2, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) / 1000000);
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_FPGA_CLK2, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK2) / 1000000);
+    // DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) / 1000000);
+    // DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) / 1000000);
+    // DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK2) / 1000000);
 
     //// FPGA Clock #3
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (FPGA_CLK3) ----", Si5351::ClockOutput::CLK_FPGA_CLK3);
+    // DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK3):", Si5351::ClockOutput::CLK_FPGA_CLK3);
 
-    // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK3, FREQ, 0.f, Si5351::PLL::PLLA);
+    // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK3, FREQ, 0.f, Si5351::PLL::PLLA, false);
     // this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK3, Si5351::ClockOutputDisableState::LOW);
     // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK3, Si5351::ClockOutputDriveCurrent::I_8mA);
     // this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK3, true); // Controlled by OE pin
@@ -1102,14 +1249,14 @@ void SoapyIcyRadio::initClocks()
     // this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK3);
     // this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK3);
 
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK3, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) / 1000000);
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_FPGA_CLK3, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) / 1000000);
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_FPGA_CLK3, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK3) / 1000000);
+    // DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) / 1000000);
+    // DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) / 1000000);
+    // DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK3) / 1000000);
 
     //// Transceiver Reference clock
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (TRX_REF_CLK) ----", Si5351::ClockOutput::CLK_TRX_REF_CLK);
+    DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (TRX_REF_CLK):", Si5351::ClockOutput::CLK_TRX_REF_CLK);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_TRX_REF_CLK, 40000000UL, 0.f, Si5351::PLL::PLLB);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_TRX_REF_CLK, 40000000UL, 0.f, Si5351::PLL::PLLB, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_TRX_REF_CLK, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_TRX_REF_CLK, Si5351::ClockOutputDriveCurrent::I_8mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_TRX_REF_CLK, true); // Controlled by OE pin
@@ -1117,14 +1264,14 @@ void SoapyIcyRadio::initClocks()
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_TRX_REF_CLK);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_TRX_REF_CLK);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_TRX_REF_CLK, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_TRX_REF_CLK, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_TRX_REF_CLK, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_TRX_REF_CLK) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) / 1000000);
+    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_TRX_REF_CLK) / 1000000);
 
     //// mmWave Synthesizer Reference clock
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (SYNTH_REF_CLK) ----", Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
+    DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (SYNTH_REF_CLK):", Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, 25000000UL, 0.f, Si5351::PLL::PLLA);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, 25000000UL, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, Si5351::ClockOutputDriveCurrent::I_8mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, true); // Controlled by OE pin
@@ -1132,47 +1279,52 @@ void SoapyIcyRadio::initClocks()
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_SYNTH_REF_CLK, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_SYNTH_REF_CLK, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_SYNTH_REF_CLK, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_SYNTH_REF_CLK) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) / 1000000);
+    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) / 1000000);
+    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_SYNTH_REF_CLK) / 1000000);
 
     //// External clock output (on frontend interface pin 2_3)
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (EXT_CLK_2_3) ----", Si5351::ClockOutput::CLK_EXT_CLK_2_3);
+    // DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (EXT_CLK_2_3):", Si5351::ClockOutput::CLK_EXT_CLK_2_3);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3, 10000000UL, 0.f, Si5351::PLL::PLLB);
-    this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_EXT_CLK_2_3, Si5351::ClockOutputDisableState::LOW);
-    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_EXT_CLK_2_3, Si5351::ClockOutputDriveCurrent::I_8mA);
-    this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_EXT_CLK_2_3, true); // Controlled by OE pin
+    // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3, 10000000UL, 0.f, Si5351::PLL::PLL_AUTO, false);
+    // this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_EXT_CLK_2_3, Si5351::ClockOutputDisableState::LOW);
+    // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_EXT_CLK_2_3, Si5351::ClockOutputDriveCurrent::I_8mA);
+    // this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_EXT_CLK_2_3, true); // Controlled by OE pin
 
-    this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3);
+    // this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3);
     // this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_EXT_CLK_2_3, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_EXT_CLK_2_3, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_EXT_CLK_2_3, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_2_3) / 1000000);
+    // DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) / 1000000);
+    // DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) / 1000000);
+    // DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_2_3) / 1000000);
 
     //// External clock output (on u.FL connector)
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "---- CLK #%hhu (EXT_CLK_OUT) ----", Si5351::ClockOutput::CLK_EXT_CLK_OUT);
+    if(this->config.enable_clkout)
+    {
+        DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (EXT_CLK_OUT):", Si5351::ClockOutput::CLK_EXT_CLK_OUT);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT, 10000000UL, 0.f, Si5351::PLL::PLLB);
-    this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_EXT_CLK_OUT, Si5351::ClockOutputDisableState::LOW);
-    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_EXT_CLK_OUT, Si5351::ClockOutputDriveCurrent::I_8mA);
-    this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_EXT_CLK_OUT, false); // Controlled via software enable only
+        this->clk_mngr->configClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT, this->config.clkout_freq, 0.f, Si5351::PLL::PLL_AUTO, true);
+        this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_EXT_CLK_OUT, Si5351::ClockOutputDisableState::LOW);
+        this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_EXT_CLK_OUT, Si5351::ClockOutputDriveCurrent::I_8mA);
+        this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_EXT_CLK_OUT, false); // Controlled via software enable only
 
-    this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT);
-    // this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT);
+        this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT);
+        this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Source Clock: %.3f MHz", Si5351::MultiSynth::MS_EXT_CLK_OUT, (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "MS%hhu Clock: %.3f MHz", Si5351::MultiSynth::MS_EXT_CLK_OUT, (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) / 1000000);
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "CLK%hhu Clock: %.3f MHz", Si5351::ClockOutput::CLK_EXT_CLK_OUT, (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT) / 1000000);
+        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) / 1000000);
+        DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) / 1000000);
+        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT) / 1000000);
+
+        DLOGF(SOAPY_SDR_INFO, "Achieved external clock output frequency is %u Hz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT));
+    }
 
     // Wait and global enable
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Waiting for all clocks to stabilize...");
+    DLOGF(SOAPY_SDR_DEBUG, "Waiting for all clocks to stabilize...");
     usleep(50000);
 
     this->clk_mngr->globalOutputEnable();
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Clock manager global output enabled: %s", this->clk_mngr->isGlobalOutputEnabled() ? "yes" : "no");
+    DLOGF(SOAPY_SDR_DEBUG, "Clock manager global output enabled: %s", this->clk_mngr->isGlobalOutputEnabled() ? "yes" : "no");
 
     usleep(50000);
 
@@ -1184,7 +1336,7 @@ void SoapyIcyRadio::initClocks()
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_CLK_WIZ0_LOCKED_BIT))
         throw std::runtime_error("FPGA clk_wiz_0 MMCM did not achieve lock (possible issue with FPGA_CLK0), aborting!");
     else
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "FPGA clk_wiz_0 MMCM locked!");
+        DLOGF(SOAPY_SDR_DEBUG, "FPGA clk_wiz_0 MMCM locked!");
 
     // De-assert DDR3 core reset
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_RST_CLK_WIZ0_250M_AUX_RESET_IN_BIT, AXIGPIO::Value::LOW);
@@ -1197,7 +1349,7 @@ void SoapyIcyRadio::initClocks()
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_MIG_MMCM_LOCKED_BIT))
         throw std::runtime_error("FPGA DDR3 MMCM (mig_7series_0) did not achieve lock, aborting!");
     else
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "FPGA DDR3 MMCM locked!");
+        DLOGF(SOAPY_SDR_DEBUG, "FPGA DDR3 MMCM locked!");
 
     // De-assert DDR3 AXI interface reset
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_RST_MIG_166M_AUX_RESET_IN_BIT, AXIGPIO::Value::LOW);
@@ -1210,7 +1362,7 @@ void SoapyIcyRadio::initClocks()
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_MIG_166M_PERI_ARESETn_BIT))
         throw std::runtime_error("FPGA DDR3 AXI interface did not come out of reset, aborting!");
     else
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "FPGA DDR3 AXI interface reset released!");
+        DLOGF(SOAPY_SDR_DEBUG, "FPGA DDR3 AXI interface reset released!");
 
     // De-assert I2S Core reset
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_RST_FPGA_CLK1_49M152_AUX_RESET_IN_BIT, AXIGPIO::Value::LOW);
@@ -1223,7 +1375,7 @@ void SoapyIcyRadio::initClocks()
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_FPGA_CLK1_49M152_PERI_ARESETn_BIT))
         throw std::runtime_error("FPGA I2S Core did not come out of reset (possible issue with FPGA_CLK1), aborting!");
     else
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "FPGA I2S Core reset released!");
+        DLOGF(SOAPY_SDR_DEBUG, "FPGA I2S Core reset released!");
 
     // De-assert RF section logic reset (we do not check if it comes out of reset because there are other conditions that need to be met)
     this->axi_gpio[AXI_GPIO_TRX_INST]->setValue(AXI_GPIO_RST_AD9361_61M44_AUX_RESET_IN_BIT, AXIGPIO::Value::LOW);
@@ -1236,14 +1388,14 @@ void SoapyIcyRadio::initClocks()
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_PCIE_MMCM_LOCKED_BIT))
         throw std::runtime_error("FPGA PCIe MMCM (axi_pcie_0) did not achieve lock (how did we get here?), aborting!");
     else
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "FPGA PCIe MMCM locked!");
+        DLOGF(SOAPY_SDR_DEBUG, "FPGA PCIe MMCM locked!");
 }
 void SoapyIcyRadio::deinitClocks()
 {
     // RF section clock domain reset procedure (this only works if the xcvr is supplying the clock to the RF section)
     // When this function is called in the cleanup, the RF section is already reset
     // When it is called during the init procedure, when an already initialized device is detected, it works because the xcvr is supplying the clock)
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Resetting RF section...");
+    DLOGF(SOAPY_SDR_DEBUG, "Resetting RF section...");
 
     this->axi_gpio[AXI_GPIO_TRX_INST]->setValue(AXI_GPIO_RST_AD9361_61M44_AUX_RESET_IN_BIT, AXIGPIO::Value::HIGH);
 
@@ -1254,10 +1406,10 @@ void SoapyIcyRadio::deinitClocks()
     if(this->axi_gpio[AXI_GPIO_TRX_INST]->getValue(AXI_GPIO_RST_AD9361_61M44_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset RF section, aborting!");
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "RF section logic is reset!");
+    DLOGF(SOAPY_SDR_DEBUG, "RF section logic is reset!");
 
     // I2S clock domain reset procedure
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Resetting I2S core...");
+    DLOGF(SOAPY_SDR_DEBUG, "Resetting I2S core...");
 
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_RST_FPGA_CLK1_49M152_AUX_RESET_IN_BIT, AXIGPIO::Value::HIGH);
 
@@ -1268,11 +1420,11 @@ void SoapyIcyRadio::deinitClocks()
     if(this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_FPGA_CLK1_49M152_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset I2S core, aborting!");
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "I2S core reset!");
+    DLOGF(SOAPY_SDR_DEBUG, "I2S core reset!");
 
     // DDR3 clock domain(s) reset procedure
     // First, reset the DDR3 AXI interface
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Resetting DDR3 AXI interface...");
+    DLOGF(SOAPY_SDR_DEBUG, "Resetting DDR3 AXI interface...");
 
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_RST_MIG_166M_AUX_RESET_IN_BIT, AXIGPIO::Value::HIGH);
 
@@ -1283,10 +1435,10 @@ void SoapyIcyRadio::deinitClocks()
     if(this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_MIG_166M_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset DDR3 AXI interface, aborting!");
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "DDR3 AXI interface reset!");
+    DLOGF(SOAPY_SDR_DEBUG, "DDR3 AXI interface reset!");
 
     // Then reset the DDR3 core
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Resetting DDR3 core...");
+    DLOGF(SOAPY_SDR_DEBUG, "Resetting DDR3 core...");
 
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_RST_CLK_WIZ0_250M_AUX_RESET_IN_BIT, AXIGPIO::Value::HIGH);
 
@@ -1297,12 +1449,12 @@ void SoapyIcyRadio::deinitClocks()
     if(this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_CLK_WIZ0_250M_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset DDR3 core, aborting!");
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "DDR3 core reset, DDR3 MMCM is %s!", this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_MIG_MMCM_LOCKED_BIT) ? "locked (how?)" : "unlocked");
+    DLOGF(SOAPY_SDR_DEBUG, "DDR3 core reset, DDR3 MMCM is %s!", this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_MIG_MMCM_LOCKED_BIT) ? "locked (how?)" : "unlocked");
 
     // Disable clock manager output
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_CLK_MNGR_OEn_BIT, AXIGPIO::Value::HIGH);
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Clock manager global output disabled, clk_wiz_0 MMCM is %s!", this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_CLK_WIZ0_LOCKED_BIT) ? "locked (how?)" : "unlocked");
+    DLOGF(SOAPY_SDR_DEBUG, "Clock manager global output disabled, clk_wiz_0 MMCM is %s!", this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_CLK_WIZ0_LOCKED_BIT) ? "locked (how?)" : "unlocked");
 }
 
 void SoapyIcyRadio::resetSystem()
@@ -1315,11 +1467,11 @@ void SoapyIcyRadio::resetSystem()
 
     if(!clk_mngr_oen) // Clock manager OE enabled
     {
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "Clock manager global output is enabled");
+        DLOGF(SOAPY_SDR_TRACE, "Clock manager global output is enabled");
 
         if(clk_wiz_0_locked && ddr_resetn && mig_mmcm_locked && ddr_axi_resetn)
         {
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "DDR3 is properly out of reset, looks like the system was left initialized");
+            DLOGF(SOAPY_SDR_TRACE, "DDR3 is properly out of reset, looks like the system was left initialized");
 
             this->deinitClocks(); // Will throw if it fails
         }
@@ -1337,11 +1489,11 @@ void SoapyIcyRadio::resetSystem()
     }
     else // Clock manager OE disabled
     {
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "Clock manager global output is disabled");
+        DLOGF(SOAPY_SDR_TRACE, "Clock manager global output is disabled");
 
         if(!clk_wiz_0_locked && !ddr_resetn && !mig_mmcm_locked && !ddr_axi_resetn)
         {
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "DDR3 is properly reset, looks like the system was left uninitialized");
+            DLOGF(SOAPY_SDR_TRACE, "DDR3 is properly reset, looks like the system was left uninitialized");
         }
         else if(!mig_mmcm_locked && ddr_axi_resetn) // AXI reset is de-asserted, but clocks are not locked, may cause lockups
         {
@@ -1356,7 +1508,7 @@ void SoapyIcyRadio::resetSystem()
         }
     }
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "Initiating system reset...");
+    DLOGF(SOAPY_SDR_DEBUG, "Initiating system reset...");
 
     // This will clear the two DDR3 reset bits set previously!
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_SYS_AUX_RESET_BIT, AXIGPIO::Value::HIGH);
@@ -1375,7 +1527,7 @@ void SoapyIcyRadio::DMAHandler(void *arg)
 
     if(buf->device == nullptr)
     {
-        SoapySDR_logf(SOAPY_SDR_WARNING, "DMAHandler: Called with unrelated transfer");
+        DLOGF(SOAPY_SDR_WARNING, "DMAHandler: Called with unrelated transfer");
 
         return;
     }
@@ -1390,7 +1542,9 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
 
     std::lock_guard<std::mutex> lock(buf->parent->mutex);
 
-    SoapySDR_logf(SOAPY_SDR_TRACE, "handleDMAData: Controller %u, transfer %u done", buf->parent->dma->getPeripheralID(), buf->xfer.id);
+    buf->idle = true;
+
+    DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: Controller %u, DMA buffer %u, transfer %u done", buf->parent->dma->getPeripheralID(), buf->index, buf->xfer.id);
 
     if(buf->parent->parent->direction == SOAPY_SDR_RX)
     {
@@ -1403,57 +1557,61 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
 
         if(hw_time_status == AXIRFTStamp::CounterLatchStatus::LATCH_VALID)
         {
+            #ifdef TRACE_STREAM
             uint64_t hw_time_now = this->axi_rf_tstamp->getCounter(); // Hardware time now
+            #endif
             uint64_t sw_time_now = hw_time + buf->xfer.size / ICYRADIO_SAMPLE_SIZE_BYTES; // Software time now, is the start time of this buffer plus this buffer's size
 
-            if(buf->parent->next_time_valid)
-                SoapySDR_logf(SOAPY_SDR_WARNING, "handleDMAData: Channel %u RX buffer hardware timestamp %llu is valid, was %llu (delta %lld)", buf->parent->num, hw_time, buf->parent->next_time, hw_time - buf->parent->next_time);
+            if(buf->parent->next_dma_user_buf_time_valid)
+                DLOGF(SOAPY_SDR_WARNING, "handleDMAData: Channel %u RX buffer hardware timestamp %llu is valid, was %llu (delta %lld)", buf->parent->num, hw_time, buf->parent->next_dma_user_buf_time, hw_time - buf->parent->next_dma_user_buf_time);
             else
-                SoapySDR_logf(SOAPY_SDR_TRACE, "handleDMAData: Channel %u RX buffer hardware timestamp %llu is valid, next is %llu, next hardware is %llu (delta %lld)", buf->parent->num, hw_time, sw_time_now, hw_time_now, hw_time_now - sw_time_now);
+                DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: Channel %u RX buffer hardware timestamp %llu is valid, next is %llu, next hardware is %llu (delta %lld)", buf->parent->num, hw_time, sw_time_now, hw_time_now, hw_time_now - sw_time_now);
 
             buf_time = hw_time;
             buf_time_valid = true;
 
-            buf->parent->next_time = sw_time_now;
-            buf->parent->next_time_valid = true;
+            buf->parent->next_dma_user_buf_time = sw_time_now;
+            buf->parent->next_dma_user_buf_time_valid = true;
         }
-        else if(buf->parent->next_time_valid)
+        else if(buf->parent->next_dma_user_buf_time_valid)
         {
+            #ifdef TRACE_STREAM
             uint64_t hw_time_now = this->axi_rf_tstamp->getCounter(); // Hardware time now
-            uint64_t sw_time_now = buf->parent->next_time + buf->xfer.size / ICYRADIO_SAMPLE_SIZE_BYTES; // Software time now, is the start time of this buffer plus this buffer's size
+            #endif
+            uint64_t sw_time_now = buf->parent->next_dma_user_buf_time + buf->xfer.size / ICYRADIO_SAMPLE_SIZE_BYTES; // Software time now, is the start time of this buffer plus this buffer's size
 
-            SoapySDR_logf(SOAPY_SDR_TRACE, "handleDMAData: Channel %u RX buffer software timestamp %llu is valid, next is %llu, next hardware is %llu (delta %lld)", buf->parent->num, buf->parent->next_time, sw_time_now, hw_time_now, hw_time_now - sw_time_now);
+            DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: Channel %u RX buffer software timestamp %llu is valid, next is %llu, next hardware is %llu (delta %lld)", buf->parent->num, buf->parent->next_dma_user_buf_time, sw_time_now, hw_time_now, hw_time_now - sw_time_now);
 
-            buf_time = buf->parent->next_time;
+            buf_time = buf->parent->next_dma_user_buf_time;
             buf_time_valid = true;
 
-            buf->parent->next_time = sw_time_now;
+            buf->parent->next_dma_user_buf_time = sw_time_now;
         }
         else
         {
-            SoapySDR_logf(SOAPY_SDR_WARNING, "handleDMAData: Channel %u RX buffer timestamp missing (hw status is %u, hw time is %llu)", buf->parent->num, hw_time_status, hw_time);
+            DLOGF(SOAPY_SDR_WARNING, "handleDMAData: Channel %u RX buffer timestamp missing (hw status is %u, hw time is %llu)", buf->parent->num, hw_time_status, hw_time);
 
             buf_time = 0;
             buf_time_valid = false;
         }
 
-        auto user_buf = buf->parent->buffers[buf->parent->next_dma_buf];
+        auto user_buf = buf->parent->buffers[buf->parent->next_dma_user_buf];
 
         if(user_buf->valid_size > 0)
         {
-            SoapySDR_logf(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer still has valid data, new data discarded", buf->parent->next_dma_buf);
+            DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer still has valid data, new data discarded", buf->parent->next_dma_user_buf);
 
-            SoapySDR_logf(SOAPY_SDR_SSI, "O");
+            DLOGF(SOAPY_SDR_SSI, "O");
         }
         else if(user_buf->acquired)
         {
-            SoapySDR_logf(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer is acquired by user, new data discarded", buf->parent->next_dma_buf);
+            DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer is acquired by user, new data discarded", buf->parent->next_dma_user_buf);
 
-            SoapySDR_logf(SOAPY_SDR_SSI, "O");
+            DLOGF(SOAPY_SDR_SSI, "O");
         }
         else
         {
-            SoapySDR_logf(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer is free, copying data", buf->parent->next_dma_buf);
+            DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer is free, copying data", buf->parent->next_dma_user_buf);
 
             std::memcpy(user_buf->addr, buf->virt, buf->xfer.size);
 
@@ -1461,7 +1619,7 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
             user_buf->time = buf_time;
             user_buf->time_valid = buf_time_valid;
 
-            buf->parent->next_dma_buf = (buf->parent->next_dma_buf + 1) % buf->parent->buffers.size();
+            buf->parent->next_dma_user_buf = (buf->parent->next_dma_user_buf + 1) % buf->parent->buffers.size();
         }
 
         if(buf->parent->dma->idle())
@@ -1469,7 +1627,7 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
             // This should never happen. Even when user cannot read fast enough, the DMA controller should be able to keep up
             // The data is just discarded and never copied to the user buffer, but the DMA still runs
             // If this happens, it means the system is not able to keep up with the data rate/interrupt rate
-            SoapySDR_logf(SOAPY_SDR_WARNING, "handleDMAData: DMA controller is idle, system cannot keep up!");
+            DLOGF(SOAPY_SDR_WARNING, "handleDMAData: DMA controller is idle, system cannot keep up!");
         }
         else
         {
@@ -1477,17 +1635,169 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
             {
                 buf->parent->dma->submitTransfer(buf->xfer);
 
-                SoapySDR_logf(SOAPY_SDR_TRACE, "handleDMAData: Re-submitted transfer, new ID %u", buf->xfer.id);
+                buf->idle = false;
+
+                DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: Re-submitted transfer, new ID %u", buf->xfer.id);
             }
             catch(const std::exception &e)
             {
-                SoapySDR_logf(SOAPY_SDR_ERROR, "handleDMAData: Failed to re-submit transfer: %s", e.what());
+                DLOGF(SOAPY_SDR_ERROR, "handleDMAData: Failed to re-submit transfer: %s", e.what());
             }
         }
     }
     else if(buf->parent->parent->direction == SOAPY_SDR_TX)
     {
-        // TODO
+        AXIRFTStamp::Channel ts_chan = buf->parent->ts_chan;
+
+        auto dma_buf = buf;
+
+        while(dma_buf)
+        {
+            bool submit_xfer = true;
+            bool cur = (dma_buf == buf);
+            auto user_buf = dma_buf->parent->buffers[dma_buf->parent->next_dma_user_buf];
+
+            if(!user_buf->valid_size)
+            {
+                submit_xfer = false;
+
+                DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer has no valid data, not submitting new transfer", dma_buf->parent->next_dma_user_buf);
+
+                DLOGF(SOAPY_SDR_SSI, "U");
+
+                if(dma_buf->parent->dma->idle())
+                {
+                    DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: DMA controller is idle, disabling");
+
+                    this->axi_rf_tstamp->disableTXCounter(ts_chan);
+                    this->axi_rf_tstamp->disableTX(ts_chan);
+
+                    dma_buf->parent->dma->disable();
+                }
+            }
+            else if(user_buf->acquired)
+            {
+                submit_xfer = false;
+
+                DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer is acquired by user, not submitting new transfer", dma_buf->parent->next_dma_user_buf);
+
+                DLOGF(SOAPY_SDR_SSI, "U");
+
+                if(dma_buf->parent->dma->idle())
+                {
+                    DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: DMA controller is idle, disabling");
+
+                    this->axi_rf_tstamp->disableTXCounter(ts_chan);
+                    this->axi_rf_tstamp->disableTX(ts_chan);
+
+                    dma_buf->parent->dma->disable();
+                }
+            }
+            else if(user_buf->time_valid && (!cur || !dma_buf->parent->dma->idle()))
+            {
+                // If the next buffer has a time, but the DMA is not idle, we cannot submit a new transfer
+                // because this would mess the timestamping up, since the DMA is working on another buffer, we cannot disable TX
+                // Instead, we skip this buffer and wait for the next interrput (the one corresponding to the buffer the DMA is currently working on)
+                // and then, it will be idle, and we can safely submit the new transfer
+                submit_xfer = false;
+
+                DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer has time but DMA is not idle, not submitting new transfer", dma_buf->parent->next_dma_user_buf);
+            }
+
+            if(submit_xfer)
+            {
+                DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer queue head is %u, buffer has valid data, copying data", dma_buf->parent->next_dma_user_buf);
+
+                std::memcpy(dma_buf->virt, user_buf->addr, user_buf->valid_size);
+
+                dma_buf->xfer.size = user_buf->valid_size;
+
+                if(user_buf->time_valid)
+                {
+                    uint64_t hw_time_now = this->axi_rf_tstamp->getCounter(); // Hardware time now
+
+                    if(user_buf->time > hw_time_now)
+                    {
+                        DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer time %llu is valid and not late (%llu ticks in the future), disabling TX and arming trigger", user_buf->time, user_buf->time - hw_time_now);
+
+                        this->axi_rf_tstamp->disableTXCounter(ts_chan);
+                        this->axi_rf_tstamp->waitTXCounterDisabled(ts_chan, 100);
+                        this->axi_rf_tstamp->disableTX(ts_chan);
+                        this->axi_rf_tstamp->setTXCounter(ts_chan, user_buf->time); // Safe because we already made sure the counter is disabled
+                        this->axi_rf_tstamp->waitTXDisabled(ts_chan, 100);
+                        this->axi_rf_tstamp->enableTXCounter(ts_chan);
+                    }
+                    else
+                    {
+                        DLOGF(SOAPY_SDR_WARNING, "handleDMAData: User buffer time %llu is late (%llu ticks late), not arming trigger, enabling TX now", user_buf->time, hw_time_now - user_buf->time);
+
+                        DLOGF(SOAPY_SDR_SSI, "L");
+
+                        this->axi_rf_tstamp->enableTX(ts_chan);
+                    }
+                }
+                else
+                {
+                    DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: User buffer time is not valid");
+                }
+
+                user_buf->valid_size = 0;
+                user_buf->time_valid = false;
+
+                try
+                {
+                    dma_buf->parent->dma->submitTransfer(dma_buf->xfer);
+
+                    dma_buf->idle = false;
+
+                    if(cur)
+                        DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: Re-submitted transfer, new ID %u", dma_buf->xfer.id);
+                    else
+                        DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: Submitted transfer ID %u", dma_buf->xfer.id);
+                }
+                catch(const std::exception &e)
+                {
+                    if(cur)
+                        DLOGF(SOAPY_SDR_ERROR, "handleDMAData: Failed to re-submit transfer: %s", e.what());
+                    else
+                        DLOGF(SOAPY_SDR_ERROR, "handleDMAData: Failed to submit transfer: %s", e.what());
+                }
+
+                dma_buf->parent->next_dma_user_buf = (dma_buf->parent->next_dma_user_buf + 1) % dma_buf->parent->buffers.size();
+
+                // Find a possible free DMA buffer
+                SoapyIcyRadio::Stream::Channel::DMABuffer *next_dma_buf = nullptr;
+
+                size_t i = (dma_buf->index + 1) % dma_buf->parent->dma_buffers.size();
+
+                for(size_t n = 0; n < dma_buf->parent->dma_buffers.size(); n++)
+                {
+                    auto _buf = dma_buf->parent->dma_buffers[i];
+
+                    if(_buf->idle)
+                    {
+                        next_dma_buf = _buf;
+
+                        break;
+                    }
+
+                    i = (i + 1) % dma_buf->parent->dma_buffers.size();
+                }
+
+                if(next_dma_buf)
+                    DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: DMA buffer %u is idle, checking if it can be submitted", next_dma_buf->index);
+                else
+                    DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: No idle DMA buffer found, everything done");
+
+                dma_buf = next_dma_buf;
+            }
+            else
+            {
+                DLOGF_S(SOAPY_SDR_TRACE, "handleDMAData: Not submitting transfer, everything done");
+
+                dma_buf = nullptr;
+            }
+        }
     }
 }
 
@@ -1495,7 +1805,7 @@ bool SoapyIcyRadio::requiresDataPathReconfiguration(const std::vector<size_t> &r
 {
     uint8_t phy_channels = this->rf_phy->getChannelCount();
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "requiresDataPathReconfiguration: Phy channels: %u, RX channels %u, TX channels %u", phy_channels, rx_channels.size(), tx_channels.size());
+    DLOGF(SOAPY_SDR_DEBUG, "requiresDataPathReconfiguration: Phy channels: %u, RX channels %u, TX channels %u", phy_channels, rx_channels.size(), tx_channels.size());
 
     // If the Phy is configured for dual channel, no reconfiguration is needed
     if(phy_channels > 1)
@@ -1510,7 +1820,7 @@ bool SoapyIcyRadio::requiresDataPathReconfiguration(const std::vector<size_t> &r
     // If in single channel mode...
     if(channel_count <= 1)
     {
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "requiresDataPathReconfiguration: Single channel mode, current RX %u, wanted RX %u, current TX %u, wanted TX %u", this->rf_phy->pdata->rx1tx1_mode_use_rx_num - 1, rx_channels.size() > 0 ? rx_channels[0] : 0, this->rf_phy->pdata->rx1tx1_mode_use_tx_num - 1, tx_channels.size() > 0 ? tx_channels[0] : 0);
+        DLOGF(SOAPY_SDR_DEBUG, "requiresDataPathReconfiguration: Single channel mode, current RX %u, wanted RX %u, current TX %u, wanted TX %u", this->rf_phy->pdata->rx1tx1_mode_use_rx_num - 1, rx_channels.size() > 0 ? rx_channels[0] : 0, this->rf_phy->pdata->rx1tx1_mode_use_tx_num - 1, tx_channels.size() > 0 ? tx_channels[0] : 0);
 
         // ...and the selected RX channel is not the one currently in use, we need to reconfigure
         if(rx_channels.size() > 0 && BIT(rx_channels[0]) != this->rf_phy->pdata->rx1tx1_mode_use_rx_num)
@@ -1527,7 +1837,7 @@ bool SoapyIcyRadio::requiresDataPathReconfiguration(const double new_rate) const
 {
     uint8_t phy_channels = this->rf_phy->getChannelCount();
 
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "requiresDataPathReconfiguration: Phy channels: %u, new rate %u Sps", phy_channels, (size_t)new_rate);
+    DLOGF(SOAPY_SDR_DEBUG, "requiresDataPathReconfiguration: Phy channels: %u, new rate %u Sps", phy_channels, (size_t)new_rate);
 
     // If the Phy is configured for single channel, we allow all sample rates without reconfiguration
     // i.e., the datapath will be forced to reconfigure if we later request the second channel
@@ -1543,7 +1853,7 @@ bool SoapyIcyRadio::requiresDataPathReconfiguration(const double new_rate) const
 }
 void SoapyIcyRadio::reconfigureDataPath(bool rx2tx2, size_t rx_ch, size_t tx_ch)
 {
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "reconfigureDataPath: %s channel mode, use RX%u, use TX%u", rx2tx2 ? "Dual" : "Single", rx_ch, tx_ch);
+    DLOGF(SOAPY_SDR_DEBUG, "reconfigureDataPath: %s channel mode, use RX%u, use TX%u", rx2tx2 ? "Dual" : "Single", rx_ch, tx_ch);
 
     this->rf_phy->pdata->rx2tx2 = rx2tx2;
     this->rf_phy->pdata->rx1tx1_mode_use_rx_num = BIT(rx_ch);
@@ -1564,7 +1874,7 @@ void SoapyIcyRadio::reconfigureDataPath(bool rx2tx2, size_t rx_ch, size_t tx_ch)
 }
 void SoapyIcyRadio::validateSampleRateAndChannelCombination(const double rate, const size_t channel_count) const
 {
-    SoapySDR_logf(SOAPY_SDR_DEBUG, "validateSampleRateAndChannelCombination: Rate %u Sps, channel count %u", (size_t)rate, channel_count);
+    DLOGF(SOAPY_SDR_DEBUG, "validateSampleRateAndChannelCombination: Rate %u Sps, channel count %u", (size_t)rate, channel_count);
 
     if(rate > (double)MAX_BASEBAND_RATE / channel_count)
         throw std::runtime_error("validateSampleRateAndChannelCombination: Rate too high for number of channels, maximum is " + std::to_string(MAX_BASEBAND_RATE / channel_count) + " Sps");
@@ -1673,7 +1983,7 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
     {
         std::unique_ptr<SoapyIcyRadio::Stream::Channel> chan = std::make_unique<SoapyIcyRadio::Stream::Channel>();
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "initStreamChannels: Setup %s%u", (stream->direction == SOAPY_SDR_RX) ? "RX" : "TX", c);
+        DLOGF(SOAPY_SDR_DEBUG, "initStreamChannels: Setup %s%u", (stream->direction == SOAPY_SDR_RX) ? "RX" : "TX", c);
 
         chan->parent = stream;
         chan->num = c;
@@ -1687,7 +1997,7 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
         if(!dma->idle())
             throw std::runtime_error("initStreamChannels: DMA controller for channel " + std::to_string(c) + " is not idle");
 
-        SoapySDR_logf(SOAPY_SDR_DEBUG, "initStreamChannels: Using DMA controller %u", dma->getPeripheralID());
+        DLOGF(SOAPY_SDR_DEBUG, "initStreamChannels: Using DMA controller %u", dma->getPeripheralID());
 
         chan->dma = dma;
 
@@ -1697,14 +2007,15 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
         void *buf_start = this->getDMAPoolStartVirt(stream->direction, c);
         size_t buf_free_size = this->getDMAPoolSizeBytes(stream->direction, c);
 
-        SoapySDR_logf(SOAPY_SDR_TRACE, "initStreamChannels: Using DMA buffer pool at 0x%016llX, available size %u", buf_start, buf_free_size);
+        DLOGF(SOAPY_SDR_TRACE, "initStreamChannels: Using DMA buffer pool at 0x%016llX, available size %u", buf_start, buf_free_size);
 
         for(size_t b = 0; b < ICYRADIO_DEFAULT_DMA_NUM_BUFFERS; b++)
         {
             std::unique_ptr<SoapyIcyRadio::Stream::Channel::DMABuffer> buf = std::make_unique<SoapyIcyRadio::Stream::Channel::DMABuffer>();
 
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "initStreamChannels: Setup DMA buffer %u", b);
+            DLOGF(SOAPY_SDR_DEBUG, "initStreamChannels: Setup DMA buffer %u", b);
 
+            buf->index = b;
             buf->device = this;
             buf->parent = chan.get();
             buf->virt = buf_start;
@@ -1722,7 +2033,7 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
                 {
                     buf_phys_axi = this->axi_pcie->getBARAXIAddress(i, buf_phys);
 
-                    SoapySDR_logf(SOAPY_SDR_TRACE, "initStreamChannels: Size: 0x%08lX, Virt: 0x%016llX, Phys: 0x%016llX, AXI: 0x%08lX @ PCIe BAR: %u", buf->size, (uintptr_t)buf_start, buf_phys, buf_phys_axi, i);
+                    DLOGF(SOAPY_SDR_TRACE, "initStreamChannels: Size: 0x%08lX, Virt: 0x%016llX, Phys: 0x%016llX, AXI: 0x%08lX @ PCIe BAR: %u", buf->size, (uintptr_t)buf_start, buf_phys, buf_phys_axi, i);
 
                     break;
                 }
@@ -1747,6 +2058,8 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
             buf->xfer.cb = SoapyIcyRadio::DMAHandler;
             buf->xfer.cb_arg = reinterpret_cast<void *>(buf.get());
 
+            buf->idle = true;
+
             // Update DMA buffer pool
             buf_start = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(buf_start) + buf->size);
             buf_free_size -= buf->size;
@@ -1759,13 +2072,13 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
         // User buffers
         chan->buffers = std::vector<SoapyIcyRadio::Stream::Channel::Buffer *>();
 
-        SoapySDR_logf(SOAPY_SDR_TRACE, "initStreamChannels: Allocating %u user buffers", ICYRADIO_DEFAULT_NUM_BUFFERS);
+        DLOGF(SOAPY_SDR_TRACE, "initStreamChannels: Allocating %u user buffers", ICYRADIO_DEFAULT_NUM_BUFFERS);
 
         for(size_t b = 0; b < ICYRADIO_DEFAULT_NUM_BUFFERS; b++)
         {
             std::unique_ptr<SoapyIcyRadio::Stream::Channel::Buffer> buf = std::make_unique<SoapyIcyRadio::Stream::Channel::Buffer>();
 
-            SoapySDR_logf(SOAPY_SDR_DEBUG, "initStreamChannels: Setup user buffer %u", b);
+            DLOGF(SOAPY_SDR_DEBUG, "initStreamChannels: Setup user buffer %u", b);
 
             buf->size = ICYRADIO_DEFAULT_DMA_BUFFER_SIZE_BYTES; // TODO: Make configurable
             buf->addr = std::malloc(buf->size);
@@ -1773,7 +2086,7 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
             if(!buf->addr)
                 throw std::runtime_error("initStreamChannels: Failed to allocate user buffer");
 
-            SoapySDR_logf(SOAPY_SDR_TRACE, "initStreamChannels: Size: 0x%08lX, Virt: 0x%016llX", buf->size, (uintptr_t)buf->addr);
+            DLOGF(SOAPY_SDR_TRACE, "initStreamChannels: Size: 0x%08lX, Virt: 0x%016llX", buf->size, (uintptr_t)buf->addr);
 
             buf->valid_size = 0;
             buf->time = 0;
@@ -1786,9 +2099,11 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
         }
 
         chan->next_user_buf = 0;
-        chan->next_dma_buf = 0;
-        chan->next_time = 0;
-        chan->next_time_valid = false;
+        chan->next_user_buf_time = 0;
+        chan->next_user_buf_time_valid = false;
+        chan->next_dma_user_buf = 0;
+        chan->next_dma_user_buf_time = 0;
+        chan->next_dma_user_buf_time_valid = false;
 
         // Timestamping
         AXIRFTStamp::Channel ts_chan = this->getTimestampingChannel(stream->direction, c);
@@ -1800,20 +2115,24 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
 
         if(stream->direction == SOAPY_SDR_RX)
         {
-            SoapySDR_logf(SOAPY_SDR_TRACE, "initStreamChannels: Using timestamping channel RX%u", ts_chan);
+            DLOGF(SOAPY_SDR_TRACE, "initStreamChannels: Using timestamping channel RX%u", ts_chan);
 
             this->axi_rf_tstamp->disarmCounterLatch(ts_chan);
             this->axi_rf_tstamp->getCounterLatch(ts_chan); // Trigger read to clear valid status
 
             this->axi_rf_tstamp->disableRXCounter(ts_chan);
             this->axi_rf_tstamp->disableRX(ts_chan);
+            this->axi_rf_tstamp->waitRXCounterDisabled(ts_chan, 100);
+            this->axi_rf_tstamp->waitRXDisabled(ts_chan, 100);
         }
         else
         {
-            SoapySDR_logf(SOAPY_SDR_TRACE, "initStreamChannels: Using timestamping channel TX%u", ts_chan);
+            DLOGF(SOAPY_SDR_TRACE, "initStreamChannels: Using timestamping channel TX%u", ts_chan);
 
             this->axi_rf_tstamp->disableTXCounter(ts_chan);
             this->axi_rf_tstamp->disableTX(ts_chan);
+            this->axi_rf_tstamp->waitTXCounterDisabled(ts_chan, 100);
+            this->axi_rf_tstamp->waitTXDisabled(ts_chan, 100);
         }
 
         SoapyIcyRadio::Stream::Channel *_chan = chan.release();

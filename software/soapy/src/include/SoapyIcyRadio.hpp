@@ -12,10 +12,10 @@
 #include <thread>
 #include <fcntl.h>
 #include <SoapySDR/Device.hpp>
-#include <SoapySDR/Logger.hpp>
 #include <SoapySDR/Types.hpp>
 #include <SoapySDR/ConverterRegistry.hpp>
 #include <SoapySDR/Time.hpp>
+#include "Log.hpp"
 #include "ioctl.hpp"
 #include "MappedRegion.hpp"
 #include "AXI.hpp"
@@ -49,6 +49,13 @@
 class SoapyIcyRadio: public SoapySDR::Device
 {
 private:
+    struct Config
+    {
+        bool use_clkin; // Use external clock input (CLKIN) instead of the internal TCXO (XTAL)
+        uint32_t clkin_freq; // External clock input frequency in Hz
+        bool enable_clkout; // Enable clock output on the u.FL connector
+        uint32_t clkout_freq; // External clock output frequency in Hz
+    };
     class Stream
     {
     public:
@@ -58,11 +65,13 @@ private:
             class DMABuffer
             {
             public:
+                size_t index; // Index of the buffer in the pool
                 SoapyIcyRadio *device; // Pointer to the parent device
                 SoapyIcyRadio::Stream::Channel *parent; // Pointer to the parent channel
                 void *virt; // Virtual (userspace) address pointing to the memory region where the DMA is going to write/read data
                 size_t size; // Size of the buffer in bytes
                 AXIDMAC::Transfer xfer; // DMA transfer
+                bool idle; // Whether this buffer is idle or the DMA is currently using it
             };
 
             class Buffer
@@ -107,9 +116,11 @@ private:
             std::vector<SoapyIcyRadio::Stream::Channel::DMABuffer *> dma_buffers; // Pool of DMA buffers
             std::vector<SoapyIcyRadio::Stream::Channel::Buffer *> buffers; // Pool of user buffers
             size_t next_user_buf; // Index of the next buffer that will be acquired by the user (queue tail)
-            size_t next_dma_buf; // Index of the next buffer that will be filled by the DMA (queue head)
-            uint64_t next_time; // Timestamp of the next buffer that will be filled by the DMA
-            bool next_time_valid;
+            uint64_t next_user_buf_time; // Expected timestamp of the next buffer that will be acquired by the user (used to check for overflows)
+            bool next_user_buf_time_valid;
+            size_t next_dma_user_buf; // Index of the next user buffer that will be filled/emptied by the DMA (queue head)
+            uint64_t next_dma_user_buf_time; // Timestamp of the next user buffer that will be filled/emptied by the DMA
+            bool next_dma_user_buf_time_valid;
             std::mutex mutex;
         };
 
@@ -135,8 +146,9 @@ private:
         std::mutex cur_buf_mutex;
         size_t cur_buf_handle;
         std::vector<void *> cur_buf_ptrs;
-        size_t cur_buf_rem;
-        uint64_t cur_buf_time;
+        size_t cur_buf_size;
+        size_t cur_buf_valid_size;
+        long long cur_buf_time;
         bool cur_buf_time_valid;
     };
 
@@ -214,16 +226,16 @@ public:
     /*******************************************************************
      * Gain API
      ******************************************************************/
-    //std::vector<std::string> listGains(const int direction, const size_t channel) const;
-    //bool hasGainMode(const int direction, const size_t channel) const;
-    //void setGainMode(const int direction, const size_t channel, const bool automatic);
-    //bool getGainMode(const int direction, const size_t channel) const;
-    //void setGain(const int direction, const size_t channel, const double value);
-    //void setGain(const int direction, const size_t channel, const std::string &name, const double value);
-    //double getGain(const int direction, const size_t channel) const;
-    //double getGain(const int direction, const size_t channel, const std::string &name) const;
-    //SoapySDR::Range getGainRange(const int direction, const size_t channel) const;
-    //SoapySDR::Range getGainRange(const int direction, const size_t channel, const std::string &name) const;
+    std::vector<std::string> listGains(const int direction, const size_t channel) const;
+    bool hasGainMode(const int direction, const size_t channel) const;
+    void setGainMode(const int direction, const size_t channel, const bool automatic);
+    bool getGainMode(const int direction, const size_t channel) const;
+    void setGain(const int direction, const size_t channel, const double value);
+    void setGain(const int direction, const size_t channel, const std::string &name, const double value);
+    double getGain(const int direction, const size_t channel) const;
+    double getGain(const int direction, const size_t channel, const std::string &name) const;
+    SoapySDR::Range getGainRange(const int direction, const size_t channel) const;
+    SoapySDR::Range getGainRange(const int direction, const size_t channel, const std::string &name) const;
 
     /*******************************************************************
      * Frequency API
@@ -242,7 +254,7 @@ public:
      ******************************************************************/
     void setSampleRate(const int direction, const size_t channel, const double rate);
     double getSampleRate(const int direction, const size_t channel) const;
-    std::vector<double> listSampleRates(const int direction, const size_t channel) const;
+    // std::vector<double> listSampleRates(const int direction, const size_t channel) const; // Deprecated
     SoapySDR::RangeList getSampleRateRange(const int direction, const size_t channel) const;
 
     /*******************************************************************
@@ -250,7 +262,7 @@ public:
      ******************************************************************/
     void setBandwidth(const int direction, const size_t channel, const double bw);
     double getBandwidth(const int direction, const size_t channel) const;
-    std::vector<double> listBandwidths(const int direction, const size_t channel) const;
+    // std::vector<double> listBandwidths(const int direction, const size_t channel) const; // Deprecated
     SoapySDR::RangeList getBandwidthRange(const int direction, const size_t channel) const;
 
     /*******************************************************************
@@ -269,13 +281,13 @@ public:
     /*******************************************************************
      * Time API
      ******************************************************************/
-    //std::vector<std::string> listTimeSources() const;
-    //void setTimeSource(const std::string &source);
-    //std::string getTimeSource() const;
-    //bool hasHardwareTime(const std::string &what = "") const;
-    //long long getHardwareTime(const std::string &what = "") const;
-    //void setHardwareTime(const long long timeNs, const std::string &what = "");
-    //void setCommandTime(const long long timeNs, const std::string &what = "");
+    std::vector<std::string> listTimeSources() const;
+    void setTimeSource(const std::string &source);
+    std::string getTimeSource() const;
+    bool hasHardwareTime(const std::string &what = "") const;
+    long long getHardwareTime(const std::string &what = "") const;
+    void setHardwareTime(const long long timeNs, const std::string &what = "");
+    // void setCommandTime(const long long timeNs, const std::string &what = ""); // Deprecated
 
     /*******************************************************************
      * Sensor API
@@ -283,9 +295,9 @@ public:
     std::vector<std::string> listSensors() const;
     SoapySDR::ArgInfo getSensorInfo(const std::string &key) const;
     std::string readSensor(const std::string &key) const;
-    //std::vector<std::string> listSensors(const int direction, const size_t channel) const;
-    //SoapySDR::ArgInfo getSensorInfo(const int direction, const size_t channel, const std::string &key) const;
-    //std::string readSensor(const int direction, const size_t channel, const std::string &key) const;
+    std::vector<std::string> listSensors(const int direction, const size_t channel) const;
+    SoapySDR::ArgInfo getSensorInfo(const int direction, const size_t channel, const std::string &key) const;
+    std::string readSensor(const int direction, const size_t channel, const std::string &key) const;
 
     /*******************************************************************
      * Register API
@@ -343,6 +355,8 @@ public:
     //void* getNativeDeviceHandle() const;
 
 private:
+    void parseConfig(const SoapySDR::Kwargs &args);
+
     void setupMemoryMaps();
     void freeMemoryMaps();
 
@@ -408,6 +422,7 @@ private:
 
 private:
     int fd; // File descriptor
+    SoapyIcyRadio::Config config;
 
     // Memory maps
     MappedRegion *mm_axi_flash;

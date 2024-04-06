@@ -330,6 +330,9 @@ void AXISPI::setClockFrequency(uint64_t input_freq, uint64_t sck_freq)
 {
     uint64_t sck_div = input_freq / sck_freq;
 
+    if(sck_div & 1)
+        sck_div++; // Round up to nearest even number
+
     this->setClockDivider(sck_div);
 }
 uint64_t AXISPI::getClockFrequency(uint64_t input_freq)

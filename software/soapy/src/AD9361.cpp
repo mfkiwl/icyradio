@@ -679,11 +679,6 @@ void AD9361::writeReg(uint16_t reg, uint8_t *src, uint8_t count)
     if(count > 8)
         throw std::invalid_argument("AD9361: Max SPI size exceeded");
 
-    // SoapySDR_logf(SOAPY_SDR_DEBUG, "AD9361: Writing %d bytes to register 0x%03X", count, reg);
-
-    // for(uint8_t i = 0; i < count; i++)
-    //     SoapySDR_logf(SOAPY_SDR_DEBUG, "AD9361: 0x%02X", src[i] & 0xFF);
-
     uint16_t cmd = BIT(15); // Write command
     cmd |= (count - 1) << 12; // Number of bytes to read
     cmd |= reg; // Register address
@@ -738,7 +733,7 @@ AD9361::AD9361(AD9361::SPIConfig spi, AD9361::GPIOConfig reset_gpio, AD9361::GPI
     uint8_t pid = this->readReg(AD9361_REG_PRODUCT_ID);
 
     if((pid & PRODUCT_ID_MASK) != PRODUCT_ID_9361)
-        throw std::runtime_error("AD9361: Product ID mismatch (" + std::to_string(pid) + " != " + std::to_string(PRODUCT_ID_9361) + ")");
+        throw std::runtime_error("AD9361: Product ID mismatch (" + std::to_string(pid & PRODUCT_ID_MASK) + " != " + std::to_string(PRODUCT_ID_9361) + ")");
 }
 AD9361::~AD9361()
 {
@@ -795,8 +790,8 @@ void AD9361::init()
     this->pdata->ensm_pin_ctrl = false;
 
     /* LO Control */
-    this->pdata->rx_synth_freq = 98000000UL; // TODO: Auto
-    this->pdata->tx_synth_freq = 100000000UL; // TODO: Auto
+    this->pdata->rx_synth_freq = 433000000ULL; // TODO: Auto
+    this->pdata->tx_synth_freq = 433000000ULL; // TODO: Auto
     this->pdata->lo_powerdown_managed_en = true;
 
     /* Rate & BW Control */
@@ -822,7 +817,7 @@ void AD9361::init()
     this->pdata->rf_tx_output_sel = 0;
 
     /* TX Attenuation Control */
-    this->pdata->tx_atten = 10000;
+    this->pdata->tx_atten = 80000;
     this->pdata->update_tx_gain_via_alert = false;
 
     /* Reference Clock Control */
@@ -840,8 +835,8 @@ void AD9361::init()
     this->pdata->clkout_mode = AD9361::ClkOutMode::DISABLE;
 
     /* Gain Control */
-    this->pdata->gain_ctrl.rx1_mode = AD9361::RFGainCtrlMode::RF_GAIN_SLOWATTACK_AGC;
-    this->pdata->gain_ctrl.rx2_mode = AD9361::RFGainCtrlMode::RF_GAIN_SLOWATTACK_AGC;
+    this->pdata->gain_ctrl.rx1_mode = AD9361::RFGainCtrlMode::RF_GAIN_MGC;
+    this->pdata->gain_ctrl.rx2_mode = AD9361::RFGainCtrlMode::RF_GAIN_MGC;
     this->pdata->gain_ctrl.adc_large_overload_thresh = 58;
     this->pdata->gain_ctrl.adc_ovr_sample_size = 4;
     this->pdata->gain_ctrl.adc_small_overload_thresh = 47;

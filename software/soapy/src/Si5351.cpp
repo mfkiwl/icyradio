@@ -208,6 +208,78 @@ Si5351::MultiSynthDivider Si5351::CalculateMSDivider(uint32_t f1, uint32_t f2)
 
     return div;
 }
+Si5351::MultiSynthDivider Si5351::CalculateValidPLLMSDivider(uint32_t f1, uint32_t f2)
+{
+    Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(f1, f2);
+
+    // Force the divider to be valid by rounding the out of range parameters
+    if(div.a < 15)
+    {
+        div.a = 15;
+        div.b = 0;
+        div.c = 1;
+    }
+
+    if(div.a >= 90)
+    {
+        div.a = 90;
+        div.b = 0;
+        div.c = 1;
+    }
+
+    return div;
+}
+Si5351::MultiSynthDivider Si5351::CalculateValidIntMSDivider(uint32_t f1, uint32_t f2)
+{
+    Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(f1, f2);
+
+    // Force the divider to be valid by rounding the out of range parameters
+    if((double)div.b / div.c >= 0.5)
+        div.a++;
+
+    div.b = 0;
+    div.c = 1;
+
+    if(div.a < 6)
+        div.a = 6;
+
+    if(div.a > 254)
+        div.a = 254;
+
+    if(div.a & 1)
+        div.a--;
+
+    return div;
+}
+Si5351::MultiSynthDivider Si5351::CalculateValidFracMSDivider(uint32_t f1, uint32_t f2)
+{
+    Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(f1, f2);
+
+    // Force the divider to be valid by rounding the out of range parameters
+    if(div.a < 4)
+        div.a = 4;
+
+    if(div.a >= 2048)
+    {
+        div.a = 2048;
+        div.b = 0;
+        div.c = 1;
+    }
+
+    if(div.a < 8)
+    {
+        if(div.b > 0)
+        {
+            div.b = 0;
+            div.c = 1;
+        }
+
+        if(div.a == 7 || div.a == 5)
+            div.a--;
+    }
+
+    return div;
+}
 void Si5351::ValidatePLLMSDivider(Si5351::MultiSynthDivider div)
 {
     if(div.a < 15 || div.a > 90) // Integer part limits
@@ -588,7 +660,7 @@ void Si5351::resetPLL(Si5351::PLL pll)
     while(this->readReg(SI5351_REG_STATUS) & SI5351_REG_STATUS_SYS_INIT) // Somehow the SYS_INIT bit gets set when the PLLs are reset
         usleep(10);
 }
-void Si5351::configPLL(Si5351::PLL pll, uint32_t freq, Si5351::PLLSource src)
+void Si5351::configPLL(Si5351::PLL pll, uint32_t freq, Si5351::PLLSource src, bool closest)
 {
     switch(pll)
     {
@@ -599,13 +671,16 @@ void Si5351::configPLL(Si5351::PLL pll, uint32_t freq, Si5351::PLLSource src)
             throw std::invalid_argument("Si5351: Invalid PLL");
     }
 
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    if(closest)
+        src = this->getClosestPLLFrequency(freq, src); // Can decide the source aswell
+
     if(freq < 600000000UL)
         throw std::invalid_argument("Si5351: VCO frequency too low (Valid: 600-900 MHz)");
 
     if(freq > 900000000UL)
         throw std::invalid_argument("Si5351: VCO frequency too high (Valid: 600-900 MHz)");
-
-    std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
     if(src == Si5351::PLLSource::PLL_SRC_AUTO)
     {
@@ -793,7 +868,71 @@ uint32_t Si5351::getPLLSourceFrequency(Si5351::PLL pll)
             throw std::runtime_error("Si5351: Invalid PLL source");
     }
 }
-void Si5351::setPLLFrequency(Si5351::PLL pll, uint32_t freq)
+Si5351::PLLSource Si5351::getClosestPLLFrequency(uint32_t &freq, Si5351::PLLSource src)
+{
+    if(freq < 600000000UL)
+        freq = 600000000UL;
+
+    if(freq > 900000000UL)
+        freq = 900000000UL;
+
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    uint32_t f_xtal = this->getXTALFrequency();
+    uint32_t f_clkin = this->getDividedCLKINFrequency();
+
+    uint32_t a_xtal = 0;
+    uint32_t a_clkin = 0;
+
+    if(f_xtal && src != Si5351::PLLSource::PLL_SRC_CLKIN)
+    {
+        Si5351::MultiSynthDivider div = Si5351::CalculateValidPLLMSDivider(freq, f_xtal);
+
+        a_xtal = f_xtal * div.a + (((uint64_t)f_xtal * div.b) / div.c);
+    }
+
+    if(f_clkin && src != Si5351::PLLSource::PLL_SRC_XTAL)
+    {
+        Si5351::MultiSynthDivider div = Si5351::CalculateValidPLLMSDivider(freq, f_clkin);
+
+        a_clkin = f_clkin * div.a + (((uint64_t)f_clkin * div.b) / div.c);
+    }
+
+    if(a_xtal && !a_clkin)
+    {
+        freq = a_xtal;
+
+        return Si5351::PLLSource::PLL_SRC_XTAL;
+    }
+
+    if(!a_xtal && a_clkin)
+    {
+        freq = a_clkin;
+
+        return Si5351::PLLSource::PLL_SRC_CLKIN;
+    }
+
+    uint32_t d_xtal = D_ABS(a_xtal, freq);
+    uint32_t d_clkin = D_ABS(a_clkin, freq);
+
+    if(d_xtal < d_clkin)
+    {
+        freq = a_xtal;
+
+        return Si5351::PLLSource::PLL_SRC_XTAL;
+    }
+    else if(d_clkin < d_xtal)
+    {
+        freq = a_clkin;
+
+        return Si5351::PLLSource::PLL_SRC_CLKIN;
+    }
+
+    freq = a_xtal; // Both are equal
+
+    return Si5351::PLLSource::PLL_SRC_AUTO;
+}
+void Si5351::setPLLFrequency(Si5351::PLL pll, uint32_t freq, bool closest)
 {
     switch(pll)
     {
@@ -812,9 +951,18 @@ void Si5351::setPLLFrequency(Si5351::PLL pll, uint32_t freq)
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(freq, this->getPLLSourceFrequency(pll));
+    Si5351::MultiSynthDivider div;
 
-    Si5351::ValidatePLLMSDivider(div);
+    if(closest)
+    {
+        div = Si5351::CalculateValidPLLMSDivider(freq, this->getPLLSourceFrequency(pll));
+    }
+    else
+    {
+        div = Si5351::CalculateMSDivider(freq, this->getPLLSourceFrequency(pll));
+
+        Si5351::ValidatePLLMSDivider(div);
+    }
 
     uint32_t p1 = 128 * div.a + ((128 * div.b) / div.c) - 512;
     uint32_t p2 = 128 * div.b - div.c * ((128 * div.b) / div.c);
@@ -868,7 +1016,7 @@ uint32_t Si5351::getPLLFrequency(Si5351::PLL pll)
     return src_freq * div.a + ((src_freq * div.b) / div.c);
 }
 
-void Si5351::configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase, Si5351::PLL src)
+void Si5351::configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase, Si5351::PLL src, bool closest)
 {
     bool integer;
 
@@ -890,13 +1038,16 @@ void Si5351::configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase,
             throw std::invalid_argument("Si5351: Invalid MultiSynth");
     }
 
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    if(closest)
+        src = this->getClosestMultiSynthFrequency(ms, freq, src); // Can decide the source aswell
+
     if(freq < 500000UL)
         throw std::invalid_argument("Si5351: Frequency too low (Valid: 0.5-200 MHz)");
 
     if(freq > 200000000UL)
         throw std::invalid_argument("Si5351: Frequency too high (Valid: 0.5-200 MHz)");
-
-    std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
     if(src == Si5351::PLL::PLL_AUTO)
     {
@@ -1089,7 +1240,94 @@ uint32_t Si5351::getMultiSynthSourceFrequency(Si5351::MultiSynth ms)
 
     return this->getPLLFrequency(this->getMultiSynthSource(ms));
 }
-void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq)
+Si5351::PLL Si5351::getClosestMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t &freq, Si5351::PLL src)
+{
+    bool integer;
+
+    switch(ms)
+    {
+        case Si5351::MultiSynth::MS0:
+        case Si5351::MultiSynth::MS1:
+        case Si5351::MultiSynth::MS2:
+        case Si5351::MultiSynth::MS3:
+        case Si5351::MultiSynth::MS4:
+        case Si5351::MultiSynth::MS5:
+            integer = false;
+        break;
+        case Si5351::MultiSynth::MS6:
+        case Si5351::MultiSynth::MS7:
+            integer = true;
+        break;
+        default:
+            throw std::invalid_argument("Si5351: Invalid MultiSynth");
+    }
+
+    if(freq < 500000UL)
+        freq = 500000UL;
+
+    if(!integer && freq > 200000000UL)
+        freq = 200000000UL;
+
+    if(integer && freq > 150000000UL)
+        freq = 150000000UL;
+
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    uint32_t f_a = this->getPLLFrequency(Si5351::PLL::PLLA);
+    uint32_t f_b = this->getPLLFrequency(Si5351::PLL::PLLB);
+
+    uint32_t a_a = 0;
+    uint32_t a_b = 0;
+
+    if(f_a && src != Si5351::PLL::PLLB)
+    {
+        Si5351::MultiSynthDivider div = integer ? Si5351::CalculateValidIntMSDivider(f_a, freq) : Si5351::CalculateValidFracMSDivider(f_a, freq);
+
+        a_a = ((uint64_t)f_a * div.c) / (((uint64_t)div.a * div.c) + div.b);
+    }
+
+    if(f_b && src != Si5351::PLL::PLLA)
+    {
+        Si5351::MultiSynthDivider div = integer ? Si5351::CalculateValidIntMSDivider(f_b, freq) : Si5351::CalculateValidFracMSDivider(f_b, freq);
+
+        a_b = ((uint64_t)f_b * div.c) / (((uint64_t)div.a * div.c) + div.b);
+    }
+
+    if(a_a && !a_b)
+    {
+        freq = a_a;
+
+        return Si5351::PLL::PLLA;
+    }
+
+    if(!a_a && a_b)
+    {
+        freq = a_b;
+
+        return Si5351::PLL::PLLB;
+    }
+
+    uint32_t d_a = D_ABS(a_a, freq);
+    uint32_t d_b = D_ABS(a_b, freq);
+
+    if(d_a < d_b)
+    {
+        freq = a_a;
+
+        return Si5351::PLL::PLLA;
+    }
+    else if(d_b < d_a)
+    {
+        freq = a_b;
+
+        return Si5351::PLL::PLLB;
+    }
+
+    freq = a_a; // Both are equal
+
+    return Si5351::PLL::PLL_AUTO;
+}
+void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq, bool closest)
 {
     bool integer;
 
@@ -1122,18 +1360,31 @@ void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq)
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(this->getMultiSynthSourceFrequency(ms), freq);
+    Si5351::MultiSynthDivider div;
+
+    if(closest)
+    {
+        if(integer)
+            div = Si5351::CalculateValidIntMSDivider(this->getMultiSynthSourceFrequency(ms), freq);
+        else
+            div = Si5351::CalculateValidFracMSDivider(this->getMultiSynthSourceFrequency(ms), freq);
+    }
+    else
+    {
+        div = Si5351::CalculateMSDivider(this->getMultiSynthSourceFrequency(ms), freq);
+
+        if(integer)
+            Si5351::ValidateIntClockMSDivider(div);
+        else
+            Si5351::ValidateFracClockMSDivider(div);
+    }
 
     if(integer)
     {
-        Si5351::ValidateIntClockMSDivider(div);
-
         this->writeReg(SI5351_REG_MS6_P1 + (ms - Si5351::MultiSynth::MS6), div.a);
     }
     else
     {
-        Si5351::ValidateFracClockMSDivider(div);
-
         // Frequencies greater than 150 MHz require divide by 4
         if(freq > 150000000UL && (div.a != 4 || div.b > 0))
             throw std::runtime_error("Si5351: Cannot achieve requested frequency");
@@ -1835,7 +2086,7 @@ void Si5351::setClockOutputEnableMode(Si5351::ClockOutput clk, bool hard)
     this->rmwReg(SI5351_REG_OEB_MASK, ~BIT(clk), hard ? 0x00 : BIT(clk));
 }
 
-void Si5351::configClock(Si5351::ClockOutput clk, uint32_t freq, float phase, Si5351::PLL src)
+void Si5351::configClock(Si5351::ClockOutput clk, uint32_t freq, float phase, Si5351::PLL src, bool closest)
 {
     switch(clk)
     {
@@ -1854,14 +2105,22 @@ void Si5351::configClock(Si5351::ClockOutput clk, uint32_t freq, float phase, Si
 
     Si5351::ClockOutputDivider out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV1;
 
-    while(freq < 500000UL && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
+    if(freq < 500000UL >> 7)
     {
-        freq <<= 1;
-        out_div = static_cast<Si5351::ClockOutputDivider>(out_div << 1);
-    }
+        if(!closest)
+            throw std::invalid_argument("Si5351: Frequency too low");
 
-    if(freq < 500000UL)
-        throw std::invalid_argument("Si5351: Frequency too low");
+        freq = 500000UL;
+        out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV128;
+    }
+    else
+    {
+        while(freq < 500000UL && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
+        {
+            freq <<= 1;
+            out_div = static_cast<Si5351::ClockOutputDivider>(out_div << 1);
+        }
+    }
 
     bool invert = false;
 
@@ -1873,10 +2132,34 @@ void Si5351::configClock(Si5351::ClockOutput clk, uint32_t freq, float phase, Si
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    this->configMultiSynth(static_cast<Si5351::MultiSynth>(clk), freq, phase, src);
+    this->configMultiSynth(static_cast<Si5351::MultiSynth>(clk), freq, phase, src, closest);
     this->setClockOutputSource(clk, Si5351::ClockOutputSource::CLK_SRC_MSn);
     this->setClockOutputDivider(clk, out_div);
     this->setClockOutputInvert(clk, invert);
+}
+Si5351::PLL Si5351::getClosestClockFrequency(Si5351::ClockOutput clk, uint32_t &freq, Si5351::PLL src)
+{
+    Si5351::ClockOutputDivider out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV1;
+
+    if(freq < 500000UL >> 7)
+    {
+        freq = 500000UL;
+        out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV128;
+    }
+    else
+    {
+        while(freq < 500000UL && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
+        {
+            freq <<= 1;
+            out_div = static_cast<Si5351::ClockOutputDivider>(out_div << 1);
+        }
+    }
+
+    src = this->getClosestMultiSynthFrequency(static_cast<Si5351::MultiSynth>(clk), freq, src);
+
+    freq /= out_div;
+
+    return src;
 }
 void Si5351::setClockFrequency(Si5351::ClockOutput clk, uint32_t freq)
 {

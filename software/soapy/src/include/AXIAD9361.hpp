@@ -569,6 +569,7 @@ private:
     {
         return this->tuneChipTiming(false, freqs, restore);
     }
+
 public:
     AXIAD9361(void *base_address, AD9361 *phy = nullptr);
     ~AXIAD9361();

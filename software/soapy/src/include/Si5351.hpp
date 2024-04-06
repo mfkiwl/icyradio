@@ -273,6 +273,9 @@ public:
 
 private:
     static Si5351::MultiSynthDivider CalculateMSDivider(uint32_t f1, uint32_t f2);
+    static Si5351::MultiSynthDivider CalculateValidPLLMSDivider(uint32_t f1, uint32_t f2);
+    static Si5351::MultiSynthDivider CalculateValidIntMSDivider(uint32_t f1, uint32_t f2);
+    static Si5351::MultiSynthDivider CalculateValidFracMSDivider(uint32_t f1, uint32_t f2);
     static void ValidatePLLMSDivider(Si5351::MultiSynthDivider div);
     static void ValidateIntClockMSDivider(Si5351::MultiSynthDivider div);
     static void ValidateFracClockMSDivider(Si5351::MultiSynthDivider div);
@@ -349,18 +352,20 @@ public:
 
     bool isPLLLocked(Si5351::PLL pll);
     void resetPLL(Si5351::PLL pll);
-    void configPLL(Si5351::PLL pll, uint32_t freq, Si5351::PLLSource src = Si5351::PLLSource::PLL_SRC_AUTO);
+    void configPLL(Si5351::PLL pll, uint32_t freq, Si5351::PLLSource src = Si5351::PLLSource::PLL_SRC_AUTO, bool closest = true);
     void setPLLSource(Si5351::PLL pll, Si5351::PLLSource src);
     Si5351::PLLSource getPLLSource(Si5351::PLL pll);
     uint32_t getPLLSourceFrequency(Si5351::PLL pll);
-    void setPLLFrequency(Si5351::PLL pll, uint32_t freq);
+    Si5351::PLLSource getClosestPLLFrequency(uint32_t &freq, Si5351::PLLSource src = Si5351::PLLSource::PLL_SRC_AUTO);
+    void setPLLFrequency(Si5351::PLL pll, uint32_t freq, bool closest = true);
     uint32_t getPLLFrequency(Si5351::PLL pll);
 
-    void configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase = 0.f, Si5351::PLL src = Si5351::PLL::PLL_AUTO);
+    void configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase = 0.f, Si5351::PLL src = Si5351::PLL::PLL_AUTO, bool closest = true);
     void setMultiSynthSource(Si5351::MultiSynth ms, Si5351::PLL src);
     Si5351::PLL getMultiSynthSource(Si5351::MultiSynth ms);
     uint32_t getMultiSynthSourceFrequency(Si5351::MultiSynth ms);
-    void setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq);
+    Si5351::PLL getClosestMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t &freq, Si5351::PLL src = Si5351::PLL::PLL_AUTO);
+    void setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq, bool closest = true);
     uint32_t getMultiSynthFrequency(Si5351::MultiSynth ms);
     void setMultiSynthPhaseOffset(Si5351::MultiSynth ms, float phase);
     float getMultiSynthPhaseOffset(Si5351::MultiSynth ms);
@@ -415,7 +420,8 @@ public:
     void setClockOutputEnableMode(Si5351::ClockOutput clk, bool hard = true);
 
     // Convenience methods that abstract the internal clock tree (MS -> Output Buffer mapping, output dividers for lower frequencies, etc...)
-    void configClock(Si5351::ClockOutput clk, uint32_t freq, float phase = 0.f, Si5351::PLL src = Si5351::PLL::PLL_AUTO);
+    void configClock(Si5351::ClockOutput clk, uint32_t freq, float phase = 0.f, Si5351::PLL src = Si5351::PLL::PLL_AUTO, bool closest = true);
+    Si5351::PLL getClosestClockFrequency(Si5351::ClockOutput clk, uint32_t &freq, Si5351::PLL src = Si5351::PLL::PLL_AUTO);
     void setClockFrequency(Si5351::ClockOutput clk, uint32_t freq);
     uint32_t getClockFrequency(Si5351::ClockOutput clk);
     void setClockPhaseOffset(Si5351::ClockOutput clk, float phase);
