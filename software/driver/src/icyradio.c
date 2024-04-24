@@ -1000,5 +1000,5 @@ module_exit(icyradio_exit);
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("João Silva");
 MODULE_DESCRIPTION("IcyRadio SDR v2 Kernel driver.");
-MODULE_VERSION("1.0.0");
+MODULE_VERSION("1.1.0");
 MODULE_DEVICE_TABLE(pci, icyradio_pci_tbl);
