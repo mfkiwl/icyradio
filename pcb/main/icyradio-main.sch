@@ -5815,7 +5815,7 @@ Source: &lt;a href="http://www.littelfuse.com/~/media/electronics/datasheets/tvs
 <wire x1="-1.3113" y1="0.7366" x2="-0.254" y2="0.7366" width="0.1905" layer="21"/>
 <text x="-1.3" y="1" size="0.4064" layer="25">&gt;NAME</text>
 </package>
-<package name="XGL351X">
+<package name="XGL35XX">
 <smd name="1" x="-0.9" y="0" dx="3.2" dy="0.81" layer="1" rot="R90"/>
 <smd name="2" x="0.9" y="0" dx="3.2" dy="0.81" layer="1" rot="R90"/>
 <wire x1="-1.6" y1="1.75" x2="1.6" y2="1.75" width="0.127" layer="21"/>
@@ -5939,12 +5939,97 @@ Source: &lt;a href="http://www.littelfuse.com/~/media/electronics/datasheets/tvs
 </device>
 </devices>
 </deviceset>
+<deviceset name="XGL3520-" prefix="L">
+<gates>
+<gate name="G$1" symbol="IND" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="XGL35XX">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<technologies>
+<technology name="101">
+<attribute name="CURRENT" value="19.2A" constant="no"/>
+<attribute name="REF" value="XGL3520-101" constant="no"/>
+<attribute name="VALUE" value="100nH" constant="no"/>
+</technology>
+<technology name="102">
+<attribute name="CURRENT" value="7.5A" constant="no"/>
+<attribute name="REF" value="XGL3520-102" constant="no"/>
+<attribute name="VALUE" value="1uH" constant="no"/>
+</technology>
+<technology name="122">
+<attribute name="CURRENT" value="6.3A" constant="no"/>
+<attribute name="REF" value="XGL3520-122" constant="no"/>
+<attribute name="VALUE" value="1.2uH" constant="no"/>
+</technology>
+<technology name="152">
+<attribute name="CURRENT" value="5.8A" constant="no"/>
+<attribute name="REF" value="XGL3520-152" constant="no"/>
+<attribute name="VALUE" value="1.5uH" constant="no"/>
+</technology>
+<technology name="182">
+<attribute name="CURRENT" value="4.9A" constant="no"/>
+<attribute name="REF" value="XGL3520-182" constant="no"/>
+<attribute name="VALUE" value="1.8uH" constant="no"/>
+</technology>
+<technology name="201">
+<attribute name="CURRENT" value="16.2A" constant="no"/>
+<attribute name="REF" value="XGL3520-201" constant="no"/>
+<attribute name="VALUE" value="200nH" constant="no"/>
+</technology>
+<technology name="222">
+<attribute name="CURRENT" value="4.2A" constant="no"/>
+<attribute name="REF" value="XGL3520-222" constant="no"/>
+<attribute name="VALUE" value="2.2uH" constant="no"/>
+</technology>
+<technology name="301">
+<attribute name="CURRENT" value="14.1A" constant="no"/>
+<attribute name="REF" value="XGL3520-301" constant="no"/>
+<attribute name="VALUE" value="300nH" constant="no"/>
+</technology>
+<technology name="332">
+<attribute name="CURRENT" value="3.7A" constant="no"/>
+<attribute name="REF" value="XGL3520-332" constant="no"/>
+<attribute name="VALUE" value="3.3uH" constant="no"/>
+</technology>
+<technology name="451">
+<attribute name="CURRENT" value="12A" constant="no"/>
+<attribute name="REF" value="XGL3520-451" constant="no"/>
+<attribute name="VALUE" value="450nH" constant="no"/>
+</technology>
+<technology name="472">
+<attribute name="CURRENT" value="3.1A" constant="no"/>
+<attribute name="REF" value="XGL3520-472" constant="no"/>
+<attribute name="VALUE" value="4.7uH" constant="no"/>
+</technology>
+<technology name="561">
+<attribute name="CURRENT" value="9.9A" constant="no"/>
+<attribute name="REF" value="XGL3520-561" constant="no"/>
+<attribute name="VALUE" value="560nH" constant="no"/>
+</technology>
+<technology name="681">
+<attribute name="CURRENT" value="8.9A" constant="no"/>
+<attribute name="REF" value="XGL3520-681" constant="no"/>
+<attribute name="VALUE" value="680nH" constant="no"/>
+</technology>
+<technology name="821">
+<attribute name="CURRENT" value="7.8A" constant="no"/>
+<attribute name="REF" value="XGL3520-821" constant="no"/>
+<attribute name="VALUE" value="820nH" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
 <deviceset name="XGL3515-" prefix="L">
 <gates>
 <gate name="G$1" symbol="IND" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="XGL351X">
+<device name="" package="XGL35XX">
 <connects>
 <connect gate="G$1" pin="1" pad="1"/>
 <connect gate="G$1" pin="2" pad="2"/>
@@ -14727,7 +14812,7 @@ Button commonly used for reset or general input. Spark Fun Electronics SKU : COM
 <part name="GND69" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="GND71" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="GND68" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="C403" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10pF"/>
+<part name="C403" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="100nF"/>
 <part name="C402" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="DNP"/>
 <part name="GND72" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="GND73" library="Supply Symbol" deviceset="GND" device=""/>
@@ -14742,9 +14827,7 @@ Button commonly used for reset or general input. Spark Fun Electronics SKU : COM
 <part name="GND78" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="M702" library="Knowles" deviceset="SPH0641LM4H-1" device=""/>
 <part name="GND79" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="L1204" library="Coilcraft" deviceset="XGL3515-" device="" technology="222" value="2.2uH">
-<attribute name="CURRENT" value="3.8A"/>
-</part>
+<part name="L1204" library="Coilcraft" deviceset="XGL3520-" device="" technology="472" value="4.7uH"/>
 <part name="L1203" library="Coilcraft" deviceset="XGL3515-" device="" technology="222" value="2.2uH">
 <attribute name="CURRENT" value="3.8A"/>
 </part>
@@ -17496,7 +17579,7 @@ DONE LED is also controllable
 through STARTUPE2 primitive</text>
 <text x="453.644" y="355.6" size="1.27" layer="98" align="center">Pullups as per Xillinx recommendation</text>
 <text x="502.92" y="120.904" size="1.27" layer="98" rot="R90" align="center">Pullups as per Xillinx recommendation</text>
-<text x="390.144" y="325.12" size="1.27" layer="98" align="center">Flash SCK is connecterd to CCLK for initial 
+<text x="390.144" y="325.12" size="1.27" layer="98" align="center">Flash SCK is connected to CCLK for initial 
 configuration, and also to a dedicated IO,
 to be used in the design at full speed.</text>
 </plain>
