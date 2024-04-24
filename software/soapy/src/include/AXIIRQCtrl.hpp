@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <unistd.h>
 #include <sys/poll.h>
 #include <thread>
 #include <mutex>

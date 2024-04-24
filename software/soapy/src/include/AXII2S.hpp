@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <unistd.h>
 #include <mutex>
 #include "AXIPeripheral.hpp"
 #include "Utils.hpp"

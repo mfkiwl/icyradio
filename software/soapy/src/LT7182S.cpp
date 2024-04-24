@@ -284,7 +284,7 @@ LT7182S::LT7182S(LT7182S::IICConfig iic, LT7182S::IRQConfig irq_config)
             break;
         }
 
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     if(!found)
@@ -320,7 +320,7 @@ void LT7182S::reset()
 
     this->writeCommand(0xFD);
 
-    usleep(50000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 void LT7182S::_selectChannel(LT7182S::Chan ch)

@@ -230,10 +230,10 @@ bool AXIDMAC::idle()
 }
 void AXIDMAC::waitIdle(uint32_t timeout_ms)
 {
-    uint64_t timeout = (uint64_t)timeout_ms * 10ULL;
+    uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
 
     while(--timeout && !this->idle())
-        usleep(100);
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
 
     if(!this->idle())
         throw std::runtime_error("AXI DMAC: Timed out waiting for controller to be idle");
@@ -258,7 +258,7 @@ void AXIDMAC::waitIdle(uint32_t timeout_ms)
         if(all_complete)
             break;
 
-        usleep(100);
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
     if(!all_complete)
@@ -357,7 +357,7 @@ void AXIDMAC::waitTransferCompletion(uint8_t id, uint32_t timeout_ms)
 
     while(--timeout && !done)
     {
-        usleep(1);
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
 
         done = this->transfer_done[id].load();
     }

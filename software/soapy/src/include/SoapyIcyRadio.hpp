@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 #include <thread>
+#include <chrono>
 #include <fcntl.h>
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
@@ -116,11 +117,13 @@ private:
             std::vector<SoapyIcyRadio::Stream::Channel::DMABuffer *> dma_buffers; // Pool of DMA buffers
             std::vector<SoapyIcyRadio::Stream::Channel::Buffer *> buffers; // Pool of user buffers
             size_t next_user_buf; // Index of the next buffer that will be acquired by the user (queue tail)
-            uint64_t next_user_buf_time; // Expected timestamp of the next buffer that will be acquired by the user (used to check for overflows)
-            bool next_user_buf_time_valid;
+            uint64_t next_user_buf_time; // Expected timestamp of the next buffer that will be acquired by the user (used to check for overflows) (unused on TX)
+            bool next_user_buf_time_valid; // (unused on TX)
             size_t next_dma_user_buf; // Index of the next user buffer that will be filled/emptied by the DMA (queue head)
-            uint64_t next_dma_user_buf_time; // Timestamp of the next user buffer that will be filled/emptied by the DMA
-            bool next_dma_user_buf_time_valid;
+            uint64_t next_dma_user_buf_time; // Timestamp of the next user buffer that will be filled/emptied by the DMA (unused on TX)
+            bool next_dma_user_buf_time_valid; // (unused on TX)
+            bool underflow; // Underflow flag (unused on RX)
+            bool late; // Late flag (unused on RX)
             std::mutex mutex;
         };
 
@@ -424,6 +427,7 @@ private:
     int fd; // File descriptor
     SoapyIcyRadio::Config config;
 
+public:
     // Memory maps
     MappedRegion *mm_axi_flash;
     MappedRegion *mm_axi_bram;
@@ -432,6 +436,7 @@ private:
     MappedRegion *mm_axi_periph;
     MappedRegion *mm_dma_buffer;
 
+public:
     // AXI Peripherals
     AXIDNA *axi_dna;
     AXIDMAC *axi_dmac[AXI_DMAC_NUM_INSTANCES];
@@ -445,6 +450,7 @@ private:
     AXIXADC *axi_xadc;
     AXIAD9361 *axi_ad9361;
 
+public:
     // Peripherals
     PMC *pmc;
     LT7182S *vin_reg;
@@ -454,6 +460,7 @@ private:
     AD9361 *rf_phy;
     ExpansionCard *exp_card;
 
+private:
     // Streaming metadata
     std::vector<SoapyIcyRadio::Stream *> streams;
     mutable std::recursive_mutex streams_mutex;

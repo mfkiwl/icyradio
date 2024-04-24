@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <vector>
 #include <string>
-#include <unistd.h>
 #include <mutex>
 #include <SoapySDR/Types.hpp>
 #include "AXIIIC.hpp"

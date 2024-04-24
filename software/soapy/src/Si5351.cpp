@@ -1,20 +1,20 @@
 #include "Si5351.hpp"
 
-uint32_t Si5351::CalcOptPLLFreq(std::vector<uint32_t> freqs, uint32_t src_freq, std::vector<bool> &achieved)
+double Si5351::CalcOptPLLFreq(std::vector<double> freqs, double src_freq, std::vector<bool> &achieved)
 {
     // Validate and remove duplicates
-    std::vector<uint32_t> _freqs;
+    std::vector<double> _freqs;
 
-    for(uint32_t freq : freqs)
+    for(double freq : freqs)
     {
         bool found = false;
 
-        for(uint32_t _freq : _freqs)
+        for(double _freq : _freqs)
         {
-            if(freq < 500000UL / 128)
+            if(freq < 500e3 / 128.0)
                 throw std::invalid_argument("Si5351: Invalid frequency (" + std::to_string(freq) + ", Valid: > 500 kHz / 128)");
 
-            if(freq > 150000000UL)
+            if(freq > 150e6)
                 throw std::invalid_argument("Si5351: Invalid frequency (" + std::to_string(freq) + ", Valid: < 150 MHz)");
 
             if(freq == _freq)
@@ -30,13 +30,13 @@ uint32_t Si5351::CalcOptPLLFreq(std::vector<uint32_t> freqs, uint32_t src_freq, 
     }
 
     // Generate all possible combinations of frequencies
-    std::vector<std::vector<uint32_t>> combs;
+    std::vector<std::vector<double>> combs;
 
     size_t max_msk = BIT(_freqs.size()) - 1;
 
     while(max_msk)
     {
-        std::vector<uint32_t> c;
+        std::vector<double> c;
 
         for(size_t i = 0; i < _freqs.size(); i++)
         {
@@ -53,39 +53,39 @@ uint32_t Si5351::CalcOptPLLFreq(std::vector<uint32_t> freqs, uint32_t src_freq, 
     std::sort(
         combs.begin(),
         combs.end(),
-        [](const std::vector<uint32_t> &a, const std::vector<uint32_t> &b) -> bool
+        [](const std::vector<double> &a, const std::vector<double> &b) -> bool
         {
             return a.size() > b.size();
         }
     );
 
     // Iterate through all combinations and find the best one
-    uint32_t best_pll_freq = 0;
+    double best_pll_freq = 0;
     size_t best_comb_idx = 0;
 
     for(size_t i = 0; i < combs.size(); i++)
     {
-        std::vector<uint32_t> comb = combs[i];
+        std::vector<double> comb = combs[i];
 
         if(best_pll_freq > 0 && comb.size() <= combs[best_comb_idx].size())
             continue; // Don't bother with combinations that have less frequencies than the current best one
 
         // Calculate the PLL frequency
-        uint64_t pll_freq = src_freq;
+        double pll_freq = src_freq;
 
-        for(uint32_t freq : comb)
+        for(double freq : comb)
             pll_freq = Utils::GetLCM(pll_freq, freq);
 
-        while(pll_freq < 600000000ULL)
-            pll_freq <<= 1;
+        while(pll_freq < 600e6)
+            pll_freq *= 2.0;
 
-        if(pll_freq > 900000000ULL)
+        if(pll_freq > 900e6)
             continue;
 
         // Check if all dividers are valid
         bool valid = true;
 
-        for(uint32_t freq : comb)
+        for(double freq : comb)
         {
             Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(pll_freq, freq);
 
@@ -129,20 +129,20 @@ uint32_t Si5351::CalcOptPLLFreq(std::vector<uint32_t> freqs, uint32_t src_freq, 
 
     return best_pll_freq;
 }
-std::vector<uint32_t> Si5351::CalcOptPLLFreqs(std::vector<uint32_t> freqs, uint32_t src_freq, std::vector<int8_t> &assigned_pll)
+std::vector<double> Si5351::CalcOptPLLFreqs(std::vector<double> freqs, double src_freq, std::vector<int8_t> &assigned_pll)
 {
-    std::vector<uint32_t> pll_freqs;
+    std::vector<double> pll_freqs;
 
     // Try one PLL with all frequencies
-    std::vector<uint32_t> plla_freqs = freqs;
+    std::vector<double> plla_freqs = freqs;
     std::vector<bool> plla_achieved;
 
-    uint32_t plla_freq = Si5351::CalcOptPLLFreq(plla_freqs, src_freq, plla_achieved);
+    double plla_freq = Si5351::CalcOptPLLFreq(plla_freqs, src_freq, plla_achieved);
 
     pll_freqs.push_back(plla_freq);
 
     // Check achieved frequencies and build a list of frequencies to try with the second PLL
-    std::vector<uint32_t> pllb_freqs;
+    std::vector<double> pllb_freqs;
     std::vector<bool> pllb_achieved;
 
     assigned_pll.clear();
@@ -164,7 +164,7 @@ std::vector<uint32_t> Si5351::CalcOptPLLFreqs(std::vector<uint32_t> freqs, uint3
         return pll_freqs;
 
     // Try the second PLL with the remaining frequencies
-    uint32_t pllb_freq = Si5351::CalcOptPLLFreq(pllb_freqs, src_freq, pllb_achieved);
+    double pllb_freq = Si5351::CalcOptPLLFreq(pllb_freqs, src_freq, pllb_achieved);
 
     pll_freqs.push_back(pllb_freq);
 
@@ -188,27 +188,27 @@ std::vector<uint32_t> Si5351::CalcOptPLLFreqs(std::vector<uint32_t> freqs, uint3
     return pll_freqs;
 }
 
-Si5351::MultiSynthDivider Si5351::CalculateMSDivider(uint32_t f1, uint32_t f2)
+Si5351::MultiSynthDivider Si5351::CalculateMSDivider(double f1, double f2)
 {
-    uint64_t b = f1;
-    uint64_t c = f2;
-    uint64_t a = Utils::GetMixedNumber(b, c);
+    double b = f1;
+    double c = f2;
+    double a = Utils::GetMixedNumber(b, c);
 
     while(c >= BIT(20))
     {
-        b >>= 1;
-        c >>= 1;
+        b /= 2.0;
+        c /= 2.0;
     }
 
     Si5351::MultiSynthDivider div;
 
-    div.a = a;
-    div.b = b;
-    div.c = c;
+    div.a = std::round(a);
+    div.b = std::round(b);
+    div.c = std::round(c);
 
     return div;
 }
-Si5351::MultiSynthDivider Si5351::CalculateValidPLLMSDivider(uint32_t f1, uint32_t f2)
+Si5351::MultiSynthDivider Si5351::CalculateValidPLLMSDivider(double f1, double f2)
 {
     Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(f1, f2);
 
@@ -229,7 +229,7 @@ Si5351::MultiSynthDivider Si5351::CalculateValidPLLMSDivider(uint32_t f1, uint32
 
     return div;
 }
-Si5351::MultiSynthDivider Si5351::CalculateValidIntMSDivider(uint32_t f1, uint32_t f2)
+Si5351::MultiSynthDivider Si5351::CalculateValidIntMSDivider(double f1, double f2)
 {
     Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(f1, f2);
 
@@ -251,7 +251,7 @@ Si5351::MultiSynthDivider Si5351::CalculateValidIntMSDivider(uint32_t f1, uint32
 
     return div;
 }
-Si5351::MultiSynthDivider Si5351::CalculateValidFracMSDivider(uint32_t f1, uint32_t f2)
+Si5351::MultiSynthDivider Si5351::CalculateValidFracMSDivider(double f1, double f2)
 {
     Si5351::MultiSynthDivider div = Si5351::CalculateMSDivider(f1, f2);
 
@@ -375,8 +375,8 @@ Si5351::Si5351(Si5351::IICConfig iic, Si5351::GPIOConfig oe_gpio, Si5351::IRQCon
     this->oe_gpio = oe_gpio;
     this->irq_config = irq_config;
 
-    this->clkin_freq = 0;
-    this->xtal_freq = 0;
+    this->clkin_freq = 0.0;
+    this->xtal_freq = 0.0;
 
     this->pll_fb_div[Si5351::PLL::PLLA] = {0, 0, 0};
     this->pll_fb_div[Si5351::PLL::PLLB] = {0, 0, 0};
@@ -405,7 +405,7 @@ Si5351::Si5351(Si5351::IICConfig iic, Si5351::GPIOConfig oe_gpio, Si5351::IRQCon
             break;
         }
 
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     if(!found)
@@ -443,7 +443,7 @@ void Si5351::init()
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
     while(this->readReg(SI5351_REG_STATUS) & SI5351_REG_STATUS_SYS_INIT)
-        usleep(10);
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
 
     this->writeReg(SI5351_REG_CLK_OEB, 0xFF); // Disable all outputs by software
 
@@ -511,14 +511,14 @@ void Si5351::globalOutputEnable(bool enable)
     this->oe_gpio.controller->setValue(this->oe_gpio.gpio, !enable);
 }
 
-void Si5351::configCLKIN(uint32_t freq, Si5351::CLKINDivider divider)
+void Si5351::configCLKIN(double freq, Si5351::CLKINDivider divider)
 {
     if(divider == Si5351::CLKINDivider::CLKIN_DIV_AUTO)
     {
         // Determine the best divider
         divider = Si5351::CLKINDivider::CLKIN_DIV_DIV1;
 
-        while(freq / divider > 40000000UL)
+        while(freq / divider > 40e6)
         {
             divider = static_cast<Si5351::CLKINDivider>(divider << 1);
 
@@ -527,10 +527,10 @@ void Si5351::configCLKIN(uint32_t freq, Si5351::CLKINDivider divider)
         }
     }
 
-    if(freq / divider < 10000000UL)
+    if(freq / divider < 10e6)
         throw std::invalid_argument("Si5351: Divided CLKIN frequency too low (Valid: 10-40 MHz)");
 
-    if(freq / divider > 40000000UL)
+    if(freq / divider > 40e6)
         throw std::invalid_argument("Si5351: Divided CLKIN frequency too high (Valid: 10-40 MHz)");
 
     uint8_t val;
@@ -559,7 +559,7 @@ void Si5351::configCLKIN(uint32_t freq, Si5351::CLKINDivider divider)
 
     this->clkin_freq = freq;
 }
-uint32_t Si5351::getDividedCLKINFrequency()
+double Si5351::getDividedCLKINFrequency()
 {
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
@@ -570,22 +570,22 @@ uint32_t Si5351::getDividedCLKINFrequency()
         case SI5351_REG_PLL_SRC_CLKIN_DIV1:
             return this->clkin_freq;
         case SI5351_REG_PLL_SRC_CLKIN_DIV2:
-            return this->clkin_freq / 2;
+            return this->clkin_freq / 2.0;
         case SI5351_REG_PLL_SRC_CLKIN_DIV4:
-            return this->clkin_freq / 4;
+            return this->clkin_freq / 4.0;
         case SI5351_REG_PLL_SRC_CLKIN_DIV8:
-            return this->clkin_freq / 8;
+            return this->clkin_freq / 8.0;
         default:
             throw std::runtime_error("Si5351: Invalid CLKIN divider");
     }
 }
 
-void Si5351::configXTAL(uint32_t freq, Si5351::XTALCapacitance cap)
+void Si5351::configXTAL(double freq, Si5351::XTALCapacitance cap)
 {
-    if(freq < 25000000UL)
+    if(freq < 25e6)
         throw std::invalid_argument("Si5351: XTAL frequency too low (Valid: 25-27 MHz)");
 
-    if(freq > 27000000UL)
+    if(freq > 27e6)
         throw std::invalid_argument("Si5351: XTAL frequency too high (Valid: 25-27 MHz)");
 
     uint8_t val;
@@ -655,12 +655,12 @@ void Si5351::resetPLL(Si5351::PLL pll)
     this->writeReg(SI5351_REG_PLL_RST, val);
 
     while(this->readReg(SI5351_REG_PLL_RST) & val)
-        usleep(10);
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
 
     while(this->readReg(SI5351_REG_STATUS) & SI5351_REG_STATUS_SYS_INIT) // Somehow the SYS_INIT bit gets set when the PLLs are reset
-        usleep(10);
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
 }
-void Si5351::configPLL(Si5351::PLL pll, uint32_t freq, Si5351::PLLSource src, bool closest)
+void Si5351::configPLL(Si5351::PLL pll, double freq, Si5351::PLLSource src, bool closest)
 {
     switch(pll)
     {
@@ -676,25 +676,25 @@ void Si5351::configPLL(Si5351::PLL pll, uint32_t freq, Si5351::PLLSource src, bo
     if(closest)
         src = this->getClosestPLLFrequency(freq, src); // Can decide the source aswell
 
-    if(freq < 600000000UL)
+    if(freq < 600e6)
         throw std::invalid_argument("Si5351: VCO frequency too low (Valid: 600-900 MHz)");
 
-    if(freq > 900000000UL)
+    if(freq > 900e6)
         throw std::invalid_argument("Si5351: VCO frequency too high (Valid: 600-900 MHz)");
 
     if(src == Si5351::PLLSource::PLL_SRC_AUTO)
     {
         do
         {
-            uint32_t xtal_freq = this->xtal_freq;
-            uint32_t clkin_freq = this->getDividedCLKINFrequency();
+            double xtal_freq = this->xtal_freq;
+            double clkin_freq = this->getDividedCLKINFrequency();
 
             // Find out if both sources are configured
-            if(!xtal_freq && !clkin_freq)
+            if(xtal_freq == 0.0 && clkin_freq == 0.0)
                 throw std::runtime_error("Si5351: No valid source for PLL could be determined");
-            else if(!xtal_freq)
+            else if(xtal_freq == 0.0)
                 src = Si5351::PLLSource::PLL_SRC_CLKIN;
-            else if(!clkin_freq)
+            else if(clkin_freq == 0.0)
                 src = Si5351::PLLSource::PLL_SRC_XTAL;
 
             if(src != Si5351::PLLSource::PLL_SRC_AUTO)
@@ -854,7 +854,7 @@ Si5351::PLLSource Si5351::getPLLSource(Si5351::PLL pll)
 
     return Si5351::PLLSource::PLL_SRC_XTAL;
 }
-uint32_t Si5351::getPLLSourceFrequency(Si5351::PLL pll)
+double Si5351::getPLLSourceFrequency(Si5351::PLL pll)
 {
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
@@ -868,52 +868,52 @@ uint32_t Si5351::getPLLSourceFrequency(Si5351::PLL pll)
             throw std::runtime_error("Si5351: Invalid PLL source");
     }
 }
-Si5351::PLLSource Si5351::getClosestPLLFrequency(uint32_t &freq, Si5351::PLLSource src)
+Si5351::PLLSource Si5351::getClosestPLLFrequency(double &freq, Si5351::PLLSource src)
 {
-    if(freq < 600000000UL)
-        freq = 600000000UL;
+    if(freq < 600e6)
+        freq = 600e6;
 
-    if(freq > 900000000UL)
-        freq = 900000000UL;
+    if(freq > 900e6)
+        freq = 900e6;
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    uint32_t f_xtal = this->getXTALFrequency();
-    uint32_t f_clkin = this->getDividedCLKINFrequency();
+    double f_xtal = this->getXTALFrequency();
+    double f_clkin = this->getDividedCLKINFrequency();
 
-    uint32_t a_xtal = 0;
-    uint32_t a_clkin = 0;
+    double a_xtal = 0.0;
+    double a_clkin = 0.0;
 
-    if(f_xtal && src != Si5351::PLLSource::PLL_SRC_CLKIN)
+    if(f_xtal > 0.0 && src != Si5351::PLLSource::PLL_SRC_CLKIN)
     {
         Si5351::MultiSynthDivider div = Si5351::CalculateValidPLLMSDivider(freq, f_xtal);
 
-        a_xtal = f_xtal * div.a + (((uint64_t)f_xtal * div.b) / div.c);
+        a_xtal = f_xtal * ((double)div.a + (double)div.b / (double)div.c);
     }
 
     if(f_clkin && src != Si5351::PLLSource::PLL_SRC_XTAL)
     {
         Si5351::MultiSynthDivider div = Si5351::CalculateValidPLLMSDivider(freq, f_clkin);
 
-        a_clkin = f_clkin * div.a + (((uint64_t)f_clkin * div.b) / div.c);
+        a_clkin = f_clkin * ((double)div.a + (double)div.b / (double)div.c);
     }
 
-    if(a_xtal && !a_clkin)
+    if(a_xtal > 0 && a_clkin == 0.0)
     {
         freq = a_xtal;
 
         return Si5351::PLLSource::PLL_SRC_XTAL;
     }
 
-    if(!a_xtal && a_clkin)
+    if(a_xtal == 0.0 && a_clkin > 0.0)
     {
         freq = a_clkin;
 
         return Si5351::PLLSource::PLL_SRC_CLKIN;
     }
 
-    uint32_t d_xtal = D_ABS(a_xtal, freq);
-    uint32_t d_clkin = D_ABS(a_clkin, freq);
+    double d_xtal = D_ABS(a_xtal, freq);
+    double d_clkin = D_ABS(a_clkin, freq);
 
     if(d_xtal < d_clkin)
     {
@@ -932,7 +932,7 @@ Si5351::PLLSource Si5351::getClosestPLLFrequency(uint32_t &freq, Si5351::PLLSour
 
     return Si5351::PLLSource::PLL_SRC_AUTO;
 }
-void Si5351::setPLLFrequency(Si5351::PLL pll, uint32_t freq, bool closest)
+void Si5351::setPLLFrequency(Si5351::PLL pll, double freq, bool closest)
 {
     switch(pll)
     {
@@ -943,10 +943,10 @@ void Si5351::setPLLFrequency(Si5351::PLL pll, uint32_t freq, bool closest)
             throw std::invalid_argument("Si5351: Invalid PLL");
     }
 
-    if(freq < 600000000UL)
+    if(freq < 600e6)
         throw std::invalid_argument("Si5351: VCO frequency too low (Valid: 600-900 MHz)");
 
-    if(freq > 900000000UL)
+    if(freq > 900e6)
         throw std::invalid_argument("Si5351: VCO frequency too high (Valid: 600-900 MHz)");
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
@@ -962,6 +962,15 @@ void Si5351::setPLLFrequency(Si5351::PLL pll, uint32_t freq, bool closest)
         div = Si5351::CalculateMSDivider(freq, this->getPLLSourceFrequency(pll));
 
         Si5351::ValidatePLLMSDivider(div);
+    }
+
+    if(div.b > 0)
+    {
+        while(!(div.c & BIT(19))) // Maximize fraction to improve phase noise
+        {
+            div.c <<= 1;
+            div.b <<= 1;
+        }
     }
 
     uint32_t p1 = 128 * div.a + ((128 * div.b) / div.c) - 512;
@@ -990,7 +999,7 @@ void Si5351::setPLLFrequency(Si5351::PLL pll, uint32_t freq, bool closest)
 
     this->pll_fb_div[pll] = div;
 }
-uint32_t Si5351::getPLLFrequency(Si5351::PLL pll)
+double Si5351::getPLLFrequency(Si5351::PLL pll)
 {
     switch(pll)
     {
@@ -1006,17 +1015,44 @@ uint32_t Si5351::getPLLFrequency(Si5351::PLL pll)
     Si5351::MultiSynthDivider div = this->pll_fb_div[pll];
 
     if(!div.a && !div.b) // If multiplier is zero, return zero
-        return 0;
+        return 0.0;
 
     if(!div.c) // Division by zero
         throw std::runtime_error("Si5351: Invalid PLL divider");
 
-    uint64_t src_freq = this->getPLLSourceFrequency(pll);
+    double src_freq = this->getPLLSourceFrequency(pll);
 
-    return src_freq * div.a + ((src_freq * div.b) / div.c);
+    return src_freq * ((double)div.a + (double)div.b / (double)div.c);
+}
+bool Si5351::isPLLDividerFractional(Si5351::PLL pll, double &dist)
+{
+    switch(pll)
+    {
+        case Si5351::PLL::PLLA:
+        case Si5351::PLL::PLLB:
+        break;
+        default:
+            throw std::invalid_argument("Si5351: Invalid PLL");
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    Si5351::MultiSynthDivider div = this->pll_fb_div[pll];
+
+    if(!div.b || !div.c || div.b >= div.c)
+        return false;
+
+    double frac = (double)div.b / (double)div.c;
+
+    if(frac < 0.5)
+        dist = frac;
+    else
+        dist = 1.0 - frac;
+
+    return true;
 }
 
-void Si5351::configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase, Si5351::PLL src, bool closest)
+void Si5351::configMultiSynth(Si5351::MultiSynth ms, double freq, double phase, Si5351::PLL src, bool closest)
 {
     bool integer;
 
@@ -1043,18 +1079,18 @@ void Si5351::configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase,
     if(closest)
         src = this->getClosestMultiSynthFrequency(ms, freq, src); // Can decide the source aswell
 
-    if(freq < 500000UL)
+    if(freq < 500e3)
         throw std::invalid_argument("Si5351: Frequency too low (Valid: 0.5-200 MHz)");
 
-    if(freq > 200000000UL)
+    if(freq > 200e6)
         throw std::invalid_argument("Si5351: Frequency too high (Valid: 0.5-200 MHz)");
 
     if(src == Si5351::PLL::PLL_AUTO)
     {
         do
         {
-            uint32_t plla_freq;
-            uint32_t pllb_freq;
+            double plla_freq;
+            double pllb_freq;
 
             // Find out if both sources are configured
             try
@@ -1063,7 +1099,7 @@ void Si5351::configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase,
             }
             catch(...)
             {
-                plla_freq = 0;
+                plla_freq = 0.0;
             }
 
             try
@@ -1072,14 +1108,14 @@ void Si5351::configMultiSynth(Si5351::MultiSynth ms, uint32_t freq, float phase,
             }
             catch(...)
             {
-                pllb_freq = 0;
+                pllb_freq = 0.0;
             }
 
-            if(!plla_freq && !pllb_freq)
+            if(plla_freq == 0.0 && pllb_freq == 0.0)
                 throw std::runtime_error("Si5351: No valid source for MultiSynth could be determined");
-            else if(!plla_freq)
+            else if(plla_freq == 0.0)
                 src = Si5351::PLL::PLLB;
-            else if(!pllb_freq)
+            else if(pllb_freq == 0.0)
                 src = Si5351::PLL::PLLA;
 
             if(src != Si5351::PLL::PLL_AUTO)
@@ -1234,13 +1270,13 @@ Si5351::PLL Si5351::getMultiSynthSource(Si5351::MultiSynth ms)
 
     return Si5351::PLL::PLLA;
 }
-uint32_t Si5351::getMultiSynthSourceFrequency(Si5351::MultiSynth ms)
+double Si5351::getMultiSynthSourceFrequency(Si5351::MultiSynth ms)
 {
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
     return this->getPLLFrequency(this->getMultiSynthSource(ms));
 }
-Si5351::PLL Si5351::getClosestMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t &freq, Si5351::PLL src)
+Si5351::PLL Si5351::getClosestMultiSynthFrequency(Si5351::MultiSynth ms, double &freq, Si5351::PLL src)
 {
     bool integer;
 
@@ -1262,53 +1298,53 @@ Si5351::PLL Si5351::getClosestMultiSynthFrequency(Si5351::MultiSynth ms, uint32_
             throw std::invalid_argument("Si5351: Invalid MultiSynth");
     }
 
-    if(freq < 500000UL)
-        freq = 500000UL;
+    if(freq < 500e3)
+        freq = 500e3;
 
-    if(!integer && freq > 200000000UL)
-        freq = 200000000UL;
+    if(!integer && freq > 200e6)
+        freq = 200e6;
 
-    if(integer && freq > 150000000UL)
-        freq = 150000000UL;
+    if(integer && freq > 150e6)
+        freq = 150e6;
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    uint32_t f_a = this->getPLLFrequency(Si5351::PLL::PLLA);
-    uint32_t f_b = this->getPLLFrequency(Si5351::PLL::PLLB);
+    double f_a = this->getPLLFrequency(Si5351::PLL::PLLA);
+    double f_b = this->getPLLFrequency(Si5351::PLL::PLLB);
 
-    uint32_t a_a = 0;
-    uint32_t a_b = 0;
+    double a_a = 0;
+    double a_b = 0;
 
-    if(f_a && src != Si5351::PLL::PLLB)
+    if(f_a > 0.0 && src != Si5351::PLL::PLLB)
     {
         Si5351::MultiSynthDivider div = integer ? Si5351::CalculateValidIntMSDivider(f_a, freq) : Si5351::CalculateValidFracMSDivider(f_a, freq);
 
-        a_a = ((uint64_t)f_a * div.c) / (((uint64_t)div.a * div.c) + div.b);
+        a_a = f_a / ((double)div.a + (double)div.b / (double)div.c);
     }
 
-    if(f_b && src != Si5351::PLL::PLLA)
+    if(f_b > 0.0 && src != Si5351::PLL::PLLA)
     {
         Si5351::MultiSynthDivider div = integer ? Si5351::CalculateValidIntMSDivider(f_b, freq) : Si5351::CalculateValidFracMSDivider(f_b, freq);
 
-        a_b = ((uint64_t)f_b * div.c) / (((uint64_t)div.a * div.c) + div.b);
+        a_b = f_b / ((double)div.a + (double)div.b / (double)div.c);
     }
 
-    if(a_a && !a_b)
+    if(a_a > 0.0 && a_b == 0.0)
     {
         freq = a_a;
 
         return Si5351::PLL::PLLA;
     }
 
-    if(!a_a && a_b)
+    if(a_a == 0.0 && a_b > 0.0)
     {
         freq = a_b;
 
         return Si5351::PLL::PLLB;
     }
 
-    uint32_t d_a = D_ABS(a_a, freq);
-    uint32_t d_b = D_ABS(a_b, freq);
+    double d_a = D_ABS(a_a, freq);
+    double d_b = D_ABS(a_b, freq);
 
     if(d_a < d_b)
     {
@@ -1327,7 +1363,7 @@ Si5351::PLL Si5351::getClosestMultiSynthFrequency(Si5351::MultiSynth ms, uint32_
 
     return Si5351::PLL::PLL_AUTO;
 }
-void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq, bool closest)
+void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, double freq, bool closest)
 {
     bool integer;
 
@@ -1349,13 +1385,13 @@ void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq, bool c
             throw std::invalid_argument("Si5351: Invalid MultiSynth");
     }
 
-    if(freq < 500000UL)
+    if(freq < 500e3)
         throw std::invalid_argument("Si5351: Frequency too low (Valid: 0.5-200 MHz)");
 
-    if(!integer && freq > 200000000UL)
+    if(!integer && freq > 200e6)
         throw std::invalid_argument("Si5351: Frequency too high (Valid: 0.5-200 MHz)");
 
-    if(integer && freq > 150000000UL)
+    if(integer && freq > 150e6)
         throw std::invalid_argument("Si5351: Frequency too high (Valid: 0.5-150 MHz)");
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
@@ -1386,8 +1422,17 @@ void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq, bool c
     else
     {
         // Frequencies greater than 150 MHz require divide by 4
-        if(freq > 150000000UL && (div.a != 4 || div.b > 0))
+        if(freq > 150e6 && (div.a != 4 || div.b > 0))
             throw std::runtime_error("Si5351: Cannot achieve requested frequency");
+
+        if(div.b > 0)
+        {
+            while(!(div.c & BIT(19))) // Maximize fraction to improve phase noise
+            {
+                div.c <<= 1;
+                div.b <<= 1;
+            }
+        }
 
         uint32_t p1 = 128 * div.a + ((128 * div.b) / div.c) - 512;
         uint32_t p2 = 128 * div.b - div.c * ((128 * div.b) / div.c);
@@ -1416,7 +1461,7 @@ void Si5351::setMultiSynthFrequency(Si5351::MultiSynth ms, uint32_t freq, bool c
 
     this->ms_div[ms] = div;
 }
-uint32_t Si5351::getMultiSynthFrequency(Si5351::MultiSynth ms)
+double Si5351::getMultiSynthFrequency(Si5351::MultiSynth ms)
 {
     switch(ms)
     {
@@ -1443,11 +1488,11 @@ uint32_t Si5351::getMultiSynthFrequency(Si5351::MultiSynth ms)
     if(!div.c) // Division by zero
         throw std::runtime_error("Si5351: Invalid MultiSynth divider");
 
-    uint64_t src_freq = this->getMultiSynthSourceFrequency(ms);
+    double src_freq = this->getMultiSynthSourceFrequency(ms);
 
-    return (src_freq * div.c) / (((uint64_t)div.a * div.c) + div.b);
+    return src_freq / ((double)div.a + (double)div.b / (double)div.c);
 }
-void Si5351::setMultiSynthPhaseOffset(Si5351::MultiSynth ms, float phase)
+void Si5351::setMultiSynthPhaseOffset(Si5351::MultiSynth ms, double phase)
 {
     switch(ms)
     {
@@ -1460,7 +1505,7 @@ void Si5351::setMultiSynthPhaseOffset(Si5351::MultiSynth ms, float phase)
         break;
         case Si5351::MultiSynth::MS6:
         case Si5351::MultiSynth::MS7:
-            if(phase > 0.f)
+            if(phase > 0.0)
                 throw std::invalid_argument("Si5351: MultiSynth does not support phase offset");
 
             return;
@@ -1469,20 +1514,16 @@ void Si5351::setMultiSynthPhaseOffset(Si5351::MultiSynth ms, float phase)
             throw std::invalid_argument("Si5351: Invalid MultiSynth");
     }
 
-    while(phase >= 360.f)
-        phase -= 360.f;
+    while(phase >= 360.0)
+        phase -= 360.0;
 
-    while(phase < 0.f)
-        phase += 360.f;
+    while(phase < 0.0)
+        phase += 360.0;
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    float time = (phase / 360.f) * 1000000.f / this->getMultiSynthFrequency(ms); // In microsseconds
-    float code = (this->getMultiSynthSourceFrequency(ms) * 4.f / 1000000.f) * time;
-
-    code += 0.5f; // Round to nearest
-
-    uint8_t _code = (uint8_t)code;
+    double code = this->getMultiSynthSourceFrequency(ms) * 4.0 * (phase / 360.0) / this->getMultiSynthFrequency(ms);
+    uint8_t _code = (uint8_t)std::round(code);
 
     if(_code > 127)
         throw std::runtime_error("Si5351: Cannot achieve requested phase offset");
@@ -1490,7 +1531,7 @@ void Si5351::setMultiSynthPhaseOffset(Si5351::MultiSynth ms, float phase)
     this->rmwReg(SI5351_REG_CLKn_CFG(ms), ~SI5351_REG_CLKn_CFG_MS_INT, SI5351_REG_CLKn_CFG_MS_FRAC); // Fractional mode is required to use phase offsets
     this->writeReg(SI5351_REG_CLKn_PHOFF(ms), _code);
 }
-float Si5351::getMultiSynthPhaseOffset(Si5351::MultiSynth ms)
+double Si5351::getMultiSynthPhaseOffset(Si5351::MultiSynth ms)
 {
     switch(ms)
     {
@@ -1503,7 +1544,7 @@ float Si5351::getMultiSynthPhaseOffset(Si5351::MultiSynth ms)
         break;
         case Si5351::MultiSynth::MS6:
         case Si5351::MultiSynth::MS7:
-            return 0.f;
+            return 0.0;
         break;
         default:
             throw std::invalid_argument("Si5351: Invalid MultiSynth");
@@ -1511,10 +1552,44 @@ float Si5351::getMultiSynthPhaseOffset(Si5351::MultiSynth ms)
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    float code = this->readReg(SI5351_REG_CLKn_PHOFF(ms));
-    float time = code / (this->getMultiSynthSourceFrequency(ms) * 4.f / 1000000.f);
+    uint8_t code = this->readReg(SI5351_REG_CLKn_PHOFF(ms));
 
-    return time * 360.f / (1000000.f / this->getMultiSynthFrequency(ms));
+    return (double)code * 360.0 * this->getMultiSynthFrequency(ms) / (this->getMultiSynthSourceFrequency(ms) * 4.0);
+}
+bool Si5351::isMultiSynthDividerFractional(Si5351::MultiSynth ms, double &dist)
+{
+    switch(ms)
+    {
+        case Si5351::MultiSynth::MS0:
+        case Si5351::MultiSynth::MS1:
+        case Si5351::MultiSynth::MS2:
+        case Si5351::MultiSynth::MS3:
+        case Si5351::MultiSynth::MS4:
+        case Si5351::MultiSynth::MS5:
+        break;
+        case Si5351::MultiSynth::MS6:
+        case Si5351::MultiSynth::MS7:
+            return false;
+        break;
+        default:
+            throw std::invalid_argument("Si5351: Invalid MultiSynth");
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    Si5351::MultiSynthDivider div = this->ms_div[ms];
+
+    if(!div.b || !div.c || div.b >= div.c)
+        return false;
+
+    double frac = (double)div.b / (double)div.c;
+
+    if(frac < 0.5)
+        dist = frac;
+    else
+        dist = 1.0 - frac;
+
+    return true;
 }
 
 void Si5351::setClockOutputSource(Si5351::ClockOutput clk, Si5351::ClockOutputSource src)
@@ -2086,7 +2161,7 @@ void Si5351::setClockOutputEnableMode(Si5351::ClockOutput clk, bool hard)
     this->rmwReg(SI5351_REG_OEB_MASK, ~BIT(clk), hard ? 0x00 : BIT(clk));
 }
 
-void Si5351::configClock(Si5351::ClockOutput clk, uint32_t freq, float phase, Si5351::PLL src, bool closest)
+void Si5351::configClock(Si5351::ClockOutput clk, double freq, double phase, Si5351::PLL src, bool closest)
 {
     switch(clk)
     {
@@ -2105,28 +2180,28 @@ void Si5351::configClock(Si5351::ClockOutput clk, uint32_t freq, float phase, Si
 
     Si5351::ClockOutputDivider out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV1;
 
-    if(freq < 500000UL >> 7)
+    if(freq < 500e3 / 128.0)
     {
         if(!closest)
             throw std::invalid_argument("Si5351: Frequency too low");
 
-        freq = 500000UL;
+        freq = 500e3;
         out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV128;
     }
     else
     {
-        while(freq < 500000UL && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
+        while(freq < 500e3 && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
         {
-            freq <<= 1;
+            freq /= 2.0;
             out_div = static_cast<Si5351::ClockOutputDivider>(out_div << 1);
         }
     }
 
     bool invert = false;
 
-    if(phase >= 180.f)
+    if(phase >= 180.0)
     {
-        phase -= 180.f;
+        phase -= 180.0;
         invert = true;
     }
 
@@ -2137,20 +2212,20 @@ void Si5351::configClock(Si5351::ClockOutput clk, uint32_t freq, float phase, Si
     this->setClockOutputDivider(clk, out_div);
     this->setClockOutputInvert(clk, invert);
 }
-Si5351::PLL Si5351::getClosestClockFrequency(Si5351::ClockOutput clk, uint32_t &freq, Si5351::PLL src)
+Si5351::PLL Si5351::getClosestClockFrequency(Si5351::ClockOutput clk, double &freq, Si5351::PLL src)
 {
     Si5351::ClockOutputDivider out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV1;
 
-    if(freq < 500000UL >> 7)
+    if(freq < 500e3 / 128.0)
     {
-        freq = 500000UL;
+        freq = 500e3;
         out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV128;
     }
     else
     {
-        while(freq < 500000UL && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
+        while(freq < 500e3 && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
         {
-            freq <<= 1;
+            freq /= 2.0;
             out_div = static_cast<Si5351::ClockOutputDivider>(out_div << 1);
         }
     }
@@ -2161,7 +2236,7 @@ Si5351::PLL Si5351::getClosestClockFrequency(Si5351::ClockOutput clk, uint32_t &
 
     return src;
 }
-void Si5351::setClockFrequency(Si5351::ClockOutput clk, uint32_t freq)
+void Si5351::setClockFrequency(Si5351::ClockOutput clk, double freq)
 {
     switch(clk)
     {
@@ -2180,14 +2255,18 @@ void Si5351::setClockFrequency(Si5351::ClockOutput clk, uint32_t freq)
 
     Si5351::ClockOutputDivider out_div = Si5351::ClockOutputDivider::CLK_DIV_DIV1;
 
-    while(freq < 500000UL && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
+    if(freq < 500e3 / 128.0)
     {
-        freq <<= 1;
-        out_div = static_cast<Si5351::ClockOutputDivider>(out_div << 1);
-    }
-
-    if(freq < 500000UL)
         throw std::invalid_argument("Si5351: Frequency too low");
+    }
+    else
+    {
+        while(freq < 500e3 && out_div != Si5351::ClockOutputDivider::CLK_DIV_DIV128)
+        {
+            freq /= 2.0;
+            out_div = static_cast<Si5351::ClockOutputDivider>(out_div << 1);
+        }
+    }
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
@@ -2195,7 +2274,7 @@ void Si5351::setClockFrequency(Si5351::ClockOutput clk, uint32_t freq)
     this->setClockOutputSource(clk, Si5351::ClockOutputSource::CLK_SRC_MSn);
     this->setClockOutputDivider(clk, out_div);
 }
-uint32_t Si5351::getClockFrequency(Si5351::ClockOutput clk)
+double Si5351::getClockFrequency(Si5351::ClockOutput clk)
 {
     Si5351::MultiSynth fanout_ms;
 
@@ -2217,7 +2296,7 @@ uint32_t Si5351::getClockFrequency(Si5351::ClockOutput clk)
             throw std::invalid_argument("Si5351: Invalid clock output");
     }
 
-    uint32_t src_freq;
+    double src_freq;
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
@@ -2241,7 +2320,7 @@ uint32_t Si5351::getClockFrequency(Si5351::ClockOutput clk)
 
     return src_freq / this->getClockOutputDivider(clk);
 }
-void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, float phase)
+void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, double phase)
 {
     Si5351::MultiSynth fanout_ms;
 
@@ -2263,11 +2342,11 @@ void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, float phase)
             throw std::invalid_argument("Si5351: Invalid clock output");
     }
 
-    while(phase >= 360.f)
-        phase -= 360.f;
+    while(phase >= 360.0)
+        phase -= 360.0;
 
-    while(phase < 0.f)
-        phase += 360.f;
+    while(phase < 0.0)
+        phase += 360.0;
 
     Si5351::MultiSynth src_ms;
 
@@ -2277,9 +2356,9 @@ void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, float phase)
     {
         case Si5351::ClockOutputSource::CLK_SRC_XTAL:
         {
-            if(phase == 0.f)
+            if(phase == 0.0)
                 this->setClockOutputInvert(clk, false);
-            else if(phase == 180.f)
+            else if(phase == 180.0)
                 this->setClockOutputInvert(clk, true);
             else
                 throw std::runtime_error("Si5351: Cannot set phase offset of XTAL source");
@@ -2289,9 +2368,9 @@ void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, float phase)
         break;
         case Si5351::ClockOutputSource::CLK_SRC_CLKIN:
         {
-            if(phase == 0.f)
+            if(phase == 0.0)
                 this->setClockOutputInvert(clk, false);
-            else if(phase == 180.f)
+            else if(phase == 180.0)
                 this->setClockOutputInvert(clk, true);
             else
                 throw std::runtime_error("Si5351: Cannot set phase offset of CLKIN source");
@@ -2306,9 +2385,9 @@ void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, float phase)
         {
             if(clk == Si5351::ClockOutput::CLK6 || clk == Si5351::ClockOutput::CLK7)
             {
-                if(phase == 0.f)
+                if(phase == 0.0)
                     this->setClockOutputInvert(clk, false);
-                else if(phase == 180.f)
+                else if(phase == 180.0)
                     this->setClockOutputInvert(clk, true);
                 else
                     throw std::invalid_argument("Si5351: MultiSynth does not support phase offset");
@@ -2325,9 +2404,9 @@ void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, float phase)
 
     bool invert = false;
 
-    if(phase >= 180.f)
+    if(phase >= 180.0)
     {
-        phase -= 180.f;
+        phase -= 180.0;
 
         invert = true;
     }
@@ -2335,7 +2414,7 @@ void Si5351::setClockPhaseOffset(Si5351::ClockOutput clk, float phase)
     this->setMultiSynthPhaseOffset(src_ms, phase);
     this->setClockOutputInvert(clk, invert);
 }
-float Si5351::getClockPhaseOffset(Si5351::ClockOutput clk)
+double Si5351::getClockPhaseOffset(Si5351::ClockOutput clk)
 {
     Si5351::MultiSynth fanout_ms;
 
@@ -2367,9 +2446,9 @@ float Si5351::getClockPhaseOffset(Si5351::ClockOutput clk)
         case Si5351::ClockOutputSource::CLK_SRC_CLKIN:
         {
             if(this->getClockOutputInvert(clk))
-                return 180.f;
+                return 180.0;
 
-            return 0.f;
+            return 0.0;
         }
         break;
         case Si5351::ClockOutputSource::CLK_SRC_MS0_MS4:
@@ -2380,9 +2459,9 @@ float Si5351::getClockPhaseOffset(Si5351::ClockOutput clk)
             if(clk == Si5351::ClockOutput::CLK6 || clk == Si5351::ClockOutput::CLK7)
             {
                 if(this->getClockOutputInvert(clk))
-                    return 180.f;
+                    return 180.0;
 
-                return 0.f;
+                return 0.0;
             }
 
             src_ms = static_cast<Si5351::MultiSynth>(clk);
@@ -2392,10 +2471,10 @@ float Si5351::getClockPhaseOffset(Si5351::ClockOutput clk)
             throw std::runtime_error("Si5351: Invalid clock output source");
     }
 
-    float phase = this->getMultiSynthPhaseOffset(src_ms);
+    double phase = this->getMultiSynthPhaseOffset(src_ms);
 
     if(this->getClockOutputInvert(clk))
-        phase += 180.f;
+        phase += 180.0;
 
     return phase;
 }

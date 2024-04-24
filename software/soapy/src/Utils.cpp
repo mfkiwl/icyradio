@@ -15,10 +15,32 @@ uint64_t Utils::GetGCD(uint64_t a, uint64_t b)
 
     return a;
 }
+double Utils::GetGCD(double a, double b)
+{
+    if((a == 0.0) || (b == 0.0))
+        return MAX(a, b);
+
+    while(b != 0.0)
+    {
+        double _a = a;
+
+        a = b;
+        b = std::fmod(_a, b);
+    }
+
+    return a;
+}
 uint64_t Utils::GetLCM(uint64_t a, uint64_t b)
 {
     if((a == 0) || (b == 0))
         return 0;
+
+    return (a * b) / Utils::GetGCD(a, b);
+}
+double Utils::GetLCM(double a, double b)
+{
+    if((a == 0.0) || (b == 0.0))
+        return 0.0;
 
     return (a * b) / Utils::GetGCD(a, b);
 }
@@ -32,6 +54,17 @@ uint64_t Utils::GetMixedNumber(uint64_t &a, uint64_t &b)
     b = _b;
 
     return _a / _b;
+}
+double Utils::GetMixedNumber(double &a, double &b)
+{
+    double gcd = Utils::GetGCD(a, b);
+    double _a = a / gcd;
+    double _b = b / gcd;
+
+    a = std::fmod(_a, _b);
+    b = _b;
+
+    return std::floor(_a / _b);
 }
 
 uint32_t Utils::FindFirstSetBit(uint32_t word)

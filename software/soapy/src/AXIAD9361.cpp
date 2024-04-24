@@ -26,7 +26,7 @@ void AXIAD9361::ADC::init()
 
     this->updateActiveChannels();
 
-    usleep(100000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     uint32_t status = this->readReg(AXI_ADC_REG_STATUS);
 
@@ -288,7 +288,7 @@ bool AXIAD9361::ADC::checkPN(bool check_channels, uint32_t delay)
     for(uint8_t i = 0; i < this->parent->getChannelCount(); i++)
         this->writeReg(AXI_ADC_CHAN_REG_CHAN_STATUS(i), AXI_ADC_CHAN_REG_CHAN_STATUS_PN_ERR | AXI_ADC_CHAN_REG_CHAN_STATUS_PN_OOS);
 
-    usleep(delay * 1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 
     if(!check_channels && !(this->readReg(AXI_ADC_REG_STATUS) & AXI_ADC_REG_STATUS_STATUS))
         return false; // Failed
@@ -339,7 +339,7 @@ void AXIAD9361::DAC::init()
 
     this->updateActiveChannels();
 
-    usleep(100000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     uint32_t status = this->readReg(AXI_DAC_REG_STATUS);
 

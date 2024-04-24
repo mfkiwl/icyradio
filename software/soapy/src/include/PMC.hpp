@@ -4,7 +4,6 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <unistd.h>
 #include <mutex>
 #include "AuxMCU.hpp"
 #include "Utils.hpp"

@@ -3,8 +3,11 @@
 #include <cstdint>
 #include <vector>
 #include <algorithm>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 #include <mutex>
+#include <cmath>
+#include <math.h>
 #include "AXISPI.hpp"
 #include "AXIGPIO.hpp"
 #include "Utils.hpp"
@@ -302,6 +305,7 @@ public:
         PWR_ANA_VREG = BIT(5),
         PWR_VCO = BIT(6),
         PWR_CHIP_ENABLE = BIT(7),
+        PWR_ALL_CE = 0x7F,
         PWR_ALL = 0xFF
     };
     struct VCOBand
@@ -344,21 +348,39 @@ public:
         LD_PREC_6p4ns = 6400,
         LD_PREC_10p4ns = 10400
     };
+    struct LoopFilter
+    {
+        double rs; // Series resistor (2nd order)
+        double cs; // Series capacitor (2nd order)
+        double cp; // Shunt capacitor (2nd order)
+        double r3; // Series resistor (3nd order)
+        double c3; // Series capacitor (3nd order)
+    };
+    struct LoopFrequencyResponse
+    {
+        double fz; // Zero frequency
+        double fc; // Loop bandwidth
+        double fp; // Pole frequency
+        double fp2; // 2nd pole frequency (for 3rd order filters)
+        double phase_margin; // Phase margin
+    };
 
     struct SPIConfig
     {
-        AXISPI *controller;
+        AXISPI* controller;
         uint32_t ss_mask;
     };
     struct GPIOConfig
     {
-        AXIGPIO *controller;
+        AXIGPIO* controller;
         uint8_t gpio;
         bool invert;
     };
 
 private:
-    void readReg(uint8_t reg, uint8_t *dst, uint8_t count);
+    static void ValidateLoopFilter(IDT8V97003::LoopFilter filter);
+
+    void readReg(uint8_t reg, uint8_t* dst, uint8_t count);
     inline uint8_t readReg(uint8_t reg)
     {
         uint8_t val;
@@ -383,7 +405,7 @@ private:
 
         return ((uint32_t)val[3] << 24) | ((uint32_t)val[2] << 16) | ((uint32_t)val[1] << 8) | val[0];
     }
-    void writeReg(uint8_t reg, uint8_t *src, uint8_t count);
+    void writeReg(uint8_t reg, uint8_t* src, uint8_t count);
     inline void writeReg(uint8_t reg, uint8_t val)
     {
         this->writeReg(reg, &val, 1);
@@ -419,7 +441,7 @@ private:
     }
 
 public:
-    IDT8V97003(IDT8V97003::SPIConfig spi, IDT8V97003::GPIOConfig ce_gpio = {nullptr, 0, false}, IDT8V97003::GPIOConfig mute_gpio = {nullptr, 0, false}, IDT8V97003::GPIOConfig sync_gpio = {nullptr, 0, false}, IDT8V97003::GPIOConfig ld_gpio = {nullptr, 0, false}, IDT8V97003::GPIOConfig reset_gpio = {nullptr, 0, false});
+    IDT8V97003(IDT8V97003::SPIConfig spi, IDT8V97003::GPIOConfig ce_gpio = { nullptr, 0, false }, IDT8V97003::GPIOConfig mute_gpio = { nullptr, 0, false }, IDT8V97003::GPIOConfig sync_gpio = { nullptr, 0, false }, IDT8V97003::GPIOConfig ld_gpio = { nullptr, 0, false }, IDT8V97003::GPIOConfig reset_gpio = { nullptr, 0, false });
     ~IDT8V97003();
 
     void init();
@@ -476,7 +498,7 @@ public:
         return this->readReg(IDT8V97003_REG_DIG_BAND_STATUS) & 0x7F;
     }
     IDT8V97003::VCOBand getCurrentVCOBand();
-    void forceVCOBand(bool force, IDT8V97003::VCOBand band = {0, 0});
+    void forceVCOBand(bool force, IDT8V97003::VCOBand band = { 0, 0 });
 
     bool isPLLLocked()
     {
@@ -487,29 +509,37 @@ public:
         return !!(this->readReg(IDT8V97003_REG_LD_CAL_VCO_STATUS) & IDT8V97003_REG_LD_CAL_VCO_STATUS_BAND_SEL_DONE);
     }
 
-    void configReferenceInput(uint32_t freq, bool diff = false);
-    void configPFD(uint32_t freq, IDT8V97003::PFDPulseWidth pw = IDT8V97003::PFDPulseWidth::PFD_PW_260ps);
+    void configReferenceInput(double freq, bool diff = false);
+    void configPFD(double freq, IDT8V97003::PFDPulseWidth pw = IDT8V97003::PFDPulseWidth::PFD_PW_260ps);
     void configPFD(IDT8V97003::RefPathConfig ref_cfg, IDT8V97003::PFDPulseWidth pw = IDT8V97003::PFDPulseWidth::PFD_PW_260ps);
 
-    uint32_t getReferenceDoublerInputFrequency();
-    inline uint32_t getReferenceDoublerOutputFrequency()
+    double getReferenceDoublerInputFrequency();
+    inline double getReferenceDoublerOutputFrequency()
     {
         return this->getReferenceDoublerInputFrequency() * 2;
     }
-    uint32_t getReferenceMultiplierInputFrequency();
-    uint32_t getReferenceMultiplierOutputFrequency();
-    uint32_t getReferenceDividerInputFrequency();
-    uint32_t getReferenceDividerOutputFrequency();
-    inline uint32_t getReferenceFrequency()
+    double getReferenceMultiplierInputFrequency();
+    double getReferenceMultiplierOutputFrequency();
+    double getReferenceDividerInputFrequency();
+    double getReferenceDividerOutputFrequency();
+    inline double getReferenceFrequency()
     {
         std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
         return this->ref_freq;
     }
-    inline uint32_t getPFDFrequency()
+    inline double getPFDFrequency()
     {
         return this->getReferenceDividerOutputFrequency();
     }
+
+    IDT8V97003::LoopFilter getLoopFilter();
+    void setLoopFilter(IDT8V97003::LoopFilter filter);
+    IDT8V97003::LoopFrequencyResponse getLoopFrequencyResponse();
+    double getLoopBandwidth();
+    void setLoopBandwidth(double bw = 0.0);
+    double getTargetLoopBandwidth();
+    void setTargetLoopBandwidth(double bw);
 
     IDT8V97003::ChargePumpConfig getChargePumpConfig();
     void setChargePumpConfig(IDT8V97003::ChargePumpConfig cfg);
@@ -519,6 +549,12 @@ public:
     void setChargePumpNegativeCurrent(double current);
     double getChargePumpBleederCurrent();
     void setChargePumpBleederCurrent(double current);
+    void enableChargePump(bool enable = true);
+    inline void disableChargePump()
+    {
+        this->enableChargePump(false);
+    }
+    bool isChargePumpEnabled();
 
     void enableLockDetect(bool enable = true);
     inline void disableLockDetect()
@@ -535,9 +571,18 @@ public:
     IDT8V97003::LDPinMode getLockDetectPinMode();
     void setLockDetectPinMode(IDT8V97003::LDPinMode mode);
 
-    uint64_t getVCOFrequency();
-    uint64_t getFrequency();
-    void setFrequency(uint64_t freq, int32_t cal_timeout = 5000, int32_t lock_timeout = 5000);
+    double getFeedbackDivider();
+    bool isFeedbackDividerFractional(double& dist);
+    inline bool isFeedbackDividerFractional()
+    {
+        double frac;
+
+        return this->isFeedbackDividerFractional(frac);
+    }
+
+    double getVCOFrequency();
+    double getFrequency();
+    void setFrequency(double freq, bool set_loop_bw = true, int32_t cal_timeout = 5000, int32_t lock_timeout = 5000);
 
     double getPhase();
     void setPhase(double phase);
@@ -552,7 +597,8 @@ private:
 
     std::recursive_mutex mutex;
 
-    uint32_t ref_freq;
-
+    double ref_freq;
     uint8_t cached_rfout_pwr[2];
+    IDT8V97003::LoopFilter loop_filter;
+    double target_loop_bw;
 };

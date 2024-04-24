@@ -4,6 +4,7 @@
 #include <vector>
 #include <utility>
 #include <cstddef>
+#include <cmath>
 
 // AXI Core versioning
 #define AXI_CORE_VERSION(maj, min, patch)   (((maj) << 16) | ((min) << 8) | (patch))
@@ -30,10 +31,13 @@ namespace Utils
 {
     // Get greatest common divisor of two numbers
     uint64_t GetGCD(uint64_t a, uint64_t b);
+    double GetGCD(double a, double b);
     // Get least common multiple of two numbers
     uint64_t GetLCM(uint64_t a, uint64_t b);
+    double GetLCM(double a, double b);
     // Get mixed number from two numbers (a / b -> return value + a % b / b)
     uint64_t GetMixedNumber(uint64_t &a, uint64_t &b);
+    double GetMixedNumber(double &a, double &b);
 
     // Find first set bit in word
     uint32_t FindFirstSetBit(uint32_t word);

@@ -59,7 +59,7 @@ double PMC::getVoltage(uint8_t reg)
 
 double PMC::getTemperature()
 {
-    uint32_t temp;
+    int32_t temp;
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 

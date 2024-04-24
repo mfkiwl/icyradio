@@ -147,11 +147,12 @@ SoapySDR::Kwargs SoapyIcyRadio::getHardwareInfo() const
 
     // FPGA DNA (aka serial)
     while(!this->axi_dna->isSerialNumberReady()) // Serial is essential, so wait for it to be ready
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    char dna[16];
-    snprintf(dna, sizeof(dna), "%015lX", this->axi_dna->getSerialNumber());
-    info["serial"] = dna;
+    char buf[64];
+
+    snprintf(buf, sizeof(buf), "%015lX", this->axi_dna->getSerialNumber());
+    info["serial"] = buf;
 
     // PMC info
     info["pmc_serial"] = this->pmc->getUniqueID();
@@ -161,6 +162,15 @@ SoapySDR::Kwargs SoapyIcyRadio::getHardwareInfo() const
     info["vin_reg_pn"] = this->vin_reg->readManufacturerID() + " " + this->vin_reg->readManufacturerModel();
     info["vin_reg_serial"] = this->vin_reg->readManufacturerSerial();
     info["vin_reg_rev_id"] = std::to_string(this->vin_reg->readManufacturerRevision());
+
+    // SPI Flash info
+    info["spi_flash_pn"] = this->spi_flash->getDeviceName();
+    snprintf(buf, sizeof(buf), "%06X", this->spi_flash->readJEDECID());
+    info["spi_flash_jedec_id"] = buf;
+    snprintf(buf, sizeof(buf), "%04X", this->spi_flash->readMFDeviceID());
+    info["spi_flash_mf_device_id"] = buf;
+    snprintf(buf, sizeof(buf), "%016lX", this->spi_flash->readUniqueID());
+    info["spi_flash_serial"] = buf;
 
     // Clock manager info
     info["clk_mngr_rev_id"] = std::to_string(this->clk_mngr->getRevisionID());
@@ -346,18 +356,25 @@ bool SoapyIcyRadio::hasGainMode(const int direction, const size_t channel) const
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("hasGainMode: Unknown direction");
 
-    return false;
-    // return direction == SOAPY_SDR_RX;
+    return direction == SOAPY_SDR_RX;
 }
 void SoapyIcyRadio::setGainMode(const int direction, const size_t channel, const bool automatic)
 {
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("setGainMode: Unknown direction");
+
+    if(direction != SOAPY_SDR_RX)
+        throw std::runtime_error("setGainMode: AGC is not supported for TX");
+
+    // TODO:
 }
 bool SoapyIcyRadio::getGainMode(const int direction, const size_t channel) const
 {
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("getGainMode: Unknown direction");
+
+    if(direction != SOAPY_SDR_RX)
+        return false;
 
     return false;
 }

@@ -3,7 +3,8 @@
 #include <cstdint>
 #include <vector>
 #include <mutex>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 #include "AXIPeripheral.hpp"
 #include "Utils.hpp"
 

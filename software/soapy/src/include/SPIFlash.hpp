@@ -2,7 +2,10 @@
 
 #include <cstdint>
 #include <string>
-#include <unistd.h>
+#include <cstring>
+#include <fstream>
+#include <thread>
+#include <chrono>
 #include <mutex>
 #include "AXISPI.hpp"
 #include "Utils.hpp"
@@ -39,7 +42,7 @@
 // Write commands
 #define SPI_FLASH_CMD_WRITE_ENABLE          0x06
 #define SPI_FLASH_CMD_WRITE_DISABLE         0x04
-#define SPI_FLASH_CMD_SECTOR_ERASE_$K       0x20
+#define SPI_FLASH_CMD_SECTOR_ERASE_4K       0x20
 #define SPI_FLASH_CMD_BLOCK_ERASE_32K       0x52
 #define SPI_FLASH_CMD_BLOCK_ERASE_64K       0xD8
 #define SPI_FLASH_CMD_CHIP_ERASE            0xC7
@@ -63,6 +66,12 @@
 // Power saving commands
 #define SPI_FLASH_CMD_POWER_DOWN            0xB9
 #define SPI_FLASH_CMD_RELEASE_POWER_DOWN    0xAB
+
+// Flash constants
+#define SPI_FLASH_PAGE_SIZE                 256
+#define SPI_FLASH_SECTOR_SIZE               4096
+#define SPI_FLASH_BLOCK_SIZE_32K            32768
+#define SPI_FLASH_BLOCK_SIZE_64K            65536
 
 // Known IDs
 // 0xEF4016 - W25Q32JV-IQ/JQ
@@ -104,10 +113,25 @@ public:
 
     std::string getDeviceName();
 
+    bool busy();
+    void waitNotBusy(uint32_t timeout_ms = 10000);
+
+    void writeEnable();
+    void writeDisable();
+
     uint32_t readJEDECID();
     uint16_t readMFDeviceID();
     uint16_t readMFDeviceIDDual();
     uint16_t readMFDeviceIDQuad();
+
+    uint64_t readUniqueID();
+
+    uint8_t readStatus();
+    void writeStatus(uint8_t status);
+    uint8_t readStatus2();
+    void writeStatus2(uint8_t status);
+    uint8_t readStatus3();
+    void writeStatus3(uint8_t status);
 
     void read(uint32_t addr, uint8_t *dst, uint32_t size);
     uint8_t read(uint32_t addr)
@@ -118,6 +142,7 @@ public:
 
         return data;
     }
+    void read(uint32_t addr, std::ofstream &dst, uint32_t size);
     void readDualIO(uint32_t addr, uint8_t *dst, uint32_t size, bool cont = false, bool set_cont = false);
     uint8_t readDualIO(uint32_t addr, bool cont = false, bool set_cont = false)
     {
@@ -127,6 +152,7 @@ public:
 
         return data;
     }
+    void readDualIO(uint32_t addr, std::ofstream &dst, uint32_t size, bool cont = false, bool set_cont = false);
     void readQuadIO(uint32_t addr, uint8_t *dst, uint32_t size, bool cont = false, bool set_cont = false);
     uint8_t readQuadIO(uint32_t addr, bool cont = false, bool set_cont = false)
     {
@@ -135,6 +161,36 @@ public:
         this->readQuadIO(addr, &data, 1, cont, set_cont);
 
         return data;
+    }
+    void readQuadIO(uint32_t addr, std::ofstream &dst, uint32_t size, bool cont = false, bool set_cont = false);
+
+    void verify(uint32_t addr, uint8_t *src, uint32_t size, uint32_t chunk_size = SPI_FLASH_SECTOR_SIZE);
+    void verify(uint32_t addr, std::ifstream &src, uint32_t size, uint32_t chunk_size = SPI_FLASH_SECTOR_SIZE);
+    void verifyDualIO(uint32_t addr, uint8_t *src, uint32_t size, uint32_t chunk_size = SPI_FLASH_SECTOR_SIZE);
+    void verifyDualIO(uint32_t addr, std::ifstream &src, uint32_t size, uint32_t chunk_size = SPI_FLASH_SECTOR_SIZE);
+    void verifyQuadIO(uint32_t addr, uint8_t *src, uint32_t size, uint32_t chunk_size = SPI_FLASH_SECTOR_SIZE);
+    void verifyQuadIO(uint32_t addr, std::ifstream &src, uint32_t size, uint32_t chunk_size = SPI_FLASH_SECTOR_SIZE);
+
+    void eraseChip();
+    void eraseSector(uint32_t addr);
+    bool isSectorErased(uint32_t addr);
+    void eraseBlock32K(uint32_t addr);
+    bool isBlock32KErased(uint32_t addr);
+    void eraseBlock64K(uint32_t addr);
+    bool isBlock64KErased(uint32_t addr);
+
+    void writePage(uint32_t addr, uint8_t *src, uint32_t size);
+    void writePageQuadIO(uint32_t addr, uint8_t *src, uint32_t size);
+
+    void write(uint32_t addr, uint8_t *src, uint32_t size, bool erase = true, bool quad = false);
+    void write(uint32_t addr, std::ifstream &src, uint32_t size, bool erase = true, bool quad = false);
+    inline void writeQuadIO(uint32_t addr, uint8_t *src, uint32_t size, bool erase = true)
+    {
+        this->write(addr, src, size, erase, true);
+    }
+    inline void writeQuadIO(uint32_t addr, std::ifstream &src, uint32_t size, bool erase = true)
+    {
+        this->write(addr, src, size, erase, true);
     }
 
 private:

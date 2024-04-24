@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <unistd.h>
+#include <thread>
+#include <chrono>
 #include <mutex>
 #include "AXIPeripheral.hpp"
 #include "AXIIRQCtrl.hpp"

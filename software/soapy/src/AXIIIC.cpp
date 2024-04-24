@@ -153,7 +153,7 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
             this->writeReg(AXI_IIC_REG_ISR, flags & AXI_IIC_REG_IxR_INT4_BUS_NOT_BUSY);
             flags = this->readReg(AXI_IIC_REG_ISR);
 
-            usleep(1);
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
         }
 
         if(!timeout)
@@ -188,7 +188,7 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
                     if(flags & AXI_IIC_REG_IxR_INT0_ARB_LOST)
                         throw std::runtime_error("AXI IIC: Arbitration lost while reading (" + std::to_string(count) + " bytes left)");
 
-                    usleep(1);
+                    std::this_thread::sleep_for(std::chrono::microseconds(1));
                 }
 
                 if(!timeout)
@@ -220,7 +220,7 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
                     if(flags & AXI_IIC_REG_IxR_INT0_ARB_LOST)
                         throw std::runtime_error("AXI IIC: Arbitration lost while writing (" + std::to_string(count) + " bytes left)");
 
-                    usleep(1);
+                    std::this_thread::sleep_for(std::chrono::microseconds(1));
                 }
 
                 if(!timeout)
@@ -268,7 +268,7 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
         if(stop == AXIIIC::Stop::RESTART && (address & 1))
             break; // No stop was requested and we already read all the bytes we wanted, no need to wait for the bus to be free, we are done!
 
-        usleep(1);
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
 
         flags = this->readReg(AXI_IIC_REG_ISR);
     }

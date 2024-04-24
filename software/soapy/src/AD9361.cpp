@@ -750,7 +750,7 @@ void AD9361::init()
     this->dev_sel = ID_AD9361;
 
     /* Reference Clock */
-    this->clk_refin = 40000000UL; // TODO: Auto
+    this->clk_refin = 39000000UL; // TODO: Auto
 
     /* Base Configuration */
     this->pdata->fdd = true;
@@ -1064,9 +1064,9 @@ void AD9361::reset()
         throw std::runtime_error("AD9361: RESET GPIO not initialized, soft reset is disabled");
 
     this->reset_gpio.controller->setValue(this->reset_gpio.gpio, this->reset_gpio.invert ? AXIGPIO::Value::HIGH : AXIGPIO::Value::LOW);
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
     this->reset_gpio.controller->setValue(this->reset_gpio.gpio, this->reset_gpio.invert ? AXIGPIO::Value::LOW : AXIGPIO::Value::HIGH);
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     /* SPI Soft Reset was removed from the register map, since it doesn't
      * work reliably. Without a prober HW reset randomness may happen.
@@ -2588,7 +2588,7 @@ void AD9361::setBBPLLRate(AD9361::ClockScale *clk_scale, uint32_t rate, uint32_t
     this->writeReg(AD9361_REG_VCO_PROGRAM_2, 0x01); // Increase BBPLL KV and phase margin
     this->writeReg(AD9361_REG_VCO_PROGRAM_2, 0x05); // Increase BBPLL KV and phase margin
 
-    return this->checkCalibrationDone(AD9361_REG_CH_1_OVERFLOW, BBPLL_LOCK, 1);
+    this->checkCalibrationDone(AD9361_REG_CH_1_OVERFLOW, BBPLL_LOCK, 1);
 }
 
 uint64_t AD9361::roundIntRFPLLRate(AD9361::ClockScale *clk_scale, uint64_t rate, uint32_t prate)
@@ -3207,6 +3207,7 @@ void AD9361::getClockScaler(AD9361::ClockScale *clk_scale)
 
 void AD9361::calcClockChain(uint32_t tx_sample_rate, uint32_t rate_governor, uint32_t *rx_clocks, uint32_t *tx_clocks)
 {
+    const uint32_t max_bb_rate = (this->pdata->rx2tx2 ? 1 : 2) * MAX_BASEBAND_RATE; // 122.88 MSPS overclock
     const uint8_t clk_dividers[][4] =
     {
         {12, 3, 2, 2},
@@ -3229,7 +3230,7 @@ void AD9361::calcClockChain(uint32_t tx_sample_rate, uint32_t rate_governor, uin
         rate_governor = 0;
     }
 
-    if(tx_sample_rate > MAX_BASEBAND_RATE)
+    if(tx_sample_rate > max_bb_rate)
         throw std::invalid_argument("AD9361: TX sample rate exceeds maximum baseband rate");
 
     uint32_t clktf = tx_sample_rate * tx_int;
@@ -3309,13 +3310,14 @@ void AD9361::calcClockChain(uint32_t tx_sample_rate, uint32_t rate_governor, uin
 }
 void AD9361::validateClockChain(uint32_t *rx_clocks, uint32_t *tx_clocks)
 {
-    static const uint32_t max_rx_rates[] = {MAX_BBPLL_FREQ, MAX_ADC_CLK, MAX_RX_HB3, MAX_RX_HB2, MAX_RX_HB1, MAX_BASEBAND_RATE};
-    static const uint32_t max_tx_rates[] = {MAX_BBPLL_FREQ, MAX_DAC_CLK, MAX_TX_HB3, MAX_TX_HB2, MAX_TX_HB1, MAX_BASEBAND_RATE};
+    const uint32_t max_bb_rate = (this->pdata->rx2tx2 ? 1 : 2) * MAX_BASEBAND_RATE; // 122.88 MSPS overclock
+    const uint32_t max_rx_rates[] = {MAX_BBPLL_FREQ, MAX_ADC_CLK, MAX_RX_HB3, MAX_RX_HB2, MAX_RX_HB1, max_bb_rate};
+    const uint32_t max_tx_rates[] = {MAX_BBPLL_FREQ, MAX_DAC_CLK, MAX_TX_HB3, MAX_TX_HB2, MAX_TX_HB1, max_bb_rate};
 
     uint32_t data_clk = (this->pdata->rx2tx2 ? 4 : 2) / ((this->pdata->port_ctrl.pp_conf[2] & LVDS_MODE) ? 1 : 2) * rx_clocks[RX_SAMPL_FREQ];
 
     // CMOS Mode
-    if(!(this->pdata->port_ctrl.pp_conf[2] & LVDS_MODE) && (data_clk > MAX_BASEBAND_RATE))
+    if(!(this->pdata->port_ctrl.pp_conf[2] & LVDS_MODE) && (data_clk > max_bb_rate))
         throw std::invalid_argument("AD9361: CMOS mode DATA_CLK > MAX_BASEBAND_RATE");
 
     // Validate MAX PLL, ADC, DAC and HB filter rates
@@ -3435,13 +3437,13 @@ void AD9361::checkCalibrationDone(uint16_t reg, uint8_t mask, uint8_t done_val, 
         {
             timeout_us -= 1000;
 
-            usleep(1000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
         else
         {
             timeout_us -= 100;
 
-            usleep(100);
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
     }
     while(timeout_us);
@@ -4098,7 +4100,7 @@ void AD9361::setENSMState(uint8_t state, bool pinctrl)
     {
         this->writeReg(AD9361_REG_CLOCK_ENABLE, DIGITAL_POWER_UP | CLOCK_ENABLE_DFLT | BBPLL_ENABLE | (this->pdata->use_extclk ? XO_BYPASS : 0)); // Enable Clocks
 
-        usleep(20);
+        std::this_thread::sleep_for(std::chrono::microseconds(20));
 
         this->writeReg(AD9361_REG_ENSM_CONFIG_1, TO_ALERT | FORCE_ALERT_STATE);
         this->controlVCOCalibration(false, true); // Enable VCO Cal
@@ -4145,11 +4147,11 @@ void AD9361::setENSMState(uint8_t state, bool pinctrl)
             this->writeReg(AD9361_REG_ENSM_CONFIG_1, this->pdata->fdd ? FORCE_TX_ON : FORCE_RX_ON);
             // Delay Flush Time 384 ADC clock cycles
 
-            usleep(384000000UL / this->getClockRate(this->ref_clk_scale[ADC_CLK]));
+            std::this_thread::sleep_for(std::chrono::microseconds(384000000UL / this->getClockRate(this->ref_clk_scale[ADC_CLK])));
 
             this->writeReg(AD9361_REG_ENSM_CONFIG_1, 0); /* Move to Wait*/
 
-            usleep(1); // Wait for ENSM settle
+            std::this_thread::sleep_for(std::chrono::microseconds(1)); // Wait for ENSM settle
 
             this->writeReg(AD9361_REG_CLOCK_ENABLE, (this->pdata->use_extclk ? XO_BYPASS : 0)); // Turn off all clocks
 
@@ -4268,7 +4270,7 @@ void AD9361::forceENSMState(uint8_t state)
     uint32_t timeout = 10;
 
     while(this->getENSMState() != state && --timeout)
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
 void AD9361::restoreENSMState(uint8_t state)
 {
@@ -4994,40 +4996,6 @@ int32_t ad9361_read_rssi(struct ad9361_rf_rssi* rssi)
     rssi->multiplier = RSSI_MULTIPLIER;
 
     return rc;
-}
-
-void ad9361_clear_state()
-{
-    this->current_table = NO_GAIN_TABLE;
-    this->bypass_tx_fir = true;
-    this->bypass_rx_fir = true;
-    this->rate_governor = 1;
-    this->rfdc_track_en = true;
-    this->bbdc_track_en = true;
-    this->quad_track_en = true;
-    this->prev_ensm_state = 0;
-    this->curr_ensm_state = 0;
-    this->auto_cal_en = false;
-    this->manual_tx_quad_cal_en = false;
-    this->last_tx_quad_cal_freq = 0;
-    this->flags = 0;
-    this->current_rx_bw_Hz = 0;
-    this->current_tx_bw_Hz = 0;
-    this->rxbbf_div = 0;
-    this->tx_fir_int = 0;
-    this->tx_fir_ntaps = 0;
-    this->rx_fir_dec = 0;
-    this->rx_fir_ntaps = 0;
-    this->ensm_pin_ctl_en = false;
-    this->txmon_tdd_en = 0;
-    this->current_tx_lo_freq = 0;
-    this->current_rx_lo_freq = 0;
-    this->current_tx_use_tdd_table = false;
-    this->current_rx_use_tdd_table = false;
-    this->cached_synth_pd[0] = 0;
-    this->cached_synth_pd[1] = 0;
-
-    memset(&this->fastlock, 0, sizeof(this->fastlock));
 }
 
 static int32_t ad9361_verify_fir_filter_coef(enum ad9361_fir_dest dest, uint32_t ntaps, short* coef)

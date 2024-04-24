@@ -493,7 +493,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         DLOGF(SOAPY_SDR_TRACE, "Scanning CODEC I2C bus...");
 
         this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_CODEC_RSTn_BIT, AXIGPIO::Value::HIGH);
-        usleep(500);
+        std::this_thread::sleep_for(std::chrono::microseconds(500));
         addrs = this->axi_iic[AXI_IIC_CODEC_INST]->scan();
         this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_CODEC_RSTn_BIT, AXIGPIO::Value::LOW);
 
@@ -503,7 +503,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
         DLOGF(SOAPY_SDR_TRACE, "Scanning SYS I2C bus...");
 
         this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_PM_I2C_EN_BIT, AXIGPIO::Value::HIGH);
-        usleep(500);
+        std::this_thread::sleep_for(std::chrono::microseconds(500));
         addrs = this->axi_iic[AXI_IIC_SYS_INST]->scan();
         this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_PM_I2C_EN_BIT, AXIGPIO::Value::LOW);
 
@@ -612,7 +612,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
 
     // Peripherals
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_PM_I2C_EN_BIT, AXIGPIO::Value::HIGH);
-    usleep(500);
+    std::this_thread::sleep_for(std::chrono::microseconds(500));
 
     this->pmc = new PMC(
         {
@@ -649,7 +649,9 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
     );
 
     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash JEDEC ID: 0x%06X", this->spi_flash->readJEDECID());
-    DLOGF(SOAPY_SDR_DEBUG, "SPI Flash device name: %s", this->spi_flash->getDeviceName().c_str());
+    DLOGF(SOAPY_SDR_DEBUG, "SPI Flash Device Name: %s", this->spi_flash->getDeviceName().c_str());
+    DLOGF(SOAPY_SDR_DEBUG, "SPI Flash Unique ID: %016lX", this->spi_flash->readUniqueID());
+    DLOGF(SOAPY_SDR_TRACE, "SPI Flash Status registers (0, 1, 2): 0x%02X, 0x%02X, 0x%02X", this->spi_flash->readStatus(), this->spi_flash->readStatus2(), this->spi_flash->readStatus3());
 
     //////////////////////// SPI FLASH TEST
     // {
@@ -1084,8 +1086,85 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
 
     // Probe expansion cards
     // Enable mmWave Synth if present
-    // this->mmw_synth->powerUp();
-    // this->mmw_synth->init();
+    this->mmw_synth->powerUp();
+    this->mmw_synth->init();
+    this->mmw_synth->mute();
+
+    this->mmw_synth->enableLockDetect();
+    this->mmw_synth->enableAutoRecal();
+    this->mmw_synth->setLockDetectPinMode(IDT8V97003::LDPinMode::LD_MODE_LD);
+    this->mmw_synth->setLockDetectPrecision(IDT8V97003::LDPrecision::LD_PREC_1p0ns);
+
+    this->mmw_synth->configReferenceInput(this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_SYNTH_REF_CLK), false);
+    this->mmw_synth->configPFD(250000000UL, IDT8V97003::PFDPulseWidth::PFD_PW_260ps);
+
+    this->mmw_synth->setLoopFilter(
+        {
+            .rs = 62,
+            .cs = 220e-9,
+            .cp = 2.2e-9,
+            .r3 = 20,
+            .c3 = 680e-12
+        }
+    );
+    this->mmw_synth->setTargetLoopBandwidth(100e3); // 100 kHz
+
+    this->mmw_synth->setChargePumpPositiveCurrent(5e-3); // 5.0 mA
+    this->mmw_synth->setChargePumpNegativeCurrent(5e-3); // 5.0 mA
+    this->mmw_synth->setChargePumpBleederCurrent(0.0); // 0.0 mA
+
+    this->mmw_synth->setRFOutputPower(IDT8V97003::RFOutput::RFOUT_A, 12);
+    this->mmw_synth->setRFOutputPower(IDT8V97003::RFOutput::RFOUT_B, 12);
+
+    // this->mmw_synth->setFrequency(6000000000ULL); // 8 GHz
+
+    {
+        DLOGF(SOAPY_SDR_DEBUG, "mmWave Synth:");
+        DLOGF(SOAPY_SDR_TRACE, "  Reference Input: %.6f MHz", this->mmw_synth->getReferenceFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "  Reference Doubler Input: %.6f MHz", this->mmw_synth->getReferenceDoublerInputFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "  Reference Doubler Output: %.6f MHz", this->mmw_synth->getReferenceDoublerOutputFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "  Reference Multiplier Input: %.6f MHz", this->mmw_synth->getReferenceMultiplierInputFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "  Reference Multiplier Output: %.6f MHz", this->mmw_synth->getReferenceMultiplierOutputFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "  Reference R-Divider Input: %.6f MHz", this->mmw_synth->getReferenceDividerInputFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "  Reference R-Divider Output: %.6f MHz", this->mmw_synth->getReferenceDividerOutputFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "  PFD Frequency: %.6f MHz", this->mmw_synth->getPFDFrequency() * 1e-6);
+
+        IDT8V97003::LoopFilter lf = this->mmw_synth->getLoopFilter();
+
+        DLOGF(SOAPY_SDR_TRACE, "  Loop Filter:");
+        DLOGF(SOAPY_SDR_TRACE, "    Rs: %.3e Ohm", lf.rs);
+        DLOGF(SOAPY_SDR_TRACE, "    Cs: %.3e F", lf.cs);
+        DLOGF(SOAPY_SDR_TRACE, "    Cp: %.3e F", lf.cp);
+        DLOGF(SOAPY_SDR_TRACE, "    R3: %.3e Ohm", lf.r3);
+        DLOGF(SOAPY_SDR_TRACE, "    C3: %.3e F", lf.c3);
+
+        DLOGF(SOAPY_SDR_DEBUG, "  Charge Pump PMOS Current: %.3f mA", this->mmw_synth->getChargePumpPositiveCurrent() * 1e3);
+        DLOGF(SOAPY_SDR_DEBUG, "  Charge Pump NMOS Current: %.3f mA", this->mmw_synth->getChargePumpNegativeCurrent() * 1e3);
+        DLOGF(SOAPY_SDR_DEBUG, "  Charge Pump Bleeder Current: %.3f uA", this->mmw_synth->getChargePumpBleederCurrent() * 1e6);
+
+        IDT8V97003::LoopFrequencyResponse lfr = this->mmw_synth->getLoopFrequencyResponse();
+
+        DLOGF(SOAPY_SDR_TRACE, "  Loop Frequency Response:");
+        DLOGF(SOAPY_SDR_TRACE, "    Zero: %.3f kHz", lfr.fz * 1e-3);
+        DLOGF(SOAPY_SDR_TRACE, "    Bandwidth: %.3f kHz", lfr.fc * 1e-3);
+        DLOGF(SOAPY_SDR_TRACE, "    1st Pole: %.3f kHz", lfr.fp * 1e-3);
+        DLOGF(SOAPY_SDR_TRACE, "    2nd Pole: %.3f kHz", lfr.fp2 * 1e-3);
+        DLOGF(SOAPY_SDR_TRACE, "    Phase Margin: %.3f deg", lfr.phase_margin);
+        DLOGF(SOAPY_SDR_TRACE, "  Target Loop Bandwidth: %.3f kHz", this->mmw_synth->getTargetLoopBandwidth() * 1e-3);
+
+        // DLOGF(SOAPY_SDR_DEBUG, "  VCO Frequency: %.6f MHz", this->mmw_synth->getVCOFrequency() * 1e-6);
+        // DLOGF(SOAPY_SDR_DEBUG, "  Output Frequency: %.6f MHz", this->mmw_synth->getFrequency() * 1e-6);
+
+        // double dist = 0;
+        // bool frac = this->mmw_synth->isFeedbackDividerFractional(dist);
+
+        // if(frac)
+        //     DLOGF(SOAPY_SDR_DEBUG, "  Distance to integer boundary: %.6f %%", dist * 100);
+        // else
+        //     DLOGF(SOAPY_SDR_DEBUG, "  PLL in integer mode");
+    }
+
+    this->mmw_synth->powerDown();
 }
 void SoapyIcyRadio::deinitPeripheralsPostClocks()
 {
@@ -1104,7 +1183,7 @@ void SoapyIcyRadio::deinitPeripheralsPostClocks()
     // Wait for the RF logic reset to assert, it is commanded when the AXI core de-initializes
     uint32_t timeout = 2000; // 2 seconds
     while(--timeout && this->axi_gpio[AXI_GPIO_TRX_INST]->getValue(AXI_GPIO_RST_AD9361_61M44_PERI_ARESETn_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     this->rf_phy->setENSMState(ENSM_STATE_SLEEP, false); //TODO: this->rf_phy->deinit();
 }
@@ -1122,7 +1201,7 @@ void SoapyIcyRadio::initClocks()
 
     uint32_t timeout = 500;
     while(--timeout && !this->clk_mngr->isXTALDetected())
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->clk_mngr->isXTALDetected())
     {
@@ -1132,7 +1211,7 @@ void SoapyIcyRadio::initClocks()
             DLOGF(SOAPY_SDR_WARNING, "  Could not detect a valid clock at the XTAL input");
     }
 
-    DLOGF(SOAPY_SDR_DEBUG, "  XTAL Clock: %.6f MHz", (float)this->clk_mngr->getXTALFrequency() / 1000000);
+    DLOGF(SOAPY_SDR_DEBUG, "  XTAL Clock: %.6f MHz", this->clk_mngr->getXTALFrequency() * 1e-6);
 
     if(this->config.use_clkin)
     {
@@ -1140,7 +1219,7 @@ void SoapyIcyRadio::initClocks()
 
         timeout = 500;
         while(--timeout && !this->clk_mngr->isCLKINDetected())
-            usleep(1000);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         if(!this->clk_mngr->isCLKINDetected())
         {
@@ -1153,8 +1232,8 @@ void SoapyIcyRadio::initClocks()
         }
         else
         {
-            DLOGF(SOAPY_SDR_DEBUG, "  CLKIN Clock: %.6f MHz", (float)this->clk_mngr->getCLKINFrequency() / 1000000);
-            DLOGF(SOAPY_SDR_DEBUG, "  CLKIN Divided Clock: %.6f MHz", (float)this->clk_mngr->getDividedCLKINFrequency() / 1000000);
+            DLOGF(SOAPY_SDR_DEBUG, "  CLKIN Clock: %.6f MHz", this->clk_mngr->getCLKINFrequency() * 1e-6);
+            DLOGF(SOAPY_SDR_DEBUG, "  CLKIN Divided Clock: %.6f MHz", this->clk_mngr->getDividedCLKINFrequency() * 1e-6);
         }
     }
 
@@ -1168,28 +1247,48 @@ void SoapyIcyRadio::initClocks()
 
     timeout = 500;
     while(--timeout && !this->clk_mngr->isPLLLocked(Si5351::PLL::PLLA))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->clk_mngr->isPLLLocked(Si5351::PLL::PLLA))
         throw std::runtime_error("PLLA did not achieve lock, aborting!");
 
-    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLA) / 1000000);
-    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLA) / 1000000);
+    {
+        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLA) * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLA) * 1e-6);
+
+        double dist = 0;
+        bool frac = this->clk_mngr->isPLLDividerFractional(Si5351::PLL::PLLA, dist);
+
+        if(frac)
+            DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+        else
+            DLOGF(SOAPY_SDR_DEBUG, "    PLL in integer mode");
+    }
 
     //// PLLB
     DLOGF(SOAPY_SDR_DEBUG, "  PLL B:");
 
-    this->clk_mngr->configPLL(Si5351::PLL::PLLB, 800000000UL, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
+    this->clk_mngr->configPLL(Si5351::PLL::PLLB, 780000000UL, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
 
     timeout = 500;
     while(--timeout && !this->clk_mngr->isPLLLocked(Si5351::PLL::PLLB))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->clk_mngr->isPLLLocked(Si5351::PLL::PLLB))
         throw std::runtime_error("PLLB did not achieve lock, aborting!");
 
-    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLB) / 1000000);
-    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLB) / 1000000);
+    {
+        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getPLLSourceFrequency(Si5351::PLL::PLLB) * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getPLLFrequency(Si5351::PLL::PLLB) * 1e-6);
+
+        double dist = 0;
+        bool frac = this->clk_mngr->isPLLDividerFractional(Si5351::PLL::PLLB, dist);
+
+        if(frac)
+            DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+        else
+            DLOGF(SOAPY_SDR_DEBUG, "    PLL in integer mode");
+    }
 
     // Clocks
     DLOGF(SOAPY_SDR_DEBUG, "Clock Outputs:");
@@ -1198,75 +1297,125 @@ void SoapyIcyRadio::initClocks()
 
     this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK0, 50000000UL, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK0, Si5351::ClockOutputDisableState::LOW);
-    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK0, Si5351::ClockOutputDriveCurrent::I_8mA);
+    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK0, Si5351::ClockOutputDriveCurrent::I_4mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK0, true); // Controlled by OE pin
 
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK0);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK0);
 
-    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) / 1000000);
-    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) / 1000000);
-    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK0) / 1000000);
+    {
+        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK0) * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK0) * 1e-6);
+
+        double dist = 0;
+        bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_FPGA_CLK0, dist);
+
+        if(frac)
+            DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+        else
+            DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+    }
 
     //// FPGA Clock #1
     DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK1):", Si5351::ClockOutput::CLK_FPGA_CLK1);
 
     this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK1, 49152000UL, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK1, Si5351::ClockOutputDisableState::LOW);
-    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK1, Si5351::ClockOutputDriveCurrent::I_8mA);
+    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK1, Si5351::ClockOutputDriveCurrent::I_4mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK1, true); // Controlled by OE pin
 
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK1);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK1);
 
-    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) / 1000000);
-    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) / 1000000);
-    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK1) / 1000000);
+    {
+        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK1) * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK1) * 1e-6);
+
+        double dist = 0;
+        bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_FPGA_CLK1, dist);
+
+        if(frac)
+            DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+        else
+            DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+    }
 
     //// FPGA Clock #2
     // DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK2):", Si5351::ClockOutput::CLK_FPGA_CLK2);
 
     // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK2, FREQ, 0.f, Si5351::PLL::PLLA, false);
     // this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK2, Si5351::ClockOutputDisableState::LOW);
-    // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK2, Si5351::ClockOutputDriveCurrent::I_8mA);
+    // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK2, Si5351::ClockOutputDriveCurrent::I_4mA);
     // this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK2, true); // Controlled by OE pin
 
     // this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK2);
     // this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK2);
 
-    // DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) / 1000000);
-    // DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) / 1000000);
-    // DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK2) / 1000000);
+    // {
+    //     DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) * 1e-6);
+    //     DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK2) * 1e-6);
+    //     DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK2) * 1e-6);
+
+    //     double dist = 0;
+    //     bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_FPGA_CLK2, dist);
+
+    //     if(frac)
+    //         DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+    //     else
+    //         DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+    // }
 
     //// FPGA Clock #3
     // DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK3):", Si5351::ClockOutput::CLK_FPGA_CLK3);
 
     // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK3, FREQ, 0.f, Si5351::PLL::PLLA, false);
     // this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK3, Si5351::ClockOutputDisableState::LOW);
-    // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK3, Si5351::ClockOutputDriveCurrent::I_8mA);
+    // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK3, Si5351::ClockOutputDriveCurrent::I_4mA);
     // this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK3, true); // Controlled by OE pin
 
     // this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_FPGA_CLK3);
     // this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_FPGA_CLK3);
 
-    // DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) / 1000000);
-    // DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) / 1000000);
-    // DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK3) / 1000000);
+    // {
+    //     DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) * 1e-6);
+    //     DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_FPGA_CLK3) * 1e-6);
+    //     DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_FPGA_CLK3) * 1e-6);
+
+    //     double dist = 0;
+    //     bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_FPGA_CLK3, dist);
+
+    //     if(frac)
+    //         DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+    //     else
+    //         DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+    // }
 
     //// Transceiver Reference clock
     DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (TRX_REF_CLK):", Si5351::ClockOutput::CLK_TRX_REF_CLK);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_TRX_REF_CLK, 40000000UL, 0.f, Si5351::PLL::PLLB, false);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_TRX_REF_CLK, 39000000UL, 0.f, Si5351::PLL::PLLB, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_TRX_REF_CLK, Si5351::ClockOutputDisableState::LOW);
-    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_TRX_REF_CLK, Si5351::ClockOutputDriveCurrent::I_8mA);
+    this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_TRX_REF_CLK, Si5351::ClockOutputDriveCurrent::I_4mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_TRX_REF_CLK, true); // Controlled by OE pin
 
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_TRX_REF_CLK);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_TRX_REF_CLK);
 
-    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) / 1000000);
-    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) / 1000000);
-    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_TRX_REF_CLK) / 1000000);
+    {
+        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_TRX_REF_CLK) * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_TRX_REF_CLK) * 1e-6);
+
+        double dist = 0;
+        bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_TRX_REF_CLK, dist);
+
+        if(frac)
+            DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+        else
+            DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+    }
 
     //// mmWave Synthesizer Reference clock
     DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (SYNTH_REF_CLK):", Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
@@ -1279,9 +1428,19 @@ void SoapyIcyRadio::initClocks()
     this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
     this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
 
-    DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) / 1000000);
-    DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) / 1000000);
-    DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_SYNTH_REF_CLK) / 1000000);
+    {
+        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) * 1e-6);
+        DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_SYNTH_REF_CLK) * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_SYNTH_REF_CLK) * 1e-6);
+
+        double dist = 0;
+        bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_SYNTH_REF_CLK, dist);
+
+        if(frac)
+            DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+        else
+            DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+    }
 
     //// External clock output (on frontend interface pin 2_3)
     // DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (EXT_CLK_2_3):", Si5351::ClockOutput::CLK_EXT_CLK_2_3);
@@ -1294,9 +1453,19 @@ void SoapyIcyRadio::initClocks()
     // this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3);
     // this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3);
 
-    // DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) / 1000000);
-    // DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) / 1000000);
-    // DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_2_3) / 1000000);
+    // {
+    //     DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) * 1e-6);
+    //     DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_2_3) * 1e-6);
+    //     DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_2_3) * 1e-6);
+
+    //     double dist = 0;
+    //     bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_EXT_CLK_2_3, dist);
+
+    //     if(frac)
+    //         DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+    //     else
+    //         DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+    // }
 
     //// External clock output (on u.FL connector)
     if(this->config.enable_clkout)
@@ -1311,27 +1480,37 @@ void SoapyIcyRadio::initClocks()
         this->clk_mngr->powerUpClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT);
         this->clk_mngr->enableClock(Si5351::ClockOutput::CLK_EXT_CLK_OUT);
 
-        DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) / 1000000);
-        DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", (float)this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) / 1000000);
-        DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", (float)this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT) / 1000000);
+        {
+            DLOGF(SOAPY_SDR_TRACE, "    Source Clock: %.6f MHz", this->clk_mngr->getMultiSynthSourceFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) * 1e-6);
+            DLOGF(SOAPY_SDR_TRACE, "    MS Output Clock: %.6f MHz", this->clk_mngr->getMultiSynthFrequency(Si5351::MultiSynth::MS_EXT_CLK_OUT) * 1e-6);
+            DLOGF(SOAPY_SDR_DEBUG, "    Output Clock: %.6f MHz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT) * 1e-6);
+
+            double dist = 0;
+            bool frac = this->clk_mngr->isMultiSynthDividerFractional(Si5351::MultiSynth::MS_EXT_CLK_OUT, dist);
+
+            if(frac)
+                DLOGF(SOAPY_SDR_DEBUG, "    Distance to integer boundary: %.6f %%", dist * 100);
+            else
+                DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
+        }
 
         DLOGF(SOAPY_SDR_INFO, "Achieved external clock output frequency is %u Hz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT));
     }
 
     // Wait and global enable
     DLOGF(SOAPY_SDR_DEBUG, "Waiting for all clocks to stabilize...");
-    usleep(50000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     this->clk_mngr->globalOutputEnable();
 
     DLOGF(SOAPY_SDR_DEBUG, "Clock manager global output enabled: %s", this->clk_mngr->isGlobalOutputEnabled() ? "yes" : "no");
 
-    usleep(50000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
     // Check clk_wiz_0 lock
     timeout = 500;
     while(--timeout && !this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_CLK_WIZ0_LOCKED_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_CLK_WIZ0_LOCKED_BIT))
         throw std::runtime_error("FPGA clk_wiz_0 MMCM did not achieve lock (possible issue with FPGA_CLK0), aborting!");
@@ -1344,7 +1523,7 @@ void SoapyIcyRadio::initClocks()
     // Check DDR3 controller MMCM lock
     timeout = 500;
     while(--timeout && !this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_MIG_MMCM_LOCKED_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_MIG_MMCM_LOCKED_BIT))
         throw std::runtime_error("FPGA DDR3 MMCM (mig_7series_0) did not achieve lock, aborting!");
@@ -1357,7 +1536,7 @@ void SoapyIcyRadio::initClocks()
     // Check DDR3 AXI interface reset release
     timeout = 500;
     while(--timeout && !this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_MIG_166M_PERI_ARESETn_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_MIG_166M_PERI_ARESETn_BIT))
         throw std::runtime_error("FPGA DDR3 AXI interface did not come out of reset, aborting!");
@@ -1370,7 +1549,7 @@ void SoapyIcyRadio::initClocks()
     // Check I2S core reset release
     timeout = 500;
     while(--timeout && !this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_FPGA_CLK1_49M152_PERI_ARESETn_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_FPGA_CLK1_49M152_PERI_ARESETn_BIT))
         throw std::runtime_error("FPGA I2S Core did not come out of reset (possible issue with FPGA_CLK1), aborting!");
@@ -1383,7 +1562,7 @@ void SoapyIcyRadio::initClocks()
     // Check PCIe MMCM lock
     timeout = 500;
     while(--timeout && !this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_PCIE_MMCM_LOCKED_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_PCIE_MMCM_LOCKED_BIT))
         throw std::runtime_error("FPGA PCIe MMCM (axi_pcie_0) did not achieve lock (how did we get here?), aborting!");
@@ -1401,7 +1580,7 @@ void SoapyIcyRadio::deinitClocks()
 
     uint32_t timeout = 2000; // 2 seconds
     while(--timeout && this->axi_gpio[AXI_GPIO_TRX_INST]->getValue(AXI_GPIO_RST_AD9361_61M44_PERI_ARESETn_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(this->axi_gpio[AXI_GPIO_TRX_INST]->getValue(AXI_GPIO_RST_AD9361_61M44_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset RF section, aborting!");
@@ -1415,7 +1594,7 @@ void SoapyIcyRadio::deinitClocks()
 
     timeout = 2000; // 2 seconds
     while(--timeout && this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_FPGA_CLK1_49M152_PERI_ARESETn_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_FPGA_CLK1_49M152_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset I2S core, aborting!");
@@ -1430,7 +1609,7 @@ void SoapyIcyRadio::deinitClocks()
 
     timeout = 2000; // 2 seconds
     while(--timeout && this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_MIG_166M_PERI_ARESETn_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_MIG_166M_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset DDR3 AXI interface, aborting!");
@@ -1444,7 +1623,7 @@ void SoapyIcyRadio::deinitClocks()
 
     timeout = 2000; // 2 seconds
     while(--timeout && this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_CLK_WIZ0_250M_PERI_ARESETn_BIT))
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
     if(this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_RST_CLK_WIZ0_250M_PERI_ARESETn_BIT))
         throw std::runtime_error("Could not reset DDR3 core, aborting!");
@@ -1512,7 +1691,7 @@ void SoapyIcyRadio::resetSystem()
 
     // This will clear the two DDR3 reset bits set previously!
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_SYS_AUX_RESET_BIT, AXIGPIO::Value::HIGH);
-    usleep(100000); // Do not access anything while it's resetting, otherwise the ENTIRE SYSTEM will hang! TODO: mutex
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Do not access anything while it's resetting, otherwise the ENTIRE SYSTEM will hang! TODO: mutex
 
     if(this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_SYS_AUX_RESET_BIT))
         throw std::runtime_error("System reset bit did not de-assert (how?), system reset failed");
@@ -1673,6 +1852,8 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
                     this->axi_rf_tstamp->disableTX(ts_chan);
 
                     dma_buf->parent->dma->disable();
+
+                    dma_buf->parent->underflow = true;
                 }
             }
             else if(user_buf->acquired)
@@ -1691,6 +1872,8 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
                     this->axi_rf_tstamp->disableTX(ts_chan);
 
                     dma_buf->parent->dma->disable();
+
+                    dma_buf->parent->underflow = true;
                 }
             }
             else if(user_buf->time_valid && (!cur || !dma_buf->parent->dma->idle()))
@@ -1732,6 +1915,8 @@ void SoapyIcyRadio::handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf
                         DLOGF(SOAPY_SDR_WARNING, "handleDMAData: User buffer time %llu is late (%llu ticks late), not arming trigger, enabling TX now", user_buf->time, hw_time_now - user_buf->time);
 
                         DLOGF(SOAPY_SDR_SSI, "L");
+
+                        dma_buf->parent->late = true;
 
                         this->axi_rf_tstamp->enableTX(ts_chan);
                     }
@@ -1876,8 +2061,11 @@ void SoapyIcyRadio::validateSampleRateAndChannelCombination(const double rate, c
 {
     DLOGF(SOAPY_SDR_DEBUG, "validateSampleRateAndChannelCombination: Rate %u Sps, channel count %u", (size_t)rate, channel_count);
 
-    if(rate > (double)MAX_BASEBAND_RATE / channel_count)
-        throw std::runtime_error("validateSampleRateAndChannelCombination: Rate too high for number of channels, maximum is " + std::to_string(MAX_BASEBAND_RATE / channel_count) + " Sps");
+    if(channel_count > 1 && rate > MAX_BASEBAND_RATE / 2)
+        throw std::runtime_error("validateSampleRateAndChannelCombination: Rate too high for multiple channels, maximum is " + std::to_string(MAX_BASEBAND_RATE / 2) + " Sps");
+
+    if(rate > (2 * MAX_BASEBAND_RATE)) // 122.88 MSPS overclock
+        throw std::runtime_error("validateSampleRateAndChannelCombination: Rate too high for single channel, maximum is " + std::to_string(2 * MAX_BASEBAND_RATE) + " Sps");
 }
 
 size_t SoapyIcyRadio::getDMAControllerIndex(const int direction, const size_t channel) const
@@ -2104,6 +2292,8 @@ void SoapyIcyRadio::initStreamChannels(SoapyIcyRadio::Stream *stream, const std:
         chan->next_dma_user_buf = 0;
         chan->next_dma_user_buf_time = 0;
         chan->next_dma_user_buf_time_valid = false;
+        chan->underflow = false;
+        chan->late = false;
 
         // Timestamping
         AXIRFTStamp::Channel ts_chan = this->getTimestampingChannel(stream->direction, c);
