@@ -64,17 +64,17 @@ void wdt_set_warning_isr(wdt_warning_isr_t pfISR)
 {
     pfWarningISR = pfISR;
 }
-float wdt_get_timeout_period()
+uint32_t wdt_get_timeout_period()
 {
     uint8_t ubPeriod = (WDT_REGS->WDT_CONFIG & WDT_CONFIG_PER_Msk) >> WDT_CONFIG_PER_Pos;
 
-    return (float)(1 << (ubPeriod + 3)) / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_WDT_Val] * 1000.f;
+    return (1000000000ULL * (1 << (ubPeriod + 3))) / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_WDT_Val];
 }
-float wdt_get_warning_period()
+uint32_t wdt_get_warning_period()
 {
     uint8_t ubPeriod = (WDT_REGS->WDT_EWCTRL & WDT_EWCTRL_EWOFFSET_Msk) >> WDT_EWCTRL_EWOFFSET_Pos;
 
-    return (float)(1 << (ubPeriod + 3)) / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_WDT_Val] * 1000.f;
+    return (1000000000ULL * (1 << (ubPeriod + 3))) / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_WDT_Val];
 }
 void wdt_feed()
 {

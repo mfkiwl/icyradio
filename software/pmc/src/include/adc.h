@@ -22,22 +22,28 @@
 #define ADC_12V0_VSENSE_CHAN    4 // PA04
 #define ADC_VEXT_VSENSE_CHAN    5 // PA05
 
+#define ADC_DISABLE_FLOAT 1
+
 void adc_init();
 
 uint32_t adc_get_iovdd();
-float adc_getf_iovdd();
 uint32_t adc_get_corevdd();
-float adc_getf_corevdd();
 uint32_t adc_get_vbus();
-float adc_getf_vbus();
 uint32_t adc_get_vin();
-float adc_getf_vin();
 uint32_t adc_get_12v0();
-float adc_getf_12v0();
 uint32_t adc_get_vext();
+
+int32_t adc_get_temperature();
+
+#ifndef ADC_DISABLE_FLOAT
+float adc_getf_iovdd();
+float adc_getf_corevdd();
+float adc_getf_vbus();
+float adc_getf_vin();
+float adc_getf_12v0();
 float adc_getf_vext();
 
-uint32_t adc_get_temperature();
 float adc_getf_temperature();
+#endif
 
 #endif // __ADC_H__

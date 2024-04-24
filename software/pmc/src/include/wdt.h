@@ -13,8 +13,8 @@ void wdt_init(uint8_t ubTimeoutCycles, uint8_t ubWarningCycles);
 void wdt_enable();
 void wdt_disable();
 void wdt_set_warning_isr(wdt_warning_isr_t pfISR);
-float wdt_get_timeout_period();
-float wdt_get_warning_period();
+uint32_t wdt_get_timeout_period();
+uint32_t wdt_get_warning_period();
 void wdt_feed();
 
 #endif // __WDT_H__
