@@ -10,8 +10,10 @@
 #include "utils.h"
 #include "atomic.h"
 
-#define SERCOM_I2C_NORMAL 0
-#define SERCOM_I2C_FAST 1
+#define SERCOM_I2C_NORMAL 100000 // Hz
+#define SERCOM_I2C_FAST   400000 // Hz
+
+#define SERCOM_I2C_TRISE_DEFAULT 100 // ns
 
 #define SERCOM_I2C_RESTART 0
 #define SERCOM_I2C_STOP 1
@@ -31,7 +33,7 @@ typedef uint8_t (* sercom_i2c_slave_rx_data_isr_t)(uint8_t);
 #define SERCOM0_FIFO_SIZE            256   // Only relevant when in UART mode
 
 #ifdef SERCOM0_MODE_I2C_MASTER
-void sercom0_i2c_master_init(uint8_t ubMode);
+void sercom0_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise);
 uint8_t sercom0_i2c_master_transmit(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop);
 static inline uint8_t sercom0_i2c_master_write(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop)
 {
@@ -119,7 +121,7 @@ static inline void sercom0_uart_read(uint8_t *pubDst, uint32_t ulSize)
 #define SERCOM1_FIFO_SIZE            256   // Only relevant when in UART mode
 
 #ifdef SERCOM1_MODE_I2C_MASTER
-void sercom1_i2c_master_init(uint8_t ubMode);
+void sercom1_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise);
 uint8_t sercom1_i2c_master_transmit(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop);
 static inline uint8_t sercom1_i2c_master_write(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop)
 {
@@ -207,7 +209,7 @@ static inline void sercom1_uart_read(uint8_t *pubDst, uint32_t ulSize)
 #define SERCOM2_FIFO_SIZE            256   // Only relevant when in UART mode
 
 #ifdef SERCOM2_MODE_I2C_MASTER
-void sercom2_i2c_master_init(uint8_t ubMode);
+void sercom2_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise);
 uint8_t sercom2_i2c_master_transmit(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop);
 static inline uint8_t sercom2_i2c_master_write(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop)
 {
@@ -295,7 +297,7 @@ static inline void sercom2_uart_read(uint8_t *pubDst, uint32_t ulSize)
 #define SERCOM3_FIFO_SIZE            256   // Only relevant when in UART mode
 
 #ifdef SERCOM3_MODE_I2C_MASTER
-void sercom3_i2c_master_init(uint8_t ubMode);
+void sercom3_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise);
 uint8_t sercom3_i2c_master_transmit(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop);
 static inline uint8_t sercom3_i2c_master_write(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop)
 {
@@ -383,7 +385,7 @@ static inline void sercom3_uart_read(uint8_t *pubDst, uint32_t ulSize)
 #define SERCOM4_FIFO_SIZE            256   // Only relevant when in UART mode
 
 #ifdef SERCOM4_MODE_I2C_MASTER
-void sercom4_i2c_master_init(uint8_t ubMode);
+void sercom4_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise);
 uint8_t sercom4_i2c_master_transmit(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop);
 static inline uint8_t sercom4_i2c_master_write(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop)
 {
@@ -471,7 +473,7 @@ static inline void sercom4_uart_read(uint8_t *pubDst, uint32_t ulSize)
 #define SERCOM5_FIFO_SIZE            256   // Only relevant when in UART mode
 
 #ifdef SERCOM5_MODE_I2C_MASTER
-void sercom5_i2c_master_init(uint8_t ubMode);
+void sercom5_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise);
 uint8_t sercom5_i2c_master_transmit(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop);
 static inline uint8_t sercom5_i2c_master_write(uint8_t ubAddress, uint8_t *pubSrc, uint32_t ulCount, uint8_t ubStop)
 {

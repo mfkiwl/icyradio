@@ -215,7 +215,7 @@ void i2c_slave_register_init()
         I2C_SLAVE_REGISTER              (uint32_t, I2C_SLAVE_REGISTER_CORE_VOLTAGE)             = 0;
         I2C_SLAVE_REGISTER_WRITE_MASK   (uint32_t, I2C_SLAVE_REGISTER_CORE_VOLTAGE)             = 0x00000000;
         I2C_SLAVE_REGISTER_READ_MASK    (uint32_t, I2C_SLAVE_REGISTER_CORE_VOLTAGE)             = 0xFFFFFFFF;
-        I2C_SLAVE_REGISTER              (uint32_t, I2C_SLAVE_REGISTER_TEMP)                     = 0;
+        I2C_SLAVE_REGISTER              (int32_t,  I2C_SLAVE_REGISTER_TEMP)                     = 0;
         I2C_SLAVE_REGISTER_WRITE_MASK   (uint32_t, I2C_SLAVE_REGISTER_TEMP)                     = 0x00000000;
         I2C_SLAVE_REGISTER_READ_MASK    (uint32_t, I2C_SLAVE_REGISTER_TEMP)                     = 0xFFFFFFFF;
         I2C_SLAVE_REGISTER              (uint64_t, I2C_SLAVE_REGISTER_UPTIME)                   = g_ullSystemTick / 1000;
@@ -397,33 +397,40 @@ int init()
     DBGPRINTLN_CTX("IcyRadio Exp. Template Controller v%lu (%s %s)!", BUILD_VERSION, __DATE__, __TIME__);
     DBGPRINTLN_CTX("Core: %s", szDeviceCoreName);
     DBGPRINTLN_CTX("Device: %s", szDeviceName);
-    DBGPRINTLN_CTX("Device Revision: %hhu", get_device_revision());
-    DBGPRINTLN_CTX("Calibration temperature: %hhu.%hhu C", (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_INT_Msk) >> FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_INT_Pos, (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_DEC_Pos);
-    DBGPRINTLN_CTX("Flash Size: %hu kB", nvmctrl_get_flash_size() >> 10);
-    DBGPRINTLN_CTX("RAM Size: %hu kB", HMCRAMC0_SIZE >> 10);
-    DBGPRINTLN_CTX("Free RAM: %lu B", get_free_ram());
+    DBGPRINTLN_CTX("Revision: %hhu", get_device_revision());
+    DBGPRINTLN_CTX("Cal Temp: %hhu.%hhu C", (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_INT_Msk) >> FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_INT_Pos, (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_TEMP_LOG_WORD_0_ROOM_TEMP_VAL_DEC_Pos);
+    DBGPRINTLN_CTX("Flash: %hu kB", nvmctrl_get_flash_size() >> 10);
+    DBGPRINTLN_CTX("RAM: %hu kB (Free: %lu B)", HMCRAMC0_SIZE >> 10, get_free_ram());
     DBGPRINTLN_CTX("Unique ID: %08X-%08X-%08X-%08X", ulUniqueID[0], ulUniqueID[1], ulUniqueID[2], ulUniqueID[3]);
 
-    DBGPRINTLN_CTX("RMU - Reset cause: %s", pm_get_reset_reason_string(pm_get_reset_reason()));
+    DBGPRINTLN_CTX("RMU:");
+    DBGPRINTLN_CTX("  Reset cause: %s", pm_get_reset_reason_string(pm_get_reset_reason()));
 
-    DBGPRINTLN_CTX("ADC - IOVDD Voltage: %.2f (%u) mV", adc_getf_iovdd(), adc_get_iovdd());
-    DBGPRINTLN_CTX("ADC - Core Voltage: %.2f (%u) mV", adc_getf_corevdd(), adc_get_corevdd());
-    DBGPRINTLN_CTX("ADC - Temperature: %.2f (%u / 1000) C", adc_getf_temperature(), adc_get_temperature());
+    int32_t lTemp = adc_get_temperature();
+
+    DBGPRINTLN_CTX("ADC:");
+    DBGPRINTLN_CTX("  IOVDD: %u mV", adc_get_iovdd());
+    DBGPRINTLN_CTX("  Core: %u mV", adc_get_corevdd());
+    DBGPRINTLN_CTX("  Temp: %d.%02u C", lTemp / 1000, ABS(lTemp % 1000));
 
     nvmctrl_config_waitstates(PM_CPU_CLOCK_FREQ, adc_get_iovdd()); // Optimize flash wait states for frequency and voltage
 
-    DBGPRINTLN_CTX("SYSCTRL - XOSC Oscillator: %.3f MHz", (float)SYSCTRL_XOSC_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("SYSCTRL - OSC8M Oscillator: %.3f MHz", (float)SYSCTRL_OSC8M_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("SYSCTRL - DFLL48M Clock: %.3f MHz", (float)SYSCTRL_DFLL48M_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("PM - MAIN Clock: %.3f MHz", (float)PM_MAIN_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("PM - CPU Clock: %.3f MHz", (float)PM_CPU_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("PM - AHB Clock: %.3f MHz", (float)PM_AHB_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("PM - APBA Clock: %.3f MHz", (float)PM_APBA_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("PM - APBB Clock: %.3f MHz", (float)PM_APBB_CLOCK_FREQ / 1000000);
-    DBGPRINTLN_CTX("PM - APBC Clock: %.3f MHz", (float)PM_APBC_CLOCK_FREQ / 1000000);
+    DBGPRINTLN_CTX("SYSCTRL:");
+    DBGPRINTLN_CTX("  XOSC: %u Hz", SYSCTRL_XOSC_CLOCK_FREQ);
+    DBGPRINTLN_CTX("  OSC8M: %u Hz", SYSCTRL_OSC8M_CLOCK_FREQ);
+    DBGPRINTLN_CTX("  DFLL48M: %u Hz", SYSCTRL_DFLL48M_CLOCK_FREQ);
 
-    DBGPRINTLN_CTX("WDT - Timeout period: %.3f ms", wdt_get_timeout_period());
-    DBGPRINTLN_CTX("WDT - Warning period: %.3f ms", wdt_get_warning_period());
+    DBGPRINTLN_CTX("PM:");
+    DBGPRINTLN_CTX("  MAIN: %u Hz", PM_MAIN_CLOCK_FREQ);
+    DBGPRINTLN_CTX("  CPU: %u Hz", PM_CPU_CLOCK_FREQ);
+    DBGPRINTLN_CTX("  AHB: %u Hz", PM_AHB_CLOCK_FREQ);
+    DBGPRINTLN_CTX("  APBA: %u Hz", PM_APBA_CLOCK_FREQ);
+    DBGPRINTLN_CTX("  APBB: %u Hz", PM_APBB_CLOCK_FREQ);
+    DBGPRINTLN_CTX("  APBC: %u Hz", PM_APBC_CLOCK_FREQ);
+
+    DBGPRINTLN_CTX("WDT:");
+    DBGPRINTLN_CTX("  Timeout: %u ns", wdt_get_timeout_period());
+    DBGPRINTLN_CTX("  Warn: %u ns", wdt_get_warning_period());
 
     // DBGPRINTLN_CTX("Scanning I2C bus 1...");
 
@@ -477,15 +484,12 @@ int main()
             ullLastTelemetryUpdate = g_ullSystemTick;
 
             // System Temperatures
-            uint32_t ulTemp = adc_get_temperature();
+            int32_t lTemp = adc_get_temperature();
 
             ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
             {
-                I2C_SLAVE_REGISTER(uint32_t, I2C_SLAVE_REGISTER_TEMP) = ulTemp;
+                I2C_SLAVE_REGISTER(int32_t, I2C_SLAVE_REGISTER_TEMP) = lTemp;
             }
-
-            DBGPRINTLN_CTX("----------------------------------");
-            DBGPRINTLN_CTX("Temperature: %lu.%02lu C", ulTemp / 1000, ulTemp % 1000);
 
             // System Voltages/Currents
             uint32_t ulIOVDD = adc_get_iovdd();
@@ -497,9 +501,13 @@ int main()
                 I2C_SLAVE_REGISTER(uint32_t, I2C_SLAVE_REGISTER_CORE_VOLTAGE) = ulCoreVDD;
             }
 
-            DBGPRINTLN_CTX("----------------------------------");
-            DBGPRINTLN_CTX("IOVDD Voltage: %u mV", ulIOVDD);
-            DBGPRINTLN_CTX("Core Voltage: %u mV", ulCoreVDD);
+            if(DBG_PRESENT())
+            {
+                DBGPRINTLN("------------------------------");
+                DBGPRINTLN("IOVDD: %u mV", ulIOVDD);
+                DBGPRINTLN("Core: %u mV", ulCoreVDD);
+                DBGPRINTLN("Temp: %d.%02u C", lTemp / 1000, ABS(lTemp % 1000));
+            }
         }
     }
 

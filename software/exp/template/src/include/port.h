@@ -14,6 +14,9 @@
 #define LED_TOGGLE()          PORT_REGS->GROUP[0].PORT_OUTTGL = BIT(19)
 #define LED_STATUS()          !!(PORT_REGS->GROUP[0].PORT_OUT & BIT(19))
 
+// DBG MACROS
+#define DBG_PRESENT()         !(PORT_REGS->GROUP[0].PORT_IN & BIT(30)) // SWCLK is high when no debugger is connected
+
 void port_init();
 
 #endif  // __PORT_H__

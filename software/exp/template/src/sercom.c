@@ -7,7 +7,7 @@ void _putchar(char ch)
 
 
 #ifdef SERCOM0_MODE_I2C_MASTER
-void sercom0_i2c_master_init(uint8_t ubMode)
+void sercom0_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise)
 {
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM0_Msk, 1);
 
@@ -19,19 +19,20 @@ void sercom0_i2c_master_init(uint8_t ubMode)
 
     SERCOM0_REGS->I2CM.SERCOM_CTRLA = SERCOM_I2CM_CTRLA_LOWTOUTEN_Msk | SERCOM_I2CM_CTRLA_INACTOUT_55US | SERCOM_I2CM_CTRLA_SDAHOLD_450NS | SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
 
-    float fI2CFreq = ubMode == SERCOM_I2C_FAST ? 400000.f : 100000.f;
-    float fSrcFreq = (float)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM0_CORE_Val];
-    float fBaud = (fSrcFreq / fI2CFreq) - ((fSrcFreq * (100.0f / 1000000000.0f)) + 10.0f);
-    uint32_t ulBaud = (uint32_t)fBaud;
+    uint32_t ulSourceFreq = GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM0_CORE_Val];
+    int32_t lBaud = (10U * ulSourceFreq / ulSCLFreq) - 100;
 
-    if(ulBaud > (0xFF * 2))
-        ulBaud = 0xFF;
-    else if(ulBaud <= 1)
-        ulBaud = 1;
-    else
-        ulBaud /= 2;
+    if(ulTRise)
+        lBaud -= ulSourceFreq / (100000000U / ulTRise);
 
-    SERCOM0_REGS->I2CM.SERCOM_BAUD = ulBaud;
+    lBaud = DIV_ROUND(lBaud, 20);
+
+    if(lBaud > 255)
+        lBaud = 255;
+    else if(lBaud <= 1)
+        lBaud = 1;
+
+    SERCOM0_REGS->I2CM.SERCOM_BAUD = (uint8_t)lBaud;
 
     while(SERCOM0_REGS->I2CM.SERCOM_SYNCBUSY);
 
@@ -267,7 +268,7 @@ void sercom0_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM0_MODE_SPI
 #ifdef SERCOM0_MODE_UART
-static volatile uint8_t *pubSERCOM0UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM0UARTFIFO[SERCOM0_FIFO_SIZE];
 static volatile uint16_t usSERCOM0UARTFIFOWritePos, usSERCOM0UARTFIFOReadPos;
 
 void _sercom0_uart_isr()
@@ -287,15 +288,6 @@ void sercom0_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     while(SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY);
 
-    free((uint8_t *)pubSERCOM0UARTFIFO);
-
-    pubSERCOM0UARTFIFO = (volatile uint8_t *)malloc(SERCOM0_FIFO_SIZE);
-
-    if(!pubSERCOM0UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM0UARTFIFO, 0, SERCOM0_FIFO_SIZE);
-
     usSERCOM0UARTFIFOWritePos = 0;
     usSERCOM0UARTFIFOReadPos = 0;
 
@@ -305,7 +297,14 @@ void sercom0_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     SERCOM0_REGS->USART_INT.SERCOM_CTRLA = (ulFrameSettings & SERCOM_USART_INT_CTRLA_DORD_Msk) | SERCOM_USART_INT_CTRLA_CMODE_ASYNC | (ulFrameSettings & SERCOM_USART_INT_CTRLA_FORM_Msk) | SERCOM_USART_INT_CTRLA_RXPO(ubRXPO) | SERCOM_USART_INT_CTRLA_TXPO(ubTXPO) | SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM0_REGS->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk | (ulFrameSettings & SERCOM_USART_INT_CTRLB_PMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_SBMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_CHSIZE_Msk);
-    SERCOM0_REGS->USART_INT.SERCOM_BAUD = (uint16_t)(65536 * (1 - 16 * ((float)ulBaud / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM0_CORE_Val])));
+
+    uint64_t ullBaud = 65536U * 100U - 65536ULL * 16ULL * 100ULL * (uint64_t)ulBaud / (uint64_t)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM0_CORE_Val];
+    ullBaud = DIV_ROUND(ullBaud, 100);
+
+    if(ullBaud > 65535)
+        ullBaud = 65535;
+
+    SERCOM0_REGS->USART_INT.SERCOM_BAUD = (uint16_t)ullBaud;
 
     while(SERCOM0_REGS->USART_INT.SERCOM_SYNCBUSY);
 
@@ -372,7 +371,7 @@ void _sercom0_isr()
 
 
 #ifdef SERCOM1_MODE_I2C_MASTER
-void sercom1_i2c_master_init(uint8_t ubMode)
+void sercom1_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise)
 {
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM1_Msk, 1);
 
@@ -384,19 +383,20 @@ void sercom1_i2c_master_init(uint8_t ubMode)
 
     SERCOM1_REGS->I2CM.SERCOM_CTRLA = SERCOM_I2CM_CTRLA_LOWTOUTEN_Msk | SERCOM_I2CM_CTRLA_INACTOUT_55US | SERCOM_I2CM_CTRLA_SDAHOLD_450NS | SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
 
-    float fI2CFreq = ubMode == SERCOM_I2C_FAST ? 400000.f : 100000.f;
-    float fSrcFreq = (float)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM1_CORE_Val];
-    float fBaud = (fSrcFreq / fI2CFreq) - ((fSrcFreq * (100.0f / 1000000000.0f)) + 10.0f);
-    uint32_t ulBaud = (uint32_t)fBaud;
+    uint32_t ulSourceFreq = GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM1_CORE_Val];
+    int32_t lBaud = (10U * ulSourceFreq / ulSCLFreq) - 100;
 
-    if(ulBaud > (0xFF * 2))
-        ulBaud = 0xFF;
-    else if(ulBaud <= 1)
-        ulBaud = 1;
-    else
-        ulBaud /= 2;
+    if(ulTRise)
+        lBaud -= ulSourceFreq / (100000000U / ulTRise);
 
-    SERCOM1_REGS->I2CM.SERCOM_BAUD = ulBaud;
+    lBaud = DIV_ROUND(lBaud, 20);
+
+    if(lBaud > 255)
+        lBaud = 255;
+    else if(lBaud <= 1)
+        lBaud = 1;
+
+    SERCOM1_REGS->I2CM.SERCOM_BAUD = (uint8_t)lBaud;
 
     while(SERCOM1_REGS->I2CM.SERCOM_SYNCBUSY);
 
@@ -632,7 +632,7 @@ void sercom1_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM1_MODE_SPI
 #ifdef SERCOM1_MODE_UART
-static volatile uint8_t *pubSERCOM1UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM1UARTFIFO[SERCOM1_FIFO_SIZE];
 static volatile uint16_t usSERCOM1UARTFIFOWritePos, usSERCOM1UARTFIFOReadPos;
 
 void _sercom1_uart_isr()
@@ -652,15 +652,6 @@ void sercom1_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     while(SERCOM1_REGS->USART_INT.SERCOM_SYNCBUSY);
 
-    free((uint8_t *)pubSERCOM1UARTFIFO);
-
-    pubSERCOM1UARTFIFO = (volatile uint8_t *)malloc(SERCOM1_FIFO_SIZE);
-
-    if(!pubSERCOM1UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM1UARTFIFO, 0, SERCOM1_FIFO_SIZE);
-
     usSERCOM1UARTFIFOWritePos = 0;
     usSERCOM1UARTFIFOReadPos = 0;
 
@@ -670,7 +661,14 @@ void sercom1_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     SERCOM1_REGS->USART_INT.SERCOM_CTRLA = (ulFrameSettings & SERCOM_USART_INT_CTRLA_DORD_Msk) | SERCOM_USART_INT_CTRLA_CMODE_ASYNC | (ulFrameSettings & SERCOM_USART_INT_CTRLA_FORM_Msk) | SERCOM_USART_INT_CTRLA_RXPO(ubRXPO) | SERCOM_USART_INT_CTRLA_TXPO(ubTXPO) | SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM1_REGS->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk | (ulFrameSettings & SERCOM_USART_INT_CTRLB_PMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_SBMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_CHSIZE_Msk);
-    SERCOM1_REGS->USART_INT.SERCOM_BAUD = (uint16_t)(65536 * (1 - 16 * ((float)ulBaud / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM1_CORE_Val])));
+
+    uint64_t ullBaud = 65536U * 100U - 65536ULL * 16ULL * 100ULL * (uint64_t)ulBaud / (uint64_t)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM1_CORE_Val];
+    ullBaud = DIV_ROUND(ullBaud, 100);
+
+    if(ullBaud > 65535)
+        ullBaud = 65535;
+
+    SERCOM1_REGS->USART_INT.SERCOM_BAUD = (uint16_t)ullBaud;
 
     while(SERCOM1_REGS->USART_INT.SERCOM_SYNCBUSY);
 
@@ -737,7 +735,7 @@ void _sercom1_isr()
 
 
 #ifdef SERCOM2_MODE_I2C_MASTER
-void sercom2_i2c_master_init(uint8_t ubMode)
+void sercom2_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise)
 {
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM2_Msk, 1);
 
@@ -749,19 +747,20 @@ void sercom2_i2c_master_init(uint8_t ubMode)
 
     SERCOM2_REGS->I2CM.SERCOM_CTRLA = SERCOM_I2CM_CTRLA_LOWTOUTEN_Msk | SERCOM_I2CM_CTRLA_INACTOUT_55US | SERCOM_I2CM_CTRLA_SDAHOLD_450NS | SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
 
-    float fI2CFreq = ubMode == SERCOM_I2C_FAST ? 400000.f : 100000.f;
-    float fSrcFreq = (float)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM2_CORE_Val];
-    float fBaud = (fSrcFreq / fI2CFreq) - ((fSrcFreq * (100.0f / 1000000000.0f)) + 10.0f);
-    uint32_t ulBaud = (uint32_t)fBaud;
+    uint32_t ulSourceFreq = GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM2_CORE_Val];
+    int32_t lBaud = (10U * ulSourceFreq / ulSCLFreq) - 100;
 
-    if(ulBaud > (0xFF * 2))
-        ulBaud = 0xFF;
-    else if(ulBaud <= 1)
-        ulBaud = 1;
-    else
-        ulBaud /= 2;
+    if(ulTRise)
+        lBaud -= ulSourceFreq / (100000000U / ulTRise);
 
-    SERCOM2_REGS->I2CM.SERCOM_BAUD = ulBaud;
+    lBaud = DIV_ROUND(lBaud, 20);
+
+    if(lBaud > 255)
+        lBaud = 255;
+    else if(lBaud <= 1)
+        lBaud = 1;
+
+    SERCOM2_REGS->I2CM.SERCOM_BAUD = (uint8_t)lBaud;
 
     while(SERCOM2_REGS->I2CM.SERCOM_SYNCBUSY);
 
@@ -997,7 +996,7 @@ void sercom2_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM2_MODE_SPI
 #ifdef SERCOM2_MODE_UART
-static volatile uint8_t *pubSERCOM2UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM2UARTFIFO[SERCOM2_FIFO_SIZE];
 static volatile uint16_t usSERCOM2UARTFIFOWritePos, usSERCOM2UARTFIFOReadPos;
 
 void _sercom2_uart_isr()
@@ -1017,15 +1016,6 @@ void sercom2_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     while(SERCOM2_REGS->USART_INT.SERCOM_SYNCBUSY);
 
-    free((uint8_t *)pubSERCOM2UARTFIFO);
-
-    pubSERCOM2UARTFIFO = (volatile uint8_t *)malloc(SERCOM2_FIFO_SIZE);
-
-    if(!pubSERCOM2UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM2UARTFIFO, 0, SERCOM2_FIFO_SIZE);
-
     usSERCOM2UARTFIFOWritePos = 0;
     usSERCOM2UARTFIFOReadPos = 0;
 
@@ -1035,7 +1025,14 @@ void sercom2_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     SERCOM2_REGS->USART_INT.SERCOM_CTRLA = (ulFrameSettings & SERCOM_USART_INT_CTRLA_DORD_Msk) | SERCOM_USART_INT_CTRLA_CMODE_ASYNC | (ulFrameSettings & SERCOM_USART_INT_CTRLA_FORM_Msk) | SERCOM_USART_INT_CTRLA_RXPO(ubRXPO) | SERCOM_USART_INT_CTRLA_TXPO(ubTXPO) | SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM2_REGS->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk | (ulFrameSettings & SERCOM_USART_INT_CTRLB_PMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_SBMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_CHSIZE_Msk);
-    SERCOM2_REGS->USART_INT.SERCOM_BAUD = (uint16_t)(65536 * (1 - 16 * ((float)ulBaud / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM2_CORE_Val])));
+
+    uint64_t ullBaud = 65536U * 100U - 65536ULL * 16ULL * 100ULL * (uint64_t)ulBaud / (uint64_t)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM2_CORE_Val];
+    ullBaud = DIV_ROUND(ullBaud, 100);
+
+    if(ullBaud > 65535)
+        ullBaud = 65535;
+
+    SERCOM2_REGS->USART_INT.SERCOM_BAUD = (uint16_t)ullBaud;
 
     while(SERCOM2_REGS->USART_INT.SERCOM_SYNCBUSY);
 
@@ -1102,7 +1099,7 @@ void _sercom2_isr()
 
 
 #ifdef SERCOM3_MODE_I2C_MASTER
-void sercom3_i2c_master_init(uint8_t ubMode)
+void sercom3_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise)
 {
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM3_Msk, 1);
 
@@ -1114,19 +1111,20 @@ void sercom3_i2c_master_init(uint8_t ubMode)
 
     SERCOM3_REGS->I2CM.SERCOM_CTRLA = SERCOM_I2CM_CTRLA_LOWTOUTEN_Msk | SERCOM_I2CM_CTRLA_INACTOUT_55US | SERCOM_I2CM_CTRLA_SDAHOLD_450NS | SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
 
-    float fI2CFreq = ubMode == SERCOM_I2C_FAST ? 400000.f : 100000.f;
-    float fSrcFreq = (float)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM3_CORE_Val];
-    float fBaud = (fSrcFreq / fI2CFreq) - ((fSrcFreq * (100.0f / 1000000000.0f)) + 10.0f);
-    uint32_t ulBaud = (uint32_t)fBaud;
+    uint32_t ulSourceFreq = GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM3_CORE_Val];
+    int32_t lBaud = (10U * ulSourceFreq / ulSCLFreq) - 100;
 
-    if(ulBaud > (0xFF * 2))
-        ulBaud = 0xFF;
-    else if(ulBaud <= 1)
-        ulBaud = 1;
-    else
-        ulBaud /= 2;
+    if(ulTRise)
+        lBaud -= ulSourceFreq / (100000000U / ulTRise);
 
-    SERCOM3_REGS->I2CM.SERCOM_BAUD = ulBaud;
+    lBaud = DIV_ROUND(lBaud, 20);
+
+    if(lBaud > 255)
+        lBaud = 255;
+    else if(lBaud <= 1)
+        lBaud = 1;
+
+    SERCOM3_REGS->I2CM.SERCOM_BAUD = (uint8_t)lBaud;
 
     while(SERCOM3_REGS->I2CM.SERCOM_SYNCBUSY);
 
@@ -1362,7 +1360,7 @@ void sercom3_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM3_MODE_SPI
 #ifdef SERCOM3_MODE_UART
-static volatile uint8_t *pubSERCOM3UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM3UARTFIFO[SERCOM3_FIFO_SIZE];
 static volatile uint16_t usSERCOM3UARTFIFOWritePos, usSERCOM3UARTFIFOReadPos;
 
 void _sercom3_uart_isr()
@@ -1382,15 +1380,6 @@ void sercom3_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     while(SERCOM3_REGS->USART_INT.SERCOM_SYNCBUSY);
 
-    free((uint8_t *)pubSERCOM3UARTFIFO);
-
-    pubSERCOM3UARTFIFO = (volatile uint8_t *)malloc(SERCOM3_FIFO_SIZE);
-
-    if(!pubSERCOM3UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM3UARTFIFO, 0, SERCOM3_FIFO_SIZE);
-
     usSERCOM3UARTFIFOWritePos = 0;
     usSERCOM3UARTFIFOReadPos = 0;
 
@@ -1400,7 +1389,14 @@ void sercom3_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     SERCOM3_REGS->USART_INT.SERCOM_CTRLA = (ulFrameSettings & SERCOM_USART_INT_CTRLA_DORD_Msk) | SERCOM_USART_INT_CTRLA_CMODE_ASYNC | (ulFrameSettings & SERCOM_USART_INT_CTRLA_FORM_Msk) | SERCOM_USART_INT_CTRLA_RXPO(ubRXPO) | SERCOM_USART_INT_CTRLA_TXPO(ubTXPO) | SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM3_REGS->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk | (ulFrameSettings & SERCOM_USART_INT_CTRLB_PMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_SBMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_CHSIZE_Msk);
-    SERCOM3_REGS->USART_INT.SERCOM_BAUD = (uint16_t)(65536 * (1 - 16 * ((float)ulBaud / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM3_CORE_Val])));
+
+    uint64_t ullBaud = 65536U * 100U - 65536ULL * 16ULL * 100ULL * (uint64_t)ulBaud / (uint64_t)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM3_CORE_Val];
+    ullBaud = DIV_ROUND(ullBaud, 100);
+
+    if(ullBaud > 65535)
+        ullBaud = 65535;
+
+    SERCOM3_REGS->USART_INT.SERCOM_BAUD = (uint16_t)ullBaud;
 
     while(SERCOM3_REGS->USART_INT.SERCOM_SYNCBUSY);
 
@@ -1467,7 +1463,7 @@ void _sercom3_isr()
 
 
 #ifdef SERCOM4_MODE_I2C_MASTER
-void sercom4_i2c_master_init(uint8_t ubMode)
+void sercom4_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise)
 {
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM4_Msk, 1);
 
@@ -1479,19 +1475,20 @@ void sercom4_i2c_master_init(uint8_t ubMode)
 
     SERCOM4_REGS->I2CM.SERCOM_CTRLA = SERCOM_I2CM_CTRLA_LOWTOUTEN_Msk | SERCOM_I2CM_CTRLA_INACTOUT_55US | SERCOM_I2CM_CTRLA_SDAHOLD_450NS | SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
 
-    float fI2CFreq = ubMode == SERCOM_I2C_FAST ? 400000.f : 100000.f;
-    float fSrcFreq = (float)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM4_CORE_Val];
-    float fBaud = (fSrcFreq / fI2CFreq) - ((fSrcFreq * (100.0f / 1000000000.0f)) + 10.0f);
-    uint32_t ulBaud = (uint32_t)fBaud;
+    uint32_t ulSourceFreq = GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM4_CORE_Val];
+    int32_t lBaud = (10U * ulSourceFreq / ulSCLFreq) - 100;
 
-    if(ulBaud > (0xFF * 2))
-        ulBaud = 0xFF;
-    else if(ulBaud <= 1)
-        ulBaud = 1;
-    else
-        ulBaud /= 2;
+    if(ulTRise)
+        lBaud -= ulSourceFreq / (100000000U / ulTRise);
 
-    SERCOM4_REGS->I2CM.SERCOM_BAUD = ulBaud;
+    lBaud = DIV_ROUND(lBaud, 20);
+
+    if(lBaud > 255)
+        lBaud = 255;
+    else if(lBaud <= 1)
+        lBaud = 1;
+
+    SERCOM4_REGS->I2CM.SERCOM_BAUD = (uint8_t)lBaud;
 
     while(SERCOM4_REGS->I2CM.SERCOM_SYNCBUSY);
 
@@ -1727,7 +1724,7 @@ void sercom4_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM4_MODE_SPI
 #ifdef SERCOM4_MODE_UART
-static volatile uint8_t *pubSERCOM4UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM4UARTFIFO[SERCOM4_FIFO_SIZE];
 static volatile uint16_t usSERCOM4UARTFIFOWritePos, usSERCOM4UARTFIFOReadPos;
 
 void _sercom4_uart_isr()
@@ -1747,15 +1744,6 @@ void sercom4_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     while(SERCOM4_REGS->USART_INT.SERCOM_SYNCBUSY);
 
-    free((uint8_t *)pubSERCOM4UARTFIFO);
-
-    pubSERCOM4UARTFIFO = (volatile uint8_t *)malloc(SERCOM4_FIFO_SIZE);
-
-    if(!pubSERCOM4UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM4UARTFIFO, 0, SERCOM4_FIFO_SIZE);
-
     usSERCOM4UARTFIFOWritePos = 0;
     usSERCOM4UARTFIFOReadPos = 0;
 
@@ -1765,7 +1753,14 @@ void sercom4_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     SERCOM4_REGS->USART_INT.SERCOM_CTRLA = (ulFrameSettings & SERCOM_USART_INT_CTRLA_DORD_Msk) | SERCOM_USART_INT_CTRLA_CMODE_ASYNC | (ulFrameSettings & SERCOM_USART_INT_CTRLA_FORM_Msk) | SERCOM_USART_INT_CTRLA_RXPO(ubRXPO) | SERCOM_USART_INT_CTRLA_TXPO(ubTXPO) | SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM4_REGS->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk | (ulFrameSettings & SERCOM_USART_INT_CTRLB_PMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_SBMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_CHSIZE_Msk);
-    SERCOM4_REGS->USART_INT.SERCOM_BAUD = (uint16_t)(65536 * (1 - 16 * ((float)ulBaud / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM4_CORE_Val])));
+
+    uint64_t ullBaud = 65536U * 100U - 65536ULL * 16ULL * 100ULL * (uint64_t)ulBaud / (uint64_t)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM4_CORE_Val];
+    ullBaud = DIV_ROUND(ullBaud, 100);
+
+    if(ullBaud > 65535)
+        ullBaud = 65535;
+
+    SERCOM4_REGS->USART_INT.SERCOM_BAUD = (uint16_t)ullBaud;
 
     while(SERCOM4_REGS->USART_INT.SERCOM_SYNCBUSY);
 
@@ -1832,7 +1827,7 @@ void _sercom4_isr()
 
 
 #ifdef SERCOM5_MODE_I2C_MASTER
-void sercom5_i2c_master_init(uint8_t ubMode)
+void sercom5_i2c_master_init(uint32_t ulSCLFreq, uint32_t ulTRise)
 {
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM5_Msk, 1);
 
@@ -1844,19 +1839,20 @@ void sercom5_i2c_master_init(uint8_t ubMode)
 
     SERCOM5_REGS->I2CM.SERCOM_CTRLA = SERCOM_I2CM_CTRLA_LOWTOUTEN_Msk | SERCOM_I2CM_CTRLA_INACTOUT_55US | SERCOM_I2CM_CTRLA_SDAHOLD_450NS | SERCOM_I2CM_CTRLA_MODE_I2C_MASTER;
 
-    float fI2CFreq = ubMode == SERCOM_I2C_FAST ? 400000.f : 100000.f;
-    float fSrcFreq = (float)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM5_CORE_Val];
-    float fBaud = (fSrcFreq / fI2CFreq) - ((fSrcFreq * (100.0f / 1000000000.0f)) + 10.0f);
-    uint32_t ulBaud = (uint32_t)fBaud;
+    uint32_t ulSourceFreq = GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM5_CORE_Val];
+    int32_t lBaud = (10U * ulSourceFreq / ulSCLFreq) - 100;
 
-    if(ulBaud > (0xFF * 2))
-        ulBaud = 0xFF;
-    else if(ulBaud <= 1)
-        ulBaud = 1;
-    else
-        ulBaud /= 2;
+    if(ulTRise)
+        lBaud -= ulSourceFreq / (100000000U / ulTRise);
 
-    SERCOM5_REGS->I2CM.SERCOM_BAUD = ulBaud;
+    lBaud = DIV_ROUND(lBaud, 20);
+
+    if(lBaud > 255)
+        lBaud = 255;
+    else if(lBaud <= 1)
+        lBaud = 1;
+
+    SERCOM5_REGS->I2CM.SERCOM_BAUD = (uint8_t)lBaud;
 
     while(SERCOM5_REGS->I2CM.SERCOM_SYNCBUSY);
 
@@ -2092,7 +2088,7 @@ void sercom5_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM5_MODE_SPI
 #ifdef SERCOM5_MODE_UART
-static volatile uint8_t *pubSERCOM5UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM5UARTFIFO[SERCOM5_FIFO_SIZE];
 static volatile uint16_t usSERCOM5UARTFIFOWritePos, usSERCOM5UARTFIFOReadPos;
 
 void _sercom5_uart_isr()
@@ -2112,15 +2108,6 @@ void sercom5_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     while(SERCOM5_REGS->USART_INT.SERCOM_SYNCBUSY);
 
-    free((uint8_t *)pubSERCOM5UARTFIFO);
-
-    pubSERCOM5UARTFIFO = (volatile uint8_t *)malloc(SERCOM5_FIFO_SIZE);
-
-    if(!pubSERCOM5UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM5UARTFIFO, 0, SERCOM5_FIFO_SIZE);
-
     usSERCOM5UARTFIFOWritePos = 0;
     usSERCOM5UARTFIFOReadPos = 0;
 
@@ -2130,7 +2117,14 @@ void sercom5_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
 
     SERCOM5_REGS->USART_INT.SERCOM_CTRLA = (ulFrameSettings & SERCOM_USART_INT_CTRLA_DORD_Msk) | SERCOM_USART_INT_CTRLA_CMODE_ASYNC | (ulFrameSettings & SERCOM_USART_INT_CTRLA_FORM_Msk) | SERCOM_USART_INT_CTRLA_RXPO(ubRXPO) | SERCOM_USART_INT_CTRLA_TXPO(ubTXPO) | SERCOM_USART_INT_CTRLA_MODE_USART_INT_CLK;
     SERCOM5_REGS->USART_INT.SERCOM_CTRLB = SERCOM_USART_INT_CTRLB_RXEN_Msk | SERCOM_USART_INT_CTRLB_TXEN_Msk | (ulFrameSettings & SERCOM_USART_INT_CTRLB_PMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_SBMODE_Msk) | (ulFrameSettings & SERCOM_USART_INT_CTRLB_CHSIZE_Msk);
-    SERCOM5_REGS->USART_INT.SERCOM_BAUD = (uint16_t)(65536 * (1 - 16 * ((float)ulBaud / GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM5_CORE_Val])));
+
+    uint64_t ullBaud = 65536U * 100U - 65536ULL * 16ULL * 100ULL * (uint64_t)ulBaud / (uint64_t)GCLK_CLOCK_FREQ[GCLK_CLKCTRL_ID_SERCOM5_CORE_Val];
+    ullBaud = DIV_ROUND(ullBaud, 100);
+
+    if(ullBaud > 65535)
+        ullBaud = 65535;
+
+    SERCOM5_REGS->USART_INT.SERCOM_BAUD = (uint16_t)ullBaud;
 
     while(SERCOM5_REGS->USART_INT.SERCOM_SYNCBUSY);
 
