@@ -18,7 +18,7 @@ Initial project codename **Icy**radio originated from the device family name of 
 ## Functional block diagram
 ![](https://github.com/vankxr/icyradio/blob/v2/docs/block-diagram.png)
 #### v2
-**Note: From v2 onwards, the only components in this repository are hardware related, no specific application software, like in v1 branches. Applications that use this hardware are kept in a separate repository (TODO: Add link)**
+**Note: From v2 onwards, the only components in this repository are hardware related, no specific application software, like in v1 branches. Applications that use this hardware are kept in a separate [repository](https://github.com/vankxr/icyradio-apps)**
 The goal of this project is to develop a flexible and feature rich SDR platform for tinkering. It will include, among other features, a mmWave synthesizer controlled by software to allow external mixers to be attached to the SDR and extend its frequency range (i.e. for 5G applications), and also allow interfacing to a Raspberry Pi Compute Module 4 for standalone operation.
 
 ## Dependencies
