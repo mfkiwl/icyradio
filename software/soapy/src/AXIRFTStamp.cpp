@@ -80,11 +80,16 @@ bool AXIRFTStamp::isClockSynced()
 void AXIRFTStamp::waitForClockSync(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isClockSynced();
 
-    while(--timeout && !this->isClockSynced())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isClockSynced())
+        done = this->isClockSynced();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for clock synchronization");
 }
 void AXIRFTStamp::triggerClockResync(bool wait, uint32_t timeout_ms)
@@ -209,41 +214,61 @@ bool AXIRFTStamp::isTXEnabled(AXIRFTStamp::Channel ch)
 void AXIRFTStamp::waitTXEnabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isTXEnabled();
 
-    while(--timeout && !this->isTXEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isTXEnabled())
+        done = this->isTXEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX enable");
 }
 void AXIRFTStamp::waitTXEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isTXEnabled(ch);
 
-    while(--timeout && !this->isTXEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isTXEnabled(ch))
+        done = this->isTXEnabled(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX" + std::to_string(ch) + " enable");
 }
 void AXIRFTStamp::waitTXDisabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isTXEnabled();
 
-    while(--timeout && this->isTXEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isTXEnabled())
+        done = !this->isTXEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX disable");
 }
 void AXIRFTStamp::waitTXDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isTXEnabled(ch);
 
-    while(--timeout && this->isTXEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isTXEnabled(ch))
+        done = !this->isTXEnabled(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX" + std::to_string(ch) + " disable");
 }
 void AXIRFTStamp::enableRX(bool enable)
@@ -281,41 +306,61 @@ bool AXIRFTStamp::isRXEnabled(AXIRFTStamp::Channel ch)
 void AXIRFTStamp::waitRXEnabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isRXEnabled();
 
-    while(--timeout && !this->isRXEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isRXEnabled())
+        done = this->isRXEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX enable");
 }
 void AXIRFTStamp::waitRXEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isRXEnabled(ch);
 
-    while(--timeout && !this->isRXEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isRXEnabled(ch))
+        done = this->isRXEnabled(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX" + std::to_string(ch) + " enable");
 }
 void AXIRFTStamp::waitRXDisabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isRXEnabled();
 
-    while(--timeout && this->isRXEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isRXEnabled())
+        done = !this->isRXEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX disable");
 }
 void AXIRFTStamp::waitRXDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isRXEnabled(ch);
 
-    while(--timeout && this->isRXEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isRXEnabled(ch))
+        done = !this->isRXEnabled(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX" + std::to_string(ch) + " disable");
 }
 
@@ -353,41 +398,61 @@ bool AXIRFTStamp::isTXCounterEnabled(AXIRFTStamp::Channel ch)
 void AXIRFTStamp::waitTXCounterEnabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isTXCounterEnabled();
 
-    while(--timeout && !this->isTXCounterEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isTXCounterEnabled())
+        done = this->isTXCounterEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX counter enable");
 }
 void AXIRFTStamp::waitTXCounterEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isTXCounterEnabled(ch);
 
-    while(--timeout && !this->isTXCounterEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isTXCounterEnabled(ch))
-        throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX" + std::to_string(ch) + " counter enable");
+        done = this->isTXCounterEnabled(ch);
+    }
+
+    if(!done)
+        throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX" + std::to_string(ch) + " enable");
 }
 void AXIRFTStamp::waitTXCounterDisabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isTXCounterEnabled();
 
-    while(--timeout && this->isTXCounterEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isTXCounterEnabled())
+        done = !this->isTXCounterEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX counter disable");
 }
 void AXIRFTStamp::waitTXCounterDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isTXCounterEnabled(ch);
 
-    while(--timeout && this->isTXCounterEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isTXCounterEnabled(ch))
+        done = !this->isTXCounterEnabled(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX" + std::to_string(ch) + " counter disable");
 }
 void AXIRFTStamp::enableRXCounter(bool enable)
@@ -415,41 +480,61 @@ bool AXIRFTStamp::isRXCounterEnabled(AXIRFTStamp::Channel ch)
 void AXIRFTStamp::waitRXCounterEnabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isRXCounterEnabled();
 
-    while(--timeout && !this->isRXCounterEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isRXCounterEnabled())
+        done = this->isRXCounterEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX counter enable");
 }
 void AXIRFTStamp::waitRXCounterEnabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isRXCounterEnabled(ch);
 
-    while(--timeout && !this->isRXCounterEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isRXCounterEnabled(ch))
-        throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX" + std::to_string(ch) + " counter enable");
+        done = this->isRXCounterEnabled(ch);
+    }
+
+    if(!done)
+        throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX" + std::to_string(ch) + " enable");
 }
 void AXIRFTStamp::waitRXCounterDisabled(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isRXCounterEnabled();
 
-    while(--timeout && this->isRXCounterEnabled())
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isRXCounterEnabled())
+        done = !this->isRXCounterEnabled();
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX counter disable");
 }
 void AXIRFTStamp::waitRXCounterDisabled(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = !this->isRXCounterEnabled(ch);
 
-    while(--timeout && this->isRXCounterEnabled(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(this->isRXCounterEnabled(ch))
+        done = !this->isRXCounterEnabled(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX" + std::to_string(ch) + " counter disable");
 }
 
@@ -585,41 +670,61 @@ bool AXIRFTStamp::isRXDataReady(AXIRFTStamp::Channel ch)
 void AXIRFTStamp::waitTXDMAReady(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isTXDMAReady(ch);
 
-    while(--timeout && !this->isTXDMAReady(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isTXDMAReady(ch))
+        done = this->isTXDMAReady(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX" + std::to_string(ch) + " DMA ready");
 }
 void AXIRFTStamp::waitRXDMAReady(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isRXDMAReady(ch);
 
-    while(--timeout && !this->isRXDMAReady(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isRXDMAReady(ch))
+        done = this->isRXDMAReady(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX" + std::to_string(ch) + " DMA ready");
 }
 void AXIRFTStamp::waitTXDataReady(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isTXDataReady(ch);
 
-    while(--timeout && !this->isTXDataReady(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isTXDataReady(ch))
+        done = this->isTXDataReady(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for TX" + std::to_string(ch) + " data ready");
 }
 void AXIRFTStamp::waitRXDataReady(AXIRFTStamp::Channel ch, uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool done = this->isRXDataReady(ch);
 
-    while(--timeout && !this->isRXDataReady(ch))
+    while(--timeout && !done)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->isRXDataReady(ch))
+        done = this->isRXDataReady(ch);
+    }
+
+    if(!done)
         throw std::runtime_error("AXI RF Timestamping: Timed out waiting for RX" + std::to_string(ch) + " data ready");
 }
 

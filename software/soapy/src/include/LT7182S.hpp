@@ -83,10 +83,12 @@ private:
     void writeCommand(uint8_t cmd);
     void writeByte(uint8_t cmd, uint8_t data);
     void writeWord(uint8_t cmd, uint16_t data);
+    void writeDWord(uint8_t cmd, uint32_t data);
     void writeL11(uint8_t cmd, float data);
     void writeUL16(uint8_t cmd, float data);
     uint8_t readByte(uint8_t cmd);
     uint16_t readWord(uint8_t cmd);
+    uint32_t readDWord(uint8_t cmd);
     float readL11(uint8_t cmd);
     float readUL16(uint8_t cmd);
     uint8_t readBlock(uint8_t cmd, uint8_t *buf, uint8_t max_size);
@@ -127,6 +129,12 @@ public:
     uint8_t readManufacturerRevision();
     std::string readManufacturerSerial();
     uint16_t readManufacturerSpecialID();
+
+    uint64_t getFaultLogTimestamp();
+    void setFaultLogTimestamp(uint64_t timestamp);
+    void storeFaultLog();
+    void clearFaultLog();
+    void readFaultLog(/* ... */); // TODO:
 
     uint8_t getStatusByte(LT7182S::Chan ch = LT7182S::Chan::CH_NO_CHANGE);
     void clearStatusByte(uint8_t mask, LT7182S::Chan ch = LT7182S::Chan::CH_NO_CHANGE);

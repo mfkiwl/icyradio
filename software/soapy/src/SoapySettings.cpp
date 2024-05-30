@@ -149,7 +149,7 @@ SoapySDR::Kwargs SoapyIcyRadio::getHardwareInfo() const
     while(!this->axi_dna->isSerialNumberReady()) // Serial is essential, so wait for it to be ready
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    char buf[64];
+    char buf[64] = {0};
 
     snprintf(buf, sizeof(buf), "%015lX", this->axi_dna->getSerialNumber());
     info["serial"] = buf;
@@ -251,8 +251,12 @@ void SoapyIcyRadio::setAntenna(const int direction, const size_t channel, const 
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("setAntenna: Unknown direction");
 
+    bool toggle_pa = true; // TODO: Allow disabling auto PA setting when TXnB selected
+
     if(channel <= 1)
     {
+        toggle_pa = false;
+
         // RF Channels
         if(direction == SOAPY_SDR_RX)
         {
@@ -286,6 +290,12 @@ void SoapyIcyRadio::setAntenna(const int direction, const size_t channel, const 
         }
 
         this->rf_phy->setupRFPort(false, this->rf_phy->pdata->rf_rx_input_sel, this->rf_phy->pdata->rf_tx_output_sel);
+
+        if(toggle_pa)
+        {
+            this->rf_phy->setGPOValue(2, this->rf_phy->pdata->rf_tx_output_sel == 1);
+            this->rf_phy->setGPOValue(3, this->rf_phy->pdata->rf_tx_output_sel == 1);
+        }
     }
 
 }
@@ -342,11 +352,11 @@ std::vector<std::string> SoapyIcyRadio::listGains(const int direction, const siz
 
     if(direction == SOAPY_SDR_RX)
     {
-        gains.push_back("RX_FE");
+        gains.push_back("RX_RF");
     }
     else
     {
-        gains.push_back("TX_ATT");
+        gains.push_back("TX_RF");
     }
 
     return gains;
@@ -366,7 +376,7 @@ void SoapyIcyRadio::setGainMode(const int direction, const size_t channel, const
     if(direction != SOAPY_SDR_RX)
         throw std::runtime_error("setGainMode: AGC is not supported for TX");
 
-    // TODO:
+    this->rf_phy->setRXGainMode(BIT(channel), automatic ? AD9361::RFGainCtrlMode::RF_GAIN_SLOWATTACK_AGC : AD9361::RFGainCtrlMode::RF_GAIN_MGC);
 }
 bool SoapyIcyRadio::getGainMode(const int direction, const size_t channel) const
 {
@@ -383,7 +393,7 @@ void SoapyIcyRadio::setGain(const int direction, const size_t channel, const dou
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("setGain: Unknown direction");
 
-    this->setGain(direction, channel, direction == SOAPY_SDR_RX ? "RX_FE" : "TX_ATT", value);
+    this->setGain(direction, channel, direction == SOAPY_SDR_RX ? "RX_RF" : "TX_RF", value);
 }
 void SoapyIcyRadio::setGain(const int direction, const size_t channel, const std::string &name, const double value)
 {
@@ -392,12 +402,12 @@ void SoapyIcyRadio::setGain(const int direction, const size_t channel, const std
 
     if(direction == SOAPY_SDR_RX)
     {
-        if(name == "RX_FE")
+        if(name == "RX_RF")
         {
-            SoapySDR::Range r = this->getGainRange(direction, channel, name);
+            // SoapySDR::Range r = this->getGainRange(direction, channel, name);
 
-            if(value < r.minimum() || value > r.maximum())
-                throw std::runtime_error("setGain: Gain out of range");
+            // if(value < r.minimum() || value > r.maximum())
+            //     throw std::runtime_error("setGain: Gain out of range");
 
             AD9361::RFRXGain g;
 
@@ -412,12 +422,12 @@ void SoapyIcyRadio::setGain(const int direction, const size_t channel, const std
     }
     else
     {
-        if(name == "TX_ATT")
+        if(name == "TX_RF")
         {
-            if(value < 0 || value > 89.75)
+            if(value > 0 || value < -89.75)
                 throw std::runtime_error("setGain: Gain out of range");
 
-            this->rf_phy->setTXAttenuation(value * 1000, channel == 0, channel == 1, true);
+            this->rf_phy->setTXAttenuation(value * -1000, channel == 0, channel == 1, true);
         }
         else
         {
@@ -430,7 +440,7 @@ double SoapyIcyRadio::getGain(const int direction, const size_t channel) const
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("getGain: Unknown direction");
 
-    return this->getGain(direction, channel, direction == SOAPY_SDR_RX ? "RX_FE" : "TX_ATT");
+    return this->getGain(direction, channel, direction == SOAPY_SDR_RX ? "RX_RF" : "TX_RF");
 }
 double SoapyIcyRadio::getGain(const int direction, const size_t channel, const std::string &name) const
 {
@@ -439,7 +449,7 @@ double SoapyIcyRadio::getGain(const int direction, const size_t channel, const s
 
     if(direction == SOAPY_SDR_RX)
     {
-        if(name == "RX_FE")
+        if(name == "RX_RF")
         {
             AD9361::RFRXGain g;
 
@@ -454,9 +464,9 @@ double SoapyIcyRadio::getGain(const int direction, const size_t channel, const s
     }
     else
     {
-        if(name == "TX_ATT")
+        if(name == "TX_RF")
         {
-            return (double)this->rf_phy->getTXAttenuation(BIT(channel)) / 1000.0;
+            return (double)this->rf_phy->getTXAttenuation(BIT(channel)) / -1000.0;
         }
         else
         {
@@ -469,7 +479,7 @@ SoapySDR::Range SoapyIcyRadio::getGainRange(const int direction, const size_t ch
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("getGainRange: Unknown direction");
 
-    return this->getGainRange(direction, channel, direction == SOAPY_SDR_RX ? "RX_FE" : "TX_ATT");
+    return this->getGainRange(direction, channel, direction == SOAPY_SDR_RX ? "RX_RF" : "TX_RF");
 }
 SoapySDR::Range SoapyIcyRadio::getGainRange(const int direction, const size_t channel, const std::string &name) const
 {
@@ -478,7 +488,7 @@ SoapySDR::Range SoapyIcyRadio::getGainRange(const int direction, const size_t ch
 
     if(direction == SOAPY_SDR_RX)
     {
-        if(name == "RX_FE")
+        if(name == "RX_RF")
         {
             int8_t min = this->rf_phy->gt_info[this->rf_phy->getCurrentGainTable()].abs_gain_tbl[0];
             int8_t max = this->rf_phy->gt_info[this->rf_phy->getCurrentGainTable()].abs_gain_tbl[this->rf_phy->gt_info[this->rf_phy->getCurrentGainTable()].max_index - 1];
@@ -492,9 +502,9 @@ SoapySDR::Range SoapyIcyRadio::getGainRange(const int direction, const size_t ch
     }
     else
     {
-        if(name == "TX_ATT")
+        if(name == "TX_RF")
         {
-            return SoapySDR::Range(0.0, 89.75, 0.25);
+            return SoapySDR::Range(-89.75, 0.0, 0.25);
         }
         else
         {
@@ -508,7 +518,7 @@ void SoapyIcyRadio::setFrequency(const int direction, const size_t channel, cons
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("setFrequency: Unknown direction");
 
-    this->setFrequency(direction, channel, "LO", frequency, args);
+    this->setFrequency(direction, channel, direction == SOAPY_SDR_RX ? "RX_LO" : "TX_LO", frequency, args);
 }
 void SoapyIcyRadio::setFrequency(const int direction, const size_t channel, const std::string &name, const double frequency, const SoapySDR::Kwargs &args)
 {
@@ -517,7 +527,7 @@ void SoapyIcyRadio::setFrequency(const int direction, const size_t channel, cons
 
     if(direction == SOAPY_SDR_RX)
     {
-        if(name == "LO")
+        if(name == "RX_LO")
         {
             if(frequency < 70e6 || frequency > 6e9)
                 throw std::runtime_error("setFrequency: Frequency out of range");
@@ -531,7 +541,7 @@ void SoapyIcyRadio::setFrequency(const int direction, const size_t channel, cons
     }
     else
     {
-        if(name == "LO")
+        if(name == "TX_LO")
         {
             if(frequency < 47e6 || frequency > 6e9)
                 throw std::runtime_error("setFrequency: Frequency out of range");
@@ -549,7 +559,7 @@ double SoapyIcyRadio::getFrequency(const int direction, const size_t channel) co
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("getFrequency: Unknown direction");
 
-    return this->getFrequency(direction, channel, "LO");
+    return this->getFrequency(direction, channel, direction == SOAPY_SDR_RX ? "RX_LO" : "TX_LO");
 }
 double SoapyIcyRadio::getFrequency(const int direction, const size_t channel, const std::string &name) const
 {
@@ -558,7 +568,7 @@ double SoapyIcyRadio::getFrequency(const int direction, const size_t channel, co
 
     if(direction == SOAPY_SDR_RX)
     {
-        if(name == "LO")
+        if(name == "RX_LO")
         {
             return this->rf_phy->getClockRate(this->rf_phy->ref_clk_scale[AD9361::ClockIndex::RX_RFPLL]);
         }
@@ -569,7 +579,7 @@ double SoapyIcyRadio::getFrequency(const int direction, const size_t channel, co
     }
     else
     {
-        if(name == "LO")
+        if(name == "TX_LO")
         {
             return this->rf_phy->getClockRate(this->rf_phy->ref_clk_scale[AD9361::ClockIndex::TX_RFPLL]);
         }
@@ -586,7 +596,14 @@ std::vector<std::string> SoapyIcyRadio::listFrequencies(const int direction, con
 
     std::vector<std::string> names;
 
-    names.push_back("LO");
+    if(direction == SOAPY_SDR_RX)
+    {
+        names.push_back("RX_LO");
+    }
+    else
+    {
+        names.push_back("TX_LO");
+    }
 
     return names;
 }
@@ -595,7 +612,7 @@ SoapySDR::RangeList SoapyIcyRadio::getFrequencyRange(const int direction, const 
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("getFrequencyRange: Unknown direction");
 
-    return this->getFrequencyRange(direction, channel, "LO");
+    return this->getFrequencyRange(direction, channel, direction == SOAPY_SDR_RX ? "RX_LO" : "TX_LO");
 }
 SoapySDR::RangeList SoapyIcyRadio::getFrequencyRange(const int direction, const size_t channel, const std::string &name) const
 {
@@ -606,7 +623,7 @@ SoapySDR::RangeList SoapyIcyRadio::getFrequencyRange(const int direction, const 
 
     if(direction == SOAPY_SDR_RX)
     {
-        if(name == "LO")
+        if(name == "RX_LO")
         {
             ranges.emplace_back(70e6, 6e9);
         }
@@ -617,7 +634,7 @@ SoapySDR::RangeList SoapyIcyRadio::getFrequencyRange(const int direction, const 
     }
     else
     {
-        if(name == "LO")
+        if(name == "TX_LO")
         {
             ranges.emplace_back(47e6, 6e9);
         }
@@ -644,7 +661,7 @@ void SoapyIcyRadio::setSampleRate(const int direction, const size_t channel, con
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("setSampleRate: Unknown direction");
 
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
+    std::lock_guard<std::mutex> lock(this->streams_mutex);
 
     // Check if datapath needs reconfiguration and if we can do it
     auto rx_chs = this->getBusyChannels(SOAPY_SDR_RX);
@@ -671,6 +688,32 @@ void SoapyIcyRadio::setSampleRate(const int direction, const size_t channel, con
             this->reinitStreamChannels(s);
     }
 
+    if(rate < MIN_BASEBAND_RATE_NOFIR) // Below this value requires FIR decimation/interpolation
+    {
+        if(this->rf_phy->bypass_rx_fir || this->rf_phy->bypass_tx_fir)
+        {
+            // FIR was already loaded on transceiver init
+            this->rf_phy->bypass_rx_fir = false;
+            this->rf_phy->bypass_tx_fir = false;
+
+            // No need to call this since changes will apply when we set the clocks below
+            // This also validates some things that "can" be invalid, but should we really care?
+            // this->rf_phy->validateAndEnableFIR();
+        }
+    }
+    else
+    {
+        if(!this->rf_phy->bypass_rx_fir || !this->rf_phy->bypass_tx_fir)
+        {
+            this->rf_phy->bypass_rx_fir = true;
+            this->rf_phy->bypass_tx_fir = true;
+
+            // No need to call this since changes will apply when we set the clocks below
+            // This also validates some things that "can" be invalid, but should we really care?
+            // this->rf_phy->validateAndEnableFIR();
+        }
+    }
+
     this->rf_phy->setClockChainFreq(rate);
     this->rf_phy->setRFBandwidth(this->rf_phy->current_rx_bw_Hz, this->rf_phy->current_tx_bw_Hz);
 
@@ -690,7 +733,7 @@ SoapySDR::RangeList SoapyIcyRadio::getSampleRateRange(const int direction, const
 
     SoapySDR::RangeList ranges;
 
-    ranges.emplace_back(2100000UL, 61440000UL);
+    ranges.emplace_back(MIN_BASEBAND_RATE, MAX_BASEBAND_RATE); // Actually supported up to 122.88 MS/s, but off-spec
 
     return ranges;
 }
@@ -1309,9 +1352,7 @@ SoapySDR::ArgInfo SoapyIcyRadio::getSensorInfo(const std::string &key) const
 }
 std::string SoapyIcyRadio::readSensor(const std::string &key) const
 {
-    char buf[16];
-
-    memset(buf, 0, sizeof(buf));
+    char buf[16] = {0};
 
     // XADC sensors (FPGA)
     if(key == "xadc_temp")
@@ -1422,6 +1463,20 @@ std::vector<std::string> SoapyIcyRadio::listSensors(const int direction, const s
 
     std::vector<std::string> sensors;
 
+    if(channel <= 1)
+    {
+        // RF Channels
+        if(direction == SOAPY_SDR_RX)
+        {
+            sensors.push_back("preamble_rssi");
+            sensors.push_back("symbol_rssi");
+        }
+        else
+        {
+            // No sensors
+        }
+    }
+
     return sensors;
 }
 SoapySDR::ArgInfo SoapyIcyRadio::getSensorInfo(const int direction, const size_t channel, const std::string &key) const
@@ -1431,12 +1486,177 @@ SoapySDR::ArgInfo SoapyIcyRadio::getSensorInfo(const int direction, const size_t
 
     SoapySDR::ArgInfo info;
 
+    if(channel <= 1)
+    {
+        // RF Channels
+        if(direction == SOAPY_SDR_RX)
+        {
+            if(key == "preamble_rssi")
+            {
+                info.key = "preamble_rssi";
+                info.value = "0.00";
+                info.name = "RX Channel " + std::to_string(channel) + " preamble phase RSSI";
+                info.description = "RSSI as reported by the RF PHY for the preamble phase of RX channel " + std::to_string(channel);
+                info.units = "dB";
+                info.type = SoapySDR::ArgInfo::FLOAT;
+                info.range = SoapySDR::Range(-128.0, 0.0, 0.25);
+            }
+            else if(key == "symbol_rssi")
+            {
+                info.key = "symbol_rssi";
+                info.value = "0.00";
+                info.name = "RX Channel " + std::to_string(channel) + " symbol phase RSSI";
+                info.description = "RSSI as reported by the RF PHY for the symbol phase of RX channel " + std::to_string(channel);
+                info.units = "dB";
+                info.type = SoapySDR::ArgInfo::FLOAT;
+                info.range = SoapySDR::Range(-128.0, 0.0, 0.25);
+            }
+        }
+        else
+        {
+            // No sensors
+        }
+    }
+
     return info;
 }
 std::string SoapyIcyRadio::readSensor(const int direction, const size_t channel, const std::string &key) const
 {
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("readSensor: Unknown direction");
+
+    char buf[16] = {0};
+
+    if(channel <= 1)
+    {
+        // RF Channels
+        if(direction == SOAPY_SDR_RX)
+        {
+            if(key == "preamble_rssi")
+                snprintf(buf, sizeof(buf), "%.2f", this->rf_phy->readPreambleRSSI(BIT(channel)));
+            else if(key == "symbol_rssi")
+                snprintf(buf, sizeof(buf), "%.2f", this->rf_phy->readSymbolRSSI(BIT(channel)));
+        }
+        else
+        {
+            // No sensors
+        }
+    }
+
+    return buf;
+}
+
+
+SoapySDR::ArgInfoList SoapyIcyRadio::getSettingInfo() const
+{
+    SoapySDR::ArgInfoList settings;
+
+    return settings;
+}
+void SoapyIcyRadio::writeSetting(const std::string &key, const std::string &value)
+{
+    // No settings to write
+}
+std::string SoapyIcyRadio::readSetting(const std::string &key) const
+{
+    // No settings to read
+    return "";
+}
+SoapySDR::ArgInfoList SoapyIcyRadio::getSettingInfo(const int direction, const size_t channel) const
+{
+    if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
+        throw std::runtime_error("setAntenna: Unknown direction");
+
+    SoapySDR::ArgInfoList settings;
+
+    if(channel <= 1)
+    {
+        // RF Channels
+        if(direction == SOAPY_SDR_RX)
+        {
+            SoapySDR::ArgInfo s;
+
+            s.key = "bias_t";
+            s.value = "false";
+            s.name = "Bias-Tee";
+            s.description = "Enable or disable the Bias-Tee power on RX" + std::to_string(BIT(channel)) + "C";
+            s.type = SoapySDR::ArgInfo::Type::BOOL;
+
+            settings.push_back(s);
+        }
+        else
+        {
+            SoapySDR::ArgInfo s;
+
+            s.key = "pa";
+            s.value = "false";
+            s.name = "Power Amplifier";
+            s.description = "Enable or disable the power amplifier on TX" + std::to_string(BIT(channel)) + "B";
+            s.type = SoapySDR::ArgInfo::Type::BOOL;
+
+            settings.push_back(s);
+        }
+    }
+
+    return settings;
+}
+void SoapyIcyRadio::writeSetting(const int direction, const size_t channel, const std::string &key, const std::string &value)
+{
+    if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
+        throw std::runtime_error("writeSetting: Unknown direction");
+
+    if(channel <= 1)
+    {
+        // RF Channels
+        if(direction == SOAPY_SDR_RX)
+        {
+            if(key == "bias_t")
+            {
+                // GPO 0 for channel 0, GPO 1 for channel 1
+                if(value == "true")
+                    this->rf_phy->setGPOValue(channel, true);
+                else
+                    this->rf_phy->setGPOValue(channel, false);
+            }
+        }
+        else
+        {
+            if(key == "pa")
+            {
+                // GPO 2 for channel 0, GPO 3 for channel 1
+                if(value == "true")
+                    this->rf_phy->setGPOValue(channel + 2, true);
+                else
+                    this->rf_phy->setGPOValue(channel + 2, false);
+            }
+        }
+    }
+}
+std::string SoapyIcyRadio::readSetting(const int direction, const size_t channel, const std::string &key) const
+{
+    if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
+        throw std::runtime_error("readSetting: Unknown direction");
+
+    if(channel <= 1)
+    {
+        // RF Channels
+        if(direction == SOAPY_SDR_RX)
+        {
+            if(key == "bias_t")
+            {
+                // GPO 0 for channel 0, GPO 1 for channel 1
+                return this->rf_phy->getGPOValue(channel) ? "true" : "false";
+            }
+        }
+        else
+        {
+            if(key == "pa")
+            {
+                // GPO 2 for channel 0, GPO 3 for channel 1
+                return this->rf_phy->getGPOValue(channel + 2) ? "true" : "false";
+            }
+        }
+    }
 
     return "";
 }

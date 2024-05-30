@@ -180,7 +180,7 @@ private:
     std::atomic<bool> transfer_done[AXI_DMAC_NUM_TRANSFERS];
     std::atomic<bool> transfer_callback_done[AXI_DMAC_NUM_TRANSFERS];
 
-    std::recursive_mutex mutex;
+    std::mutex mutex;
 };
 
 // Instance 0 - axi_dmac_rf_tx0 - AXI DMA Controller for RF TX channel 0

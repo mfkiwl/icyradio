@@ -1,6 +1,6 @@
 #include "IDT8V97003.hpp"
 
-static const double IDT8V97003_kVCO[] = {100e6, 120e6, 140e6, 160e6, 210e6, 165e6, 155e6, 170e6};
+static const double IDT8V97003_kVCO[] = { 100e6, 120e6, 140e6, 160e6, 210e6, 165e6, 155e6, 170e6 };
 
 void IDT8V97003::ValidateLoopFilter(IDT8V97003::LoopFilter filter)
 {
@@ -20,7 +20,7 @@ void IDT8V97003::ValidateLoopFilter(IDT8V97003::LoopFilter filter)
         throw std::invalid_argument("8V97003: Invalid loop filter C3 value");
 }
 
-void IDT8V97003::readReg(uint8_t reg, uint8_t *dst, uint8_t count)
+void IDT8V97003::readReg(uint8_t reg, uint8_t* dst, uint8_t count)
 {
     if(this->spi.controller == nullptr)
         throw std::runtime_error("8V97003: SPI not initialized");
@@ -42,7 +42,7 @@ void IDT8V97003::readReg(uint8_t reg, uint8_t *dst, uint8_t count)
 
     this->spi.controller->selectSlave(this->spi.ss_mask, false); // This unlocks mutex
 }
-void IDT8V97003::writeReg(uint8_t reg, uint8_t *src, uint8_t count)
+void IDT8V97003::writeReg(uint8_t reg, uint8_t* src, uint8_t count)
 {
     if(this->spi.controller == nullptr)
         throw std::runtime_error("8V97003: SPI not initialized");
@@ -264,10 +264,10 @@ bool IDT8V97003::isMuted(IDT8V97003::RFOutput output)
     {
         case IDT8V97003::RFOutput::RFOUT_A:
             reg = IDT8V97003_REG_RFOUTA_PWR;
-        break;
+            break;
         case IDT8V97003::RFOutput::RFOUT_B:
             reg = IDT8V97003_REG_RFOUTB_PWR;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid RF output");
     }
@@ -300,10 +300,10 @@ void IDT8V97003::mute(IDT8V97003::RFOutput output, bool mute)
     {
         case IDT8V97003::RFOutput::RFOUT_A:
             reg = IDT8V97003_REG_RFOUTA_PWR;
-        break;
+            break;
         case IDT8V97003::RFOutput::RFOUT_B:
             reg = IDT8V97003_REG_RFOUTB_PWR;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid RF output");
     }
@@ -344,7 +344,7 @@ void IDT8V97003::setMuteUntilLocked(bool mute)
 {
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    this->rmwReg(IDT8V97003_REG_RFOUTA_ENA, IDT8V97003_REG_RFOUTA_ENA_MUTE_UNTIL_LD, mute ? IDT8V97003_REG_RFOUTA_ENA_MUTE_UNTIL_LD : 0);
+    this->rmwReg(IDT8V97003_REG_RFOUTA_ENA, (uint8_t)~IDT8V97003_REG_RFOUTA_ENA_MUTE_UNTIL_LD, mute ? IDT8V97003_REG_RFOUTA_ENA_MUTE_UNTIL_LD : 0);
 }
 
 void IDT8V97003::enableRFOutput(IDT8V97003::RFOutput output, bool enable)
@@ -355,17 +355,17 @@ void IDT8V97003::enableRFOutput(IDT8V97003::RFOutput output, bool enable)
     {
         case IDT8V97003::RFOutput::RFOUT_A:
             reg = IDT8V97003_REG_RFOUTA_ENA;
-        break;
+            break;
         case IDT8V97003::RFOutput::RFOUT_B:
             reg = IDT8V97003_REG_RFOUTB_ENA;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid RF output");
     }
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    this->rmwReg(reg, IDT8V97003_REG_RFOUTA_ENA_RFOUTA_ENA, enable ? IDT8V97003_REG_RFOUTA_ENA_RFOUTA_ENA : 0);
+    this->rmwReg(reg, (uint8_t)~IDT8V97003_REG_RFOUTA_ENA_RFOUTA_ENA, enable ? IDT8V97003_REG_RFOUTA_ENA_RFOUTA_ENA : 0);
 }
 void IDT8V97003::setRFOutputPower(IDT8V97003::RFOutput output, uint8_t power)
 {
@@ -378,10 +378,10 @@ void IDT8V97003::setRFOutputPower(IDT8V97003::RFOutput output, uint8_t power)
     {
         case IDT8V97003::RFOutput::RFOUT_A:
             reg = IDT8V97003_REG_RFOUTA_PWR;
-        break;
+            break;
         case IDT8V97003::RFOutput::RFOUT_B:
             reg = IDT8V97003_REG_RFOUTB_PWR;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid RF output");
     }
@@ -400,10 +400,10 @@ uint8_t IDT8V97003::getRFOutputPower(IDT8V97003::RFOutput output)
     {
         case IDT8V97003::RFOutput::RFOUT_A:
             reg = IDT8V97003_REG_RFOUTA_PWR;
-        break;
+            break;
         case IDT8V97003::RFOutput::RFOUT_B:
             reg = IDT8V97003_REG_RFOUTB_PWR;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid RF output");
     }
@@ -585,16 +585,16 @@ void IDT8V97003::configPFD(IDT8V97003::RefPathConfig ref_cfg, IDT8V97003::PFDPul
     {
         case IDT8V97003::PFDPulseWidth::PFD_PW_260ps:
             pw_val = IDT8V97003_REG_PFD_PULSE_WIDTH_PW_260ps;
-        break;
+            break;
         case IDT8V97003::PFDPulseWidth::PFD_PW_348ps:
             pw_val = IDT8V97003_REG_PFD_PULSE_WIDTH_PW_348ps;
-        break;
+            break;
         case IDT8V97003::PFDPulseWidth::PFD_PW_487ps:
             pw_val = IDT8V97003_REG_PFD_PULSE_WIDTH_PW_487ps;
-        break;
+            break;
         case IDT8V97003::PFDPulseWidth::PFD_PW_583ps:
             pw_val = IDT8V97003_REG_PFD_PULSE_WIDTH_PW_583ps;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid PFD pulse width");
     }
@@ -616,7 +616,7 @@ void IDT8V97003::configPFD(IDT8V97003::RefPathConfig ref_cfg, IDT8V97003::PFDPul
     double mult_out_freq = this->ref_freq * (ref_cfg.doubler_en ? 2 : 1) * ref_cfg.mult;
 
     if(ref_cfg.mult > 1 && (mult_out_freq < 160e6 || mult_out_freq > 250e6))
-            throw std::runtime_error("8V97003: Multiplier output frequency out of range (Valid: 160-250 MHz)");
+        throw std::runtime_error("8V97003: Multiplier output frequency out of range (Valid: 160-250 MHz)");
 
     double pfd_freq = mult_out_freq / ref_cfg.r_div;
 
@@ -758,7 +758,7 @@ IDT8V97003::LoopFilter IDT8V97003::getLoopFilter()
     {
         IDT8V97003::ValidateLoopFilter(this->loop_filter);
     }
-    catch (const std::exception &e)
+    catch(const std::exception& e)
     {
         throw std::runtime_error("8V97003: Current loop filter is not valid");
     }
@@ -820,7 +820,7 @@ void IDT8V97003::setLoopBandwidth(double bw)
         {
             bw = this->getTargetLoopBandwidth();
         }
-        catch (const std::exception &e)
+        catch(const std::exception& e)
         {
             throw std::runtime_error("8V97003: Loop bandwidth is not valid and target loop bandwidth is not set");
         }
@@ -930,7 +930,7 @@ void IDT8V97003::setChargePumpBleederCurrent(double current)
     current = std::round(current / 20e-6);
     current = CLAMP(current, 0, 127);
 
-    this->writeReg(IDT8V97003_REG_ICP_BLEEDER, (uint8_t)current & 0x7F);
+    this->rmwReg(IDT8V97003_REG_ICP_BLEEDER, IDT8V97003_REG_ICP_BLEEDER_CP_HIZ, (uint8_t)current & 0x7F);
 }
 void IDT8V97003::enableChargePump(bool enable)
 {
@@ -966,24 +966,24 @@ IDT8V97003::LDPrecision IDT8V97003::getLockDetectPrecision()
     {
         case IDT8V97003_REG_LD_CTL1_LD_PRECISION_0p5ns:
             return IDT8V97003::LDPrecision::LD_PREC_0p5ns;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PRECISION_1p0ns:
             return IDT8V97003::LDPrecision::LD_PREC_1p0ns;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PRECISION_1p8ns:
             return IDT8V97003::LDPrecision::LD_PREC_1p8ns;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PRECISION_3p0ns:
             return IDT8V97003::LDPrecision::LD_PREC_3p0ns;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PRECISION_6p4ns:
         case 0x05: // Repeated setting
             return IDT8V97003::LDPrecision::LD_PREC_6p4ns;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PRECISION_10p4ns:
         case 0x07: // Repeated setting
             return IDT8V97003::LDPrecision::LD_PREC_10p4ns;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid lock detect precision");
     }
@@ -996,22 +996,22 @@ void IDT8V97003::setLockDetectPrecision(IDT8V97003::LDPrecision prec)
     {
         case IDT8V97003::LDPrecision::LD_PREC_0p5ns:
             reg = IDT8V97003_REG_LD_CTL1_LD_PRECISION_0p5ns;
-        break;
+            break;
         case IDT8V97003::LDPrecision::LD_PREC_1p0ns:
             reg = IDT8V97003_REG_LD_CTL1_LD_PRECISION_1p0ns;
-        break;
+            break;
         case IDT8V97003::LDPrecision::LD_PREC_1p8ns:
             reg = IDT8V97003_REG_LD_CTL1_LD_PRECISION_1p8ns;
-        break;
+            break;
         case IDT8V97003::LDPrecision::LD_PREC_3p0ns:
             reg = IDT8V97003_REG_LD_CTL1_LD_PRECISION_3p0ns;
-        break;
+            break;
         case IDT8V97003::LDPrecision::LD_PREC_6p4ns:
             reg = IDT8V97003_REG_LD_CTL1_LD_PRECISION_6p4ns;
-        break;
+            break;
         case IDT8V97003::LDPrecision::LD_PREC_10p4ns:
             reg = IDT8V97003_REG_LD_CTL1_LD_PRECISION_10p4ns;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid lock detect precision");
     }
@@ -1028,16 +1028,16 @@ IDT8V97003::LDPinMode IDT8V97003::getLockDetectPinMode()
     {
         case IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_LD:
             return IDT8V97003::LDPinMode::LD_MODE_LD;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_CAL_DONE:
             return IDT8V97003::LDPinMode::LD_MODE_CAL_DONE;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_LOW:
             return IDT8V97003::LDPinMode::LD_MODE_LOW;
-        break;
+            break;
         case IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_HIGH:
             return IDT8V97003::LDPinMode::LD_MODE_HIGH;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid lock detect pin mode");
     }
@@ -1050,16 +1050,16 @@ void IDT8V97003::setLockDetectPinMode(IDT8V97003::LDPinMode mode)
     {
         case IDT8V97003::LDPinMode::LD_MODE_LD:
             reg = IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_LD;
-        break;
+            break;
         case IDT8V97003::LDPinMode::LD_MODE_CAL_DONE:
             reg = IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_CAL_DONE;
-        break;
+            break;
         case IDT8V97003::LDPinMode::LD_MODE_LOW:
             reg = IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_LOW;
-        break;
+            break;
         case IDT8V97003::LDPinMode::LD_MODE_HIGH:
             reg = IDT8V97003_REG_LD_CTL1_LD_PIN_MODE_HIGH;
-        break;
+            break;
         default:
             throw std::runtime_error("8V97003: Invalid lock detect pin mode");
     }
@@ -1084,7 +1084,7 @@ double IDT8V97003::getFeedbackDivider()
 
     return (double)a + (double)b / (double)c;
 }
-bool IDT8V97003::isFeedbackDividerFractional(double &dist)
+bool IDT8V97003::isFeedbackDividerFractional(double& dist)
 {
     uint8_t buf[10];
 
@@ -1202,6 +1202,18 @@ void IDT8V97003::setFrequency(double freq, bool set_loop_bw, int32_t cal_timeout
         c /= 2.0;
     }
 
+    a = std::round(a);
+    b = std::round(b);
+    c = std::round(c);
+
+    if(b == c)
+    {
+        a++;
+
+        b = 0.0;
+        c = 2.0;
+    }
+
     if(b > 0.0 && pfd_freq > 250e6)
         throw std::runtime_error("8V97003: Fractional mode not supported with PFD above 250 MHz");
 
@@ -1223,10 +1235,6 @@ void IDT8V97003::setFrequency(double freq, bool set_loop_bw, int32_t cal_timeout
     {
         c = 2.0;
     }
-
-    a = std::round(a);
-    b = std::round(b);
-    c = std::round(c);
 
     uint8_t man_ctl_reg = IDT8V97003_REG_MANUAL_CTL_FORCE_RELOCK | IDT8V97003_REG_MANUAL_CTL_MANUAL_RESYNC;
 

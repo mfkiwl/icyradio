@@ -107,8 +107,8 @@ void testToneTX(SoapyIcyRadio *sdr, double fc)
     sdr->setBandwidth(SOAPY_SDR_TX, 0, 12e6);
     sdr->setFrequency(SOAPY_SDR_TX, 0, fc);
     sdr->setAntenna(SOAPY_SDR_TX, 0, "TX1A");
-    sdr->setGain(SOAPY_SDR_TX, 0, "TX_ATT", 30);
-    sdr->setGain(SOAPY_SDR_TX, 1, "TX_ATT", 30);
+    sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -30);
+    sdr->setGain(SOAPY_SDR_TX, 1, "TX_RF", -30);
 
     double full_scale = 0;
     const std::string fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, full_scale);
@@ -172,8 +172,8 @@ void testTimedToneTX(SoapyIcyRadio *sdr, double fc)
     sdr->setBandwidth(SOAPY_SDR_TX, 0, 12e6);
     sdr->setFrequency(SOAPY_SDR_TX, 0, fc);
     sdr->setAntenna(SOAPY_SDR_TX, 0, "TX1A");
-    sdr->setGain(SOAPY_SDR_TX, 0, "TX_ATT", 30);
-    sdr->setGain(SOAPY_SDR_TX, 1, "TX_ATT", 30);
+    sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -30);
+    sdr->setGain(SOAPY_SDR_TX, 1, "TX_RF", -30);
 
     double full_scale = 0;
     const std::string fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, full_scale);
@@ -246,8 +246,8 @@ void testAWGNTX(SoapyIcyRadio *sdr, double fc, double fs)
     sdr->setBandwidth(SOAPY_SDR_TX, 0, 0.5 * fs);
     sdr->setFrequency(SOAPY_SDR_TX, 0, fc);
     sdr->setAntenna(SOAPY_SDR_TX, 0, "TX1A");
-    sdr->setGain(SOAPY_SDR_TX, 0, "TX_ATT", 30);
-    sdr->setGain(SOAPY_SDR_TX, 1, "TX_ATT", 30);
+    sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -30);
+    sdr->setGain(SOAPY_SDR_TX, 1, "TX_RF", -30);
 
     double full_scale = 0;
     const std::string fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, full_scale);
@@ -312,8 +312,8 @@ void testRFDelay(SoapyIcyRadio *sdr, double fc, double fs)
     sdr->setFrequency(SOAPY_SDR_RX, 0, fc);
     sdr->setAntenna(SOAPY_SDR_TX, 0, "TX1A");
     sdr->setAntenna(SOAPY_SDR_RX, 0, "RX1A");
-    sdr->setGain(SOAPY_SDR_TX, 0, "TX_ATT", 10);
-    sdr->setGain(SOAPY_SDR_RX, 0, "RX_FE", 0);
+    sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -10);
+    sdr->setGain(SOAPY_SDR_RX, 0, "RX_RF", 0);
 
     double tx_full_scale = 0;
     const std::string tx_fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, tx_full_scale);
@@ -480,8 +480,8 @@ void testFullDuplex(SoapyIcyRadio *sdr, size_t n_chan, double fs)
     sdr->setSampleRate(SOAPY_SDR_TX, 0, fs);
     sdr->setAntenna(SOAPY_SDR_TX, 0, "TX1A");
     sdr->setAntenna(SOAPY_SDR_RX, 0, "RX1A");
-    sdr->setGain(SOAPY_SDR_TX, 0, "TX_ATT", 89);
-    sdr->setGain(SOAPY_SDR_RX, 0, "RX_FE", 0);
+    sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -89);
+    sdr->setGain(SOAPY_SDR_RX, 0, "RX_RF", 0);
 
     std::vector<size_t> channels(n_chan);
 

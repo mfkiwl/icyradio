@@ -92,15 +92,15 @@ SoapySDR::KwargsList findIcyRadio(const SoapySDR::Kwargs &args)
 }
 SoapySDR::Device *makeIcyRadio(const SoapySDR::Kwargs &args)
 {
-    // If path specified, use that and we're done
-    if(args.count("path") != 0)
+    // If only path is specified, use that and we're done
+    if(args.count("path") != 0 && args.count("serial") == 0)
         return new SoapyIcyRadio(args);
 
     // For anything else, make a non-const copy of args
     SoapySDR::Kwargs _args = args;
 
-    // If device_id specified, build a path from that and we're done
-    if(args.count("device_id") != 0)
+    // If only device_id is specified, build a path from that and we're done
+    if(args.count("device_id") != 0 && args.count("serial") == 0)
     {
         _args["path"] = "/dev/icyradio" + args.at("device_id");
 

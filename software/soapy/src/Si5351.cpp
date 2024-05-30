@@ -200,13 +200,23 @@ Si5351::MultiSynthDivider Si5351::CalculateMSDivider(double f1, double f2)
         c /= 2.0;
     }
 
-    Si5351::MultiSynthDivider div;
+    a = std::round(a);
+    b = std::round(b);
+    c = std::round(c);
 
-    div.a = std::round(a);
-    div.b = std::round(b);
-    div.c = std::round(c);
+    if(b == c)
+    {
+        a++;
 
-    return div;
+        b = 0.0;
+        c = 1.0;
+    }
+
+    return {
+        .a = (uint32_t)a,
+        .b = (uint32_t)b,
+        .c = (uint32_t)c
+    };
 }
 Si5351::MultiSynthDivider Si5351::CalculateValidPLLMSDivider(double f1, double f2)
 {

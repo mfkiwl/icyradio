@@ -1,5 +1,28 @@
 #include "SoapyIcyRadio.hpp"
 
+// Default FIR coefficients for decimation/interpolation when sample rates below 2.0833... MHz are needed
+// Gain is 6 dB, set AD9361 gain to -6 dB to compensate
+static const int16_t rf_phy_fir_128_dec4[] = {
+	   -15,   -27,   -23,    -6,    17,    33,    31,     9,   -23,   -47,   -45,   -13,    34,    69,    67,    21,
+       -49,  -102,   -99,   -32,    69,   146,   143,    48,   -96,  -204,  -200,   -69,   129,   278,   275,    97,
+      -170,  -372,  -371,  -135,   222,   494,   497,   187,  -288,  -654,  -665,  -258,   376,   875,   902,   363,
+      -500, -1201, -1265,  -530,   699,  1748,  1906,   845, -1089, -2922, -3424, -1697,  2326,  7714, 12821, 15921,
+     15921, 12821,  7714,  2326, -1697, -3424, -2922, -1089,   845,  1906,  1748,   699,  -530, -1265, -1201,  -500,
+       363,   902,   875,   376,  -258,  -665,  -654,  -288,   187,   497,   494,   222,  -135,  -371,  -372,  -170,
+        97,   275,   278,   129,   -69,  -200,  -204,   -96,    48,   143,   146,    69,   -32,   -99,  -102,   -49,
+        21,    67,    69,    34,   -13,   -45,   -47,   -23,     9,    31,    33,    17,    -6,   -23,   -27,   -15
+};
+static const int16_t rf_phy_fir_128_dec2[] = {
+        0,     0,     1,     0,    -2,     0,     3,     0,    -5,     0,     8,     0,   -11,     0,    17,     0,
+      -24,     0,    33,     0,   -45,     0,    61,     0,   -80,     0,   104,     0,  -134,     0,   169,     0,
+     -213,     0,   264,     0,  -327,     0,   401,     0,  -489,     0,   595,     0,  -724,     0,   880,     0,
+    -1075,     0,  1323,     0, -1652,     0,  2114,     0, -2819,     0,  4056,     0, -6883,     0, 20837, 32767,
+    20837,     0, -6883,     0,  4056,     0, -2819,     0,  2114,     0, -1652,     0,  1323,     0, -1075,     0,
+      880,     0,  -724,     0,   595,     0,  -489,     0,   401,     0,  -327,     0,   264,     0,  -213,     0,
+      169,     0,  -134,     0,   104,     0,   -80,     0,    61,     0,   -45,     0,    33,     0,   -24,     0,
+       17,     0,   -11,     0,     8,     0,    -5,     0,     3,     0,    -2,     0,     1,     0,    -0,     0
+};
+
 void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
 {
     SoapySDR::Kwargs c_args = args;
@@ -33,7 +56,7 @@ void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
 
         if(f < 0 || f > UINT32_MAX)
         {
-            this->config.clkin_freq = 10000000U;
+            this->config.clkin_freq = 10e6;
 
             DLOGF(SOAPY_SDR_WARNING, "Invalid external clock input frequency provided (%.6f), using default: 10 MHz", f);
         }
@@ -41,7 +64,7 @@ void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
         {
             this->config.clkin_freq = f;
 
-            DLOGF(SOAPY_SDR_INFO, "External clock input frequency is %u Hz", this->config.clkin_freq);
+            DLOGF(SOAPY_SDR_INFO, "External clock input frequency is %.6f Hz", this->config.clkin_freq);
         }
     }
     else
@@ -49,7 +72,7 @@ void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
         if(this->config.use_clkin)
             DLOGF(SOAPY_SDR_WARNING, "External clock input usage requested, but no frequency provided, using default: 10 MHz");
 
-        this->config.clkin_freq = 10000000U;
+        this->config.clkin_freq = 10e6;
     }
 
     // en_ext_clk_out
@@ -71,7 +94,7 @@ void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
 
         if(f < 0 || f > UINT32_MAX)
         {
-            this->config.clkout_freq = 10000000U;
+            this->config.clkout_freq = 10e6;
 
             DLOGF(SOAPY_SDR_WARNING, "Invalid external clock output frequency provided (%.6f), using default: 10 MHz", f);
         }
@@ -79,7 +102,7 @@ void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
         {
             this->config.clkout_freq = f;
 
-            DLOGF(SOAPY_SDR_INFO, "Requested external clock output frequency is %u Hz", this->config.clkout_freq);
+            DLOGF(SOAPY_SDR_INFO, "Requested external clock output frequency is %.6f Hz", this->config.clkout_freq);
         }
     }
     else
@@ -87,7 +110,7 @@ void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
         if(this->config.enable_clkout)
             DLOGF(SOAPY_SDR_WARNING, "External clock output enabled, but no frequency provided, using default: 10 MHz");
 
-        this->config.clkout_freq = 10000000U;
+        this->config.clkout_freq = 10e6;
     }
 }
 
@@ -1021,6 +1044,10 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
 
     // Init RF Phy
     this->rf_phy->init();
+    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_RX1_RX2, rf_phy_fir_128_dec4, ARRAY_SIZE(rf_phy_fir_128_dec4), 4, -6);
+    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_TX1_TX2, rf_phy_fir_128_dec4, ARRAY_SIZE(rf_phy_fir_128_dec4), 4, 0);
+
+    // Init RF Phy HDL block
     this->axi_ad9361->init(this->rf_phy);
 
     {
@@ -1100,11 +1127,11 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
 
     this->mmw_synth->setLoopFilter(
         {
-            .rs = 62,
-            .cs = 220e-9,
-            .cp = 2.2e-9,
-            .r3 = 20,
-            .c3 = 680e-12
+            .rs = 20,
+            .cs = 1e-6,
+            .cp = 10e-9,
+            .r3 = 62,
+            .c3 = 2.2e-9
         }
     );
     this->mmw_synth->setTargetLoopBandwidth(100e3); // 100 kHz
@@ -1494,7 +1521,7 @@ void SoapyIcyRadio::initClocks()
                 DLOGF(SOAPY_SDR_DEBUG, "    MS in integer mode");
         }
 
-        DLOGF(SOAPY_SDR_INFO, "Achieved external clock output frequency is %u Hz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT));
+        DLOGF(SOAPY_SDR_INFO, "Achieved external clock output frequency is %.6f Hz", this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_EXT_CLK_OUT));
     }
 
     // Wait and global enable
@@ -2052,6 +2079,10 @@ void SoapyIcyRadio::reconfigureDataPath(bool rx2tx2, size_t rx_ch, size_t tx_ch)
 
     this->rf_phy->setup();
 
+    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_RX1_RX2, rf_phy_fir_128_dec4, ARRAY_SIZE(rf_phy_fir_128_dec4), 4, -6);
+    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_TX1_TX2, rf_phy_fir_128_dec4, ARRAY_SIZE(rf_phy_fir_128_dec4), 4, 0);
+    this->rf_phy->validateAndEnableFIR();
+
     this->axi_ad9361->updateActiveChannels();
 
     this->axi_rf_tstamp->enableClockSyncBypass(!rx2tx2);
@@ -2060,6 +2091,9 @@ void SoapyIcyRadio::reconfigureDataPath(bool rx2tx2, size_t rx_ch, size_t tx_ch)
 void SoapyIcyRadio::validateSampleRateAndChannelCombination(const double rate, const size_t channel_count) const
 {
     DLOGF(SOAPY_SDR_DEBUG, "validateSampleRateAndChannelCombination: Rate %u Sps, channel count %u", (size_t)rate, channel_count);
+
+    if(rate < MIN_BASEBAND_RATE)
+        throw std::runtime_error("validateSampleRateAndChannelCombination: Rate too low, minimum is " + std::to_string(MIN_BASEBAND_RATE) + " Sps");
 
     if(channel_count > 1 && rate > MAX_BASEBAND_RATE / 2)
         throw std::runtime_error("validateSampleRateAndChannelCombination: Rate too high for multiple channels, maximum is " + std::to_string(MAX_BASEBAND_RATE / 2) + " Sps");
@@ -2360,8 +2394,6 @@ void SoapyIcyRadio::reinitStreamChannels(SoapyIcyRadio::Stream *stream)
 
 std::vector<SoapyIcyRadio::Stream *> SoapyIcyRadio::getStreams(bool active_only) const
 {
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
-
     std::vector<SoapyIcyRadio::Stream *> ret;
 
     for(SoapyIcyRadio::Stream *s : this->streams)
@@ -2374,8 +2406,6 @@ std::vector<SoapyIcyRadio::Stream *> SoapyIcyRadio::getStreams(bool active_only)
 }
 std::vector<SoapyIcyRadio::Stream *> SoapyIcyRadio::getStreams(const int direction, bool active_only) const
 {
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
-
     std::vector<SoapyIcyRadio::Stream *> ret;
 
     for(SoapyIcyRadio::Stream *s : this->streams)
@@ -2386,10 +2416,8 @@ std::vector<SoapyIcyRadio::Stream *> SoapyIcyRadio::getStreams(const int directi
 
     return ret;
 }
-SoapyIcyRadio::Stream *SoapyIcyRadio::findStream(SoapyIcyRadio::Stream *stream) const
+SoapyIcyRadio::Stream *SoapyIcyRadio::_findStream(SoapyIcyRadio::Stream *stream) const
 {
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
-
     for(SoapyIcyRadio::Stream *s : this->streams)
     {
         if(s == stream)
@@ -2416,8 +2444,6 @@ bool SoapyIcyRadio::isChannelVectorValid(const int direction, const std::vector<
 }
 bool SoapyIcyRadio::isAnyChannelBusy(const int direction, const std::vector<size_t> &channels) const
 {
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
-
     for(SoapyIcyRadio::Stream *s : this->streams)
     {
         if(s->direction != direction)
@@ -2432,8 +2458,6 @@ bool SoapyIcyRadio::isAnyChannelBusy(const int direction, const std::vector<size
 }
 std::vector<size_t> SoapyIcyRadio::getBusyChannels(const int direction) const
 {
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
-
     std::vector<size_t> ret;
 
     for(SoapyIcyRadio::Stream *s : this->streams)

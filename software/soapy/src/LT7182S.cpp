@@ -148,6 +148,21 @@ void LT7182S::writeWord(uint8_t cmd, uint16_t data)
 
     this->iic.controller->write(this->iic.addr, buf, 3, AXIIIC::Stop::STOP);
 }
+void LT7182S::writeDWord(uint8_t cmd, uint32_t data)
+{
+    if(this->iic.controller == nullptr)
+        throw std::runtime_error("LT7182S: IIC not initialized");
+
+    uint8_t buf[5];
+
+    buf[0] = cmd;
+    buf[1] = data & 0xFF;
+    buf[2] = (data >> 8) & 0xFF;
+    buf[3] = (data >> 16) & 0xFF;
+    buf[4] = data >> 24;
+
+    this->iic.controller->write(this->iic.addr, buf, 5, AXIIIC::Stop::STOP);
+}
 void LT7182S::writeL11(uint8_t cmd, float data)
 {
     int8_t exp = -16;
@@ -213,6 +228,22 @@ uint16_t LT7182S::readWord(uint8_t cmd)
     this->iic.controller->endAtomicTransaction(); // Unlock the I2C bus
 
     return (((uint16_t)buf[1]) << 8) | buf[0];
+}
+uint32_t LT7182S::readDWord(uint8_t cmd)
+{
+    if(this->iic.controller == nullptr)
+        throw std::runtime_error("LT7182S: IIC not initialized");
+
+    uint8_t buf[4];
+
+    this->iic.controller->startAtomicTransaction(); // Lock the I2C bus so the next two transactions are not interrupted
+
+    this->iic.controller->write(this->iic.addr, cmd, AXIIIC::Stop::RESTART);
+    this->iic.controller->read(this->iic.addr, buf, 4, AXIIIC::Stop::STOP);
+
+    this->iic.controller->endAtomicTransaction(); // Unlock the I2C bus
+
+    return (((uint32_t)buf[3]) << 24) | (((uint32_t)buf[2]) << 16) | (((uint32_t)buf[1]) << 8) | buf[0];
 }
 float LT7182S::readL11(uint8_t cmd)
 {
@@ -419,6 +450,36 @@ uint16_t LT7182S::readManufacturerSpecialID()
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
     return this->readWord(0xE7);
+}
+
+uint64_t LT7182S::getFaultLogTimestamp()
+{
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    uint64_t timestamp = this->readDWord(0xE8);
+
+    timestamp = (timestamp << 32) | this->readDWord(0xE9);
+
+    return timestamp;
+}
+void LT7182S::setFaultLogTimestamp(uint64_t timestamp)
+{
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    this->writeDWord(0xE8, timestamp >> 32);
+    this->writeDWord(0xE9, timestamp & 0xFFFFFFFF);
+}
+void LT7182S::storeFaultLog()
+{
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    this->writeCommand(0xEA);
+}
+void LT7182S::clearFaultLog()
+{
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    this->writeCommand(0xEC);
 }
 
 uint8_t LT7182S::getStatusByte(LT7182S::Chan ch)

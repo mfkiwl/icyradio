@@ -60,7 +60,7 @@ SoapySDR::Stream *SoapyIcyRadio::setupStream(const int direction, const std::str
     if(!this->isChannelVectorValid(direction, channels))
         throw std::runtime_error("setupStream: Invalid channel(s) specified");
 
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
+    std::lock_guard<std::mutex> lock(this->streams_mutex);
 
     DLOGF(SOAPY_SDR_DEBUG, "setupStream: %s, %u channels, %s (%s)", (direction == SOAPY_SDR_RX) ? "RX" : "TX", channels.size(), format.c_str(), SoapySDR::KwargsToString(args).c_str());
 
@@ -156,9 +156,9 @@ SoapySDR::Stream *SoapyIcyRadio::setupStream(const int direction, const std::str
 }
 void SoapyIcyRadio::closeStream(SoapySDR::Stream *stream)
 {
-    std::lock_guard<std::recursive_mutex> lock(this->streams_mutex);
+    std::lock_guard<std::mutex> lock(this->streams_mutex);
 
-    SoapyIcyRadio::Stream *s = this->findStream(stream);
+    SoapyIcyRadio::Stream *s = this->_findStream(stream); // Use unlocked version since we are already locked
 
     if(s == nullptr)
         throw std::runtime_error("closeStream: Stream not found");
@@ -167,7 +167,11 @@ void SoapyIcyRadio::closeStream(SoapySDR::Stream *stream)
         std::lock_guard<std::mutex> lock(s->mutex);
 
         if(s->active)
-            this->deactivateStream(stream);
+        {
+            DLOGF(SOAPY_SDR_ERROR, "closeStream: Stream is active");
+
+            return;
+        }
     }
 
     std::remove(this->streams.begin(), this->streams.end(), s);
@@ -663,16 +667,36 @@ int SoapyIcyRadio::writeStream(SoapySDR::Stream *stream, const void * const *buf
             _timeNs = s->cur_buf_time;
         }
 
-        this->releaseWriteBuffer(stream, s->cur_buf_handle, s->cur_buf_valid_size, _flags, _timeNs);
+        try
+        {
+            this->releaseWriteBuffer(stream, s->cur_buf_handle, s->cur_buf_valid_size, _flags, _timeNs);
 
-        for(size_t i = 0; i < s->cur_buf_ptrs.size(); i++)
-            s->cur_buf_ptrs[i] = nullptr;
+            DLOGF_S(SOAPY_SDR_TRACE, "writeStream: Buffer released");
 
-        s->cur_buf_size = 0;
-        s->cur_buf_valid_size = 0;
-        s->cur_buf_handle = 0;
-        s->cur_buf_time = 0;
-        s->cur_buf_time_valid = false;
+            for(size_t i = 0; i < s->cur_buf_ptrs.size(); i++)
+                s->cur_buf_ptrs[i] = nullptr;
+
+            s->cur_buf_size = 0;
+            s->cur_buf_valid_size = 0;
+            s->cur_buf_handle = 0;
+            s->cur_buf_time = 0;
+            s->cur_buf_time_valid = false;
+        }
+        catch(const std::exception &e)
+        {
+            DLOGF(SOAPY_SDR_ERROR, "writeStream: Failed to release buffer %s, samples lost", e.what());
+
+            for(size_t i = 0; i < s->cur_buf_ptrs.size(); i++)
+                s->cur_buf_ptrs[i] = nullptr;
+
+            s->cur_buf_size = 0;
+            s->cur_buf_valid_size = 0;
+            s->cur_buf_handle = 0;
+            s->cur_buf_time = 0;
+            s->cur_buf_time_valid = false;
+
+            return SOAPY_SDR_STREAM_ERROR;
+        }
     }
     else
     {
@@ -739,7 +763,7 @@ int SoapyIcyRadio::readStreamStatus(SoapySDR::Stream *stream, size_t &chanMask, 
                 ret = SOAPY_SDR_UNDERFLOW;
 
                 // Log underflow as warning, otherwise it will be logged on the next releaseWriteBuffer
-                DLOGF(SOAPY_SDR_WARNING, "readStreamStatus: Underflow on channel %u", c->num);
+                DLOGF(SOAPY_SDR_TRACE, "readStreamStatus: Underflow on channel %u", c->num);
 
                 c->underflow = false;
                 chanMask |= BIT(c->num);
@@ -1280,21 +1304,11 @@ void SoapyIcyRadio::releaseWriteBuffer(SoapySDR::Stream *stream, const size_t ha
     DLOGF_S(SOAPY_SDR_TRACE, "releaseWriteBuffer: Releasing user buffer %u", handle);
 
     bool any_dma_disabled = false;
-    bool any_underflow = false;
 
     // Check if any of the DMAs is disabled, meaning we had an underflow and the ISR disabled them
     for(auto &c : s->channels)
     {
         std::lock_guard<std::mutex> lock(c->mutex);
-
-        if(c->underflow)
-        {
-            DLOGF_S(SOAPY_SDR_TRACE, "releaseWriteBuffer: Channel %u underflowed", c->num);
-
-            any_underflow = true;
-
-            break;
-        }
 
         if(!c->dma->enabled())
         {
@@ -1306,13 +1320,10 @@ void SoapyIcyRadio::releaseWriteBuffer(SoapySDR::Stream *stream, const size_t ha
         }
     }
 
-    if(any_underflow || any_dma_disabled)
+    if(any_dma_disabled)
     {
         // If no underflow flag is set, assume the warning has already been logged
-        if(any_underflow)
-            DLOGF(SOAPY_SDR_WARNING, "releaseWriteBuffer: At least one DMA Controller is disabled, waiting for all to be");
-        else
-            DLOGF_S(SOAPY_SDR_TRACE, "releaseWriteBuffer: At least one DMA Controller is disabled, waiting for all to be");
+        DLOGF(SOAPY_SDR_WARNING, "releaseWriteBuffer: At least one DMA Controller is disabled, waiting for all to be");
 
         for(auto &c : s->channels)
         {
@@ -1521,6 +1532,9 @@ void SoapyIcyRadio::releaseWriteBuffer(SoapySDR::Stream *stream, const size_t ha
                 std::memcpy(dma_buf->virt, c->buffers[handle]->addr, numElems * ICYRADIO_SAMPLE_SIZE_BYTES);
 
                 dma_buf->xfer.size = numElems * ICYRADIO_SAMPLE_SIZE_BYTES;
+
+                if(c->dma->idle())
+                    DLOGF(SOAPY_SDR_WARNING, "releaseWriteBuffer: DMA Controller is idle, stream may be discontinuous");
 
                 c->dma->submitTransfer(dma_buf->xfer);
 

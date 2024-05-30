@@ -1082,12 +1082,6 @@ void AD9361::reset()
 void AD9361::clear()
 {
     this->current_table = -1;
-    this->bypass_tx_fir = true;
-    this->bypass_rx_fir = true;
-    this->rate_governor = 1;
-    this->rfdc_track_en = true;
-    this->bbdc_track_en = true;
-    this->quad_track_en = true;
     this->prev_ensm_state = 0;
     this->curr_ensm_state = 0;
     this->auto_cal_en = false;
@@ -1936,7 +1930,7 @@ void AD9361::setupGainControl(AD9361::GainControl *ctrl)
     this->writeRegField(AD9361_REG_RX1_MANUAL_LPF_GAIN, POWER_MEAS_IN_STATE_5(~0), reg);
     this->writeRegField(AD9361_REG_RX1_MANUAL_LMT_FULL_GAIN, POWER_MEAS_IN_STATE_5_MSB, reg >> 3);
 
-    return this->updateGainControl();
+    this->updateGainControl();
 }
 void AD9361::updateGainControl()
 {
@@ -2204,6 +2198,35 @@ void AD9361::setupRSSI(AD9361::RSSIControl *ctrl, bool is_update)
         temp |= DEFAULT_RSSI_MEAS_MODE;
 
     this->writeReg(AD9361_REG_RSSI_CONFIG, temp); // RSSI Mode Select
+}
+void AD9361::readRSSI(uint8_t rx_id, double *symbol, double *preamble)
+{
+    if(rx_id != 1 && rx_id != 2)
+        throw std::invalid_argument("AD9361: Unknown RX path " + std::to_string(rx_id));
+
+    if(!symbol && !preamble)
+        throw std::invalid_argument("AD9361: At least one of symbol or preamble must be provided");
+
+    uint8_t reg[6];
+
+    this->readReg(AD9361_REG_PREAMBLE_LSB, reg, 6);
+
+    if(rx_id == 1)
+    {
+        if(symbol)
+            *symbol = RSSI_OFFSET + RSSI_RESOLUTION * (double)((reg[5] << RSSI_LSB_SHIFT) + (reg[1] & RSSI_LSB_MASK1));
+
+        if(preamble)
+            *preamble = RSSI_OFFSET + RSSI_RESOLUTION * (double)((reg[4] << RSSI_LSB_SHIFT) + (reg[0] & RSSI_LSB_MASK1));
+    }
+    else if(rx_id == 2)
+    {
+        if(symbol)
+            *symbol = RSSI_OFFSET + RSSI_RESOLUTION * (double)((reg[3] << RSSI_LSB_SHIFT) + ((reg[1] & RSSI_LSB_MASK2) >> 1));
+
+        if(preamble)
+            *preamble = RSSI_OFFSET + RSSI_RESOLUTION * (double)((reg[2] << RSSI_LSB_SHIFT) + ((reg[0] & RSSI_LSB_MASK2) >> 1));
+    }
 }
 
 double AD9361::getTemperature()
@@ -2588,7 +2611,7 @@ void AD9361::setBBPLLRate(AD9361::ClockScale *clk_scale, uint32_t rate, uint32_t
     this->writeReg(AD9361_REG_VCO_PROGRAM_2, 0x01); // Increase BBPLL KV and phase margin
     this->writeReg(AD9361_REG_VCO_PROGRAM_2, 0x05); // Increase BBPLL KV and phase margin
 
-    this->checkCalibrationDone(AD9361_REG_CH_1_OVERFLOW, BBPLL_LOCK, 1);
+    this->checkCalibrationDone(AD9361_REG_CH_1_OVERFLOW, BBPLL_LOCK, 1, 1000);
 }
 
 uint64_t AD9361::roundIntRFPLLRate(AD9361::ClockScale *clk_scale, uint64_t rate, uint32_t prate)
@@ -2999,7 +3022,7 @@ void AD9361::setClockScaler(AD9361::ClockScale *clk_scale, bool set)
             if(clk_scale->mult != 1 || clk_scale->div > 4 || clk_scale->div < 1 || clk_scale->div == 3)
                 throw std::invalid_argument("AD9361: RX_SAMPL clock divider must be 1, 2 or 4");
 
-            uint8_t val = this->bypass_rx_fir ? 0 : (Utils::Ilog2((uint8_t)clk_scale->div) + 1);
+            uint8_t val = this->bypass_rx_fir ? 0 : ((clk_scale->div == 4) ? 3 : clk_scale->div);
 
             if(set)
                 this->writeRegField(AD9361_REG_RX_ENABLE_FILTER_CTRL, RX_FIR_ENABLE_DECIMATION(~0), val);
@@ -3046,7 +3069,7 @@ void AD9361::setClockScaler(AD9361::ClockScale *clk_scale, bool set)
             if(clk_scale->mult != 1 || clk_scale->div > 4 || clk_scale->div < 1 || clk_scale->div == 3)
                 throw std::invalid_argument("AD9361: TX_SAMPL clock divider must be 1, 2 or 4");
 
-            uint8_t val = this->bypass_tx_fir ? 0 : (Utils::Ilog2((uint8_t)clk_scale->div) + 1);
+            uint8_t val = this->bypass_tx_fir ? 0 : ((clk_scale->div == 4) ? 3 : clk_scale->div);
 
             if(set)
                 this->writeRegField(AD9361_REG_TX_ENABLE_FILTER_CTRL, TX_FIR_ENABLE_INTERPOLATION(~0), val);
@@ -3414,6 +3437,195 @@ void AD9361::getClockChain(uint32_t *rx_clocks, uint32_t *tx_clocks)
         if(tx_clocks != nullptr)
             tx_clocks[n] = this->getClockRate(this->ref_clk_scale[j]);
     }
+}
+
+void AD9361::verifyFIRCoefficients(AD9361::FIRDest dest, const int16_t *coefs, uint8_t count)
+{
+    uint8_t gain = 0;
+    uint32_t offs = 0;
+
+    if(dest & FIR_IS_RX)
+    {
+        gain = this->readReg(AD9361_REG_RX_FILTER_GAIN);
+        offs = AD9361_REG_RX_FILTER_COEF_ADDR - AD9361_REG_TX_FILTER_COEF_ADDR;
+
+        this->writeReg(AD9361_REG_RX_FILTER_GAIN, 0);
+    }
+
+    uint8_t conf = this->readReg(AD9361_REG_TX_FILTER_CONF + offs);
+    uint8_t sel;
+    uint8_t cnt;
+
+    if((dest & 3) == 3)
+    {
+        sel = 1;
+        cnt = 2;
+    }
+    else
+    {
+        sel = (dest & 3);
+        cnt = 1;
+    }
+
+    uint8_t mismatch = 0;
+
+    for(; cnt > 0; cnt--, sel++)
+    {
+        this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, FIR_NUM_TAPS(count / 16 - 1) | FIR_SELECT(sel) | FIR_START_CLK);
+
+        for(uint8_t val = 0; val < count; val++)
+        {
+            this->writeReg(AD9361_REG_TX_FILTER_COEF_ADDR + offs, val);
+
+            int16_t tmp = ((int16_t)this->readReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_1 + offs) & 0xFF) | ((int16_t)this->readReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_2 + offs) << 8);
+
+            if(tmp != coefs[val])
+            {
+                mismatch = val | 0x80;
+
+                break;
+            }
+        }
+
+        if(mismatch)
+            break;
+    }
+
+    if(dest & FIR_IS_RX)
+        this->writeReg(AD9361_REG_RX_FILTER_GAIN, gain);
+
+    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, conf);
+
+    if(mismatch)
+        throw std::runtime_error("AD9361: FIR coefficient mismatch at index " + std::to_string(mismatch & 0x7F));
+}
+void AD9361::loadFIRCoefficients(AD9361::FIRDest dest, const int16_t *coefs, uint8_t count, uint8_t int_dec, int8_t gain)
+{
+    if(!coefs)
+        throw std::invalid_argument("AD9361: Invalid FIR coefficients");
+
+    if(!count || count > 128 || count % 16)
+        throw std::invalid_argument("AD9361: Invalid FIR coefficient count");
+
+    if(dest & FIR_IS_RX && gain != -12 && gain != -6 && gain != 0 && gain != 6)
+        throw std::invalid_argument("AD9361: Invalid FIR gain");
+
+    if(!(dest & FIR_IS_RX) && gain != -6 && gain != 0)
+        throw std::invalid_argument("AD9361: Invalid FIR gain");
+
+    if(int_dec != 1 && int_dec != 2 && int_dec != 4)
+        throw std::invalid_argument("AD9361: Invalid FIR interpolation/decimation");
+
+    this->forceENSMState(ENSM_STATE_ALERT);
+
+    uint8_t fir_conf = 0;
+    uint8_t fir_enable;
+    uint32_t offs = 0;
+
+    if(dest & FIR_IS_RX)
+    {
+        this->writeReg(AD9361_REG_RX_FILTER_GAIN, (3 - (gain + 12) / 6) & 0x3);
+
+        offs = AD9361_REG_RX_FILTER_COEF_ADDR - AD9361_REG_TX_FILTER_COEF_ADDR;
+
+        this->rx_fir_ntaps = count;
+        this->rx_fir_dec = int_dec;
+
+        fir_enable = this->readRegField(AD9361_REG_RX_ENABLE_FILTER_CTRL, RX_FIR_ENABLE_DECIMATION(~0));
+
+        this->writeRegField(AD9361_REG_RX_ENABLE_FILTER_CTRL, RX_FIR_ENABLE_DECIMATION(~0), (int_dec == 4) ? 3 : int_dec);
+    }
+    else
+    {
+        if(gain == -6)
+            fir_conf = TX_FIR_GAIN_6DB;
+
+        this->tx_fir_ntaps = count;
+        this->tx_fir_int = int_dec;
+
+        fir_enable = this->readRegField(AD9361_REG_TX_ENABLE_FILTER_CTRL, TX_FIR_ENABLE_INTERPOLATION(~0));
+        this->writeRegField(AD9361_REG_TX_ENABLE_FILTER_CTRL, TX_FIR_ENABLE_INTERPOLATION(~0), (int_dec == 4) ? 3 : int_dec);
+    }
+
+    fir_conf |= FIR_NUM_TAPS(count / 16 - 1) | FIR_SELECT(dest) | FIR_START_CLK;
+
+    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf);
+
+    for(uint8_t val = 0; val < count; val++)
+    {
+        this->writeReg(AD9361_REG_TX_FILTER_COEF_ADDR + offs, val);
+        this->writeReg(AD9361_REG_TX_FILTER_COEF_WRITE_DATA_1 + offs, coefs[val] & 0xFF);
+        this->writeReg(AD9361_REG_TX_FILTER_COEF_WRITE_DATA_2 + offs, coefs[val] >> 8);
+        this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf | FIR_WRITE);
+        this->writeReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_2 + offs, 0);
+        this->writeReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_2 + offs, 0);
+    }
+
+    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf);
+
+    fir_conf &= ~FIR_START_CLK;
+
+    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf);
+
+    if(dest & FIR_IS_RX)
+        this->writeRegField(AD9361_REG_RX_ENABLE_FILTER_CTRL, RX_FIR_ENABLE_DECIMATION(~0), fir_enable);
+    else
+        this->writeRegField(AD9361_REG_TX_ENABLE_FILTER_CTRL, TX_FIR_ENABLE_INTERPOLATION(~0), fir_enable);
+
+    this->restorePrevENSMState();
+}
+void AD9361::validateAndEnableFIR()
+{
+    if(!this->bypass_tx_fir)
+    {
+        if(!(this->tx_fir_int == 1 || this->tx_fir_int == 2 || this->tx_fir_int == 4))
+            throw new std::runtime_error("AD9361: Invalid interpolation " + std::to_string(this->tx_fir_int) + " in filter config");
+
+        if(this->tx_fir_int == 1 && this->tx_fir_ntaps > 64)
+            throw new std::runtime_error("AD9361: Invalid: ntaps > 64 and interpolation = 1");
+    }
+
+    if(!this->bypass_rx_fir)
+    {
+        if(!(this->rx_fir_dec == 1 || this->rx_fir_dec == 2 || this->rx_fir_dec == 4))
+            throw new std::runtime_error("AD9361: Invalid decimation " + std::to_string(this->rx_fir_dec) + " in filter config");
+    }
+
+    uint32_t rx[6], tx[6];
+
+    try
+    {
+        this->calcClockChain(this->getClockRate(this->ref_clk_scale[TX_SAMPL_CLK]), this->rate_governor, rx, tx);
+    }
+    catch(const std::exception &e)
+    {
+        this->calcClockChain(MIN_BASEBAND_RATE_NOFIR, this->rate_governor, rx, tx); // If this fails we are out of luck
+    }
+
+    if(!this->bypass_tx_fir)
+    {
+        uint32_t max = (tx[DAC_FREQ] / tx[TX_SAMPL_FREQ]) * 16;
+
+        if(this->tx_fir_ntaps > max)
+            throw new std::runtime_error("AD9361: Invalid: ratio DAC / TX_SAMPL * 16 > ntaps (max " + std::to_string(max) + ", dac " + std::to_string(tx[DAC_FREQ]) + ", tx " + std::to_string(tx[TX_SAMPL_FREQ]) + ")");
+    }
+
+    if(!this->bypass_rx_fir)
+    {
+        uint32_t max = ((rx[ADC_FREQ] / ((rx[ADC_FREQ] == rx[R2_FREQ]) ? 1 : 2)) / rx[RX_SAMPL_FREQ]) * 16;
+
+        if(this->rx_fir_ntaps > max)
+            throw new std::runtime_error("AD9361: Invalid: ratio ADC/2 / RX_SAMPL * 16 > ntaps (max " + std::to_string(max) + ", adc " + std::to_string(rx[ADC_FREQ]) + ", r2 " + std::to_string(rx[R2_FREQ]) + ", rx " + std::to_string(rx[RX_SAMPL_FREQ]) + ")");
+    }
+
+    this->setClockChain(rx, tx);
+
+    // See also: this->setClockChain()
+    // TODO: Re-enable this
+    // if(!this->pdata->dig_interface_tune_fir_disable && this->bypass_tx_fir && this->bypass_rx_fir)
+    //     ad9361_util_dig_tune(0, RESTORE_PREVIOUS);
+
+    this->setRFBandwidth(this->current_rx_bw_Hz, this->current_tx_bw_Hz);
 }
 
 void AD9361::checkCalibrationDone(uint16_t reg, uint8_t mask, uint8_t done_val, uint32_t timeout_ms)
@@ -4598,6 +4810,54 @@ void AD9361::setRXGain(uint8_t rx_id, AD9361::RFRXGain *rx_gain)
     else
         this->setFullTableGain(idx_reg, rx_gain);
 }
+void AD9361::setRXGainMode(uint8_t rx_id, AD9361::RFGainCtrlMode mode)
+{
+    uint8_t gain_ctl_shift;
+
+    if(rx_id == 1)
+        gain_ctl_shift = RX1_GAIN_CTRL_SHIFT;
+    else if(rx_id == 2)
+        gain_ctl_shift = RX2_GAIN_CTRL_SHIFT;
+    else
+        throw std::invalid_argument("AD9361: Unknown RX path " + std::to_string(rx_id));
+
+    uint8_t _mode;
+
+    switch(mode)
+    {
+        case RF_GAIN_MGC:
+            _mode = RX_GAIN_CTL_MGC;
+        break;
+        case RF_GAIN_FASTATTACK_AGC:
+            _mode = RX_GAIN_CTL_AGC_FAST_ATK;
+        break;
+        case RF_GAIN_SLOWATTACK_AGC:
+            _mode = RX_GAIN_CTL_AGC_SLOW_ATK;
+        break;
+        case RF_GAIN_HYBRID_AGC:
+            _mode = RX_GAIN_CTL_AGC_SLOW_ATK_HYBD;
+        break;
+        default:
+            throw std::invalid_argument("AD9361: Invalid RX gain control mode");
+        break;
+    }
+
+    uint8_t val = this->readReg(AD9361_REG_AGC_CONFIG_1);
+    this->enableRX(rx_id, RX_DISABLE);
+
+    val &= ~(RX_GAIN_CTL_MASK << gain_ctl_shift);
+    val |= _mode << gain_ctl_shift;
+
+    if(_mode == RX_GAIN_CTL_AGC_SLOW_ATK_HYBD)
+        val |= SLOW_ATTACK_HYBRID_MODE;
+    else
+        val &= ~SLOW_ATTACK_HYBRID_MODE;
+
+    this->writeReg(AD9361_REG_AGC_CONFIG_1, val);
+    this->enableRX(rx_id, RX_ENABLE);
+
+    this->updateGainControl();
+}
 
 void AD9361::initRFPLLVCO(bool tx, uint64_t freq, uint32_t ref_freq)
 {
@@ -4889,496 +5149,6 @@ void AD9361::doMCSStage(uint8_t stage)
 }
 
 /*
-int32_t ad9361_set_gain_ctrl_mode(struct ad9361_rf_gain_ctrl* gain_ctrl)
-{
-    int32_t rc = 0;
-    uint32_t gain_ctl_shift, mode;
-    uint8_t val;
-
-    rc = this->readReg(AD9361_REG_AGC_CONFIG_1, &val, 1);
-
-    if(rc < 0)
-    {
-        DBGPRINTLN_CTX("Unable to read AGC_CONFIG_1 register (%"PRIX32")", AD9361_REG_AGC_CONFIG_1);
-
-        return rc;
-    }
-
-    switch(gain_ctrl->mode)
-    {
-        case RF_GAIN_MGC:
-            mode = RX_GAIN_CTL_MGC;
-        break;
-        case RF_GAIN_FASTATTACK_AGC:
-            mode = RX_GAIN_CTL_AGC_FAST_ATK;
-        break;
-        case RF_GAIN_SLOWATTACK_AGC:
-            mode = RX_GAIN_CTL_AGC_SLOW_ATK;
-        break;
-        case RF_GAIN_HYBRID_AGC:
-            mode = RX_GAIN_CTL_AGC_SLOW_ATK_HYBD;
-        break;
-        default:
-            return -EINVAL;
-        break;
-    }
-
-    if(gain_ctrl->ant == 1)
-    {
-        gain_ctl_shift = RX1_GAIN_CTRL_SHIFT;
-    }
-    else if(gain_ctrl->ant == 2)
-    {
-        gain_ctl_shift = RX2_GAIN_CTRL_SHIFT;
-    }
-    else
-    {
-        DBGPRINTLN_CTX("Unknown Rx path %"PRIu32, gain_ctrl->ant);
-
-        return -EINVAL;
-    }
-
-    rc = this->enableRX(gain_ctrl->ant, RX_DISABLE);
-
-    if(rc < 0)
-    {
-        DBGPRINTLN_CTX("Unable to disable Rx%"PRIu32, gain_ctrl->ant);
-
-        return rc;
-    }
-
-    val &= ~(RX_GAIN_CTL_MASK << gain_ctl_shift);
-    val |= mode << gain_ctl_shift;
-
-    if(mode == RX_GAIN_CTL_AGC_SLOW_ATK_HYBD)
-        val |= SLOW_ATTACK_HYBRID_MODE;
-    else
-        val &= ~SLOW_ATTACK_HYBRID_MODE;
-
-    rc = this->writeReg(AD9361_REG_AGC_CONFIG_1, val);
-
-    if(rc < 0)
-    {
-        DBGPRINTLN_CTX("Unable to write AGC_CONFIG_1 register (%"PRIX32")", AD9361_REG_AGC_CONFIG_1);
-
-        return rc;
-    }
-
-    this->enableRX(gain_ctrl->ant, RX_ENABLE);
-
-    rc = this->updateGainControl();
-
-    return rc;
-}
-
-int32_t ad9361_read_rssi(struct ad9361_rf_rssi* rssi)
-{
-    uint8_t reg_val_buf[6];
-    int32_t rc;
-
-    rc = this->readReg(AD9361_REG_PREAMBLE_LSB, reg_val_buf, ARRAY_SIZE(reg_val_buf));
-
-    if(rssi->ant == 1)
-    {
-        rssi->symbol = RSSI_RESOLUTION * ((reg_val_buf[5] << RSSI_LSB_SHIFT) + (reg_val_buf[1] & RSSI_LSB_MASK1));
-        rssi->preamble = RSSI_RESOLUTION * ((reg_val_buf[4] << RSSI_LSB_SHIFT) + (reg_val_buf[0] & RSSI_LSB_MASK1));
-    }
-    else if(rssi->ant == 2)
-    {
-        rssi->symbol = RSSI_RESOLUTION * ((reg_val_buf[3] << RSSI_LSB_SHIFT) + ((reg_val_buf[1] & RSSI_LSB_MASK2) >> 1));
-        rssi->preamble = RSSI_RESOLUTION * ((reg_val_buf[2] << RSSI_LSB_SHIFT) + ((reg_val_buf[0] & RSSI_LSB_MASK2) >> 1));
-    }
-    else
-    {
-        rc = -EFAULT;
-    }
-
-    rssi->multiplier = RSSI_MULTIPLIER;
-
-    return rc;
-}
-
-static int32_t ad9361_verify_fir_filter_coef(enum ad9361_fir_dest dest, uint32_t ntaps, short* coef)
-{
-    uint32_t val, offs = 0, gain = 0, conf, sel, cnt;
-    int32_t ret = 0;
-
-    //return 0;
-
-    DBGPRINTLN_CTX("ntaps %"PRIu32", dest %d", ntaps, dest);
-
-    if(dest & FIR_IS_RX)
-    {
-        gain = this->readReg(AD9361_REG_RX_FILTER_GAIN);
-
-        offs = AD9361_REG_RX_FILTER_COEF_ADDR - AD9361_REG_TX_FILTER_COEF_ADDR;
-
-        this->writeReg(AD9361_REG_RX_FILTER_GAIN, 0);
-    }
-
-    conf = this->readReg(AD9361_REG_TX_FILTER_CONF + offs);
-
-    if((dest & 3) == 3)
-    {
-        sel = 1;
-        cnt = 2;
-    }
-    else
-    {
-        sel = (dest & 3);
-        cnt = 1;
-    }
-
-    for(; cnt > 0; cnt--, sel++)
-    {
-        this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, FIR_NUM_TAPS(ntaps / 16 - 1) | FIR_SELECT(sel) | FIR_START_CLK);
-
-        for(val = 0; val < ntaps; val++)
-        {
-            int16_t tmp;
-
-            this->writeReg(AD9361_REG_TX_FILTER_COEF_ADDR + offs, val);
-
-            tmp = (this->readReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_1 + offs) & 0xFF) | (this->readReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_2 + offs) << 8);
-
-            if(tmp != coef[val])
-            {
-                DBGPRINTLN_CTX("%s%"PRIu32" readback mismatch at tap %"PRIu32" (%d != %d)", (dest & FIR_IS_RX) ? "RX" : "TX", sel, val, tmp, coef[val]);
-
-                ret = -EIO;
-            }
-        }
-    }
-
-    if(dest & FIR_IS_RX)
-        this->writeReg(AD9361_REG_RX_FILTER_GAIN, gain);
-
-    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, conf);
-
-    return ret;
-}
-int32_t ad9361_load_fir_filter_coef(enum ad9361_fir_dest dest, int32_t gain_dB, uint32_t ntaps, int16_t* coef)
-{
-    uint32_t val, offs = 0, fir_conf = 0, fir_enable = 0;
-    int32_t ret;
-
-    DBGPRINTLN_CTX("ntaps %"PRIu32", gain %"PRId32" dB, dest %d", ntaps, gain_dB, dest);
-
-    if(coef == NULL || !ntaps || ntaps > 128 || ntaps % 16)
-    {
-        DBGPRINTLN_CTX("Invalid parameters");
-
-        return -EINVAL;
-    }
-
-    this->forceENSMState(ENSM_STATE_ALERT);
-
-    if(dest & FIR_IS_RX)
-    {
-        val = 3 - (gain_dB + 12) / 6;
-
-        this->writeReg(AD9361_REG_RX_FILTER_GAIN, val & 0x3);
-
-        offs = AD9361_REG_RX_FILTER_COEF_ADDR - AD9361_REG_TX_FILTER_COEF_ADDR;
-        this->rx_fir_ntaps = ntaps;
-        fir_enable = this->readRegField(AD9361_REG_RX_ENABLE_FILTER_CTRL, RX_FIR_ENABLE_DECIMATION(~0));
-
-        this->writeRegField(AD9361_REG_RX_ENABLE_FILTER_CTRL, RX_FIR_ENABLE_DECIMATION(~0), (this->rx_fir_dec == 4) ? 3 : this->rx_fir_dec);
-    }
-    else
-    {
-        if(gain_dB == -6)
-            fir_conf = TX_FIR_GAIN_6DB;
-
-        this->tx_fir_ntaps = ntaps;
-
-        fir_enable = this->readRegField(AD9361_REG_TX_ENABLE_FILTER_CTRL, TX_FIR_ENABLE_INTERPOLATION(~0));
-        this->writeRegField(AD9361_REG_TX_ENABLE_FILTER_CTRL, TX_FIR_ENABLE_INTERPOLATION(~0), (this->tx_fir_int == 4) ? 3 : this->tx_fir_int);
-    }
-
-    val = ntaps / 16 - 1;
-
-    fir_conf |= FIR_NUM_TAPS(val) | FIR_SELECT(dest) | FIR_START_CLK;
-
-    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf);
-
-    for(val = 0; val < ntaps; val++)
-    {
-        this->writeReg(AD9361_REG_TX_FILTER_COEF_ADDR + offs, val);
-        this->writeReg(AD9361_REG_TX_FILTER_COEF_WRITE_DATA_1 + offs, coef[val] & 0xFF);
-        this->writeReg(AD9361_REG_TX_FILTER_COEF_WRITE_DATA_2 + offs, coef[val] >> 8);
-        this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf | FIR_WRITE);
-        this->writeReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_2 + offs, 0);
-        this->writeReg(AD9361_REG_TX_FILTER_COEF_READ_DATA_2 + offs, 0);
-    }
-
-    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf);
-
-    fir_conf &= ~FIR_START_CLK;
-
-    this->writeReg(AD9361_REG_TX_FILTER_CONF + offs, fir_conf);
-
-    ret = ad9361_verify_fir_filter_coef(dest, ntaps, coef);
-
-    if(dest & FIR_IS_RX)
-        this->writeRegField(AD9361_REG_RX_ENABLE_FILTER_CTRL, RX_FIR_ENABLE_DECIMATION(~0), fir_enable);
-    else
-        this->writeRegField(AD9361_REG_TX_ENABLE_FILTER_CTRL, TX_FIR_ENABLE_INTERPOLATION(~0), fir_enable);
-
-    this->restorePrevENSMState();
-
-    return ret;
-}
-int32_t ad9361_parse_fir(char* data, uint32_t size)
-{
-    char* line;
-    int32_t i = 0, ret, txc, rxc;
-    int32_t tx = -1, tx_gain = 0, tx_int = 0;
-    int32_t rx = -1, rx_gain = 0, rx_dec = 0;
-    int32_t rtx = -1, rrx = -1;
-    int16_t coef_tx[128];
-    int16_t coef_rx[128];
-    char* ptr = data;
-
-    this->filt_rx_bw_Hz = 0;
-    this->filt_tx_bw_Hz = 0;
-    this->filt_valid = false;
-
-    while((line = strsep(&ptr, "\n")))
-    {
-        if(line >= data + size)
-        {
-            break;
-        }
-
-        if(line[0] == '#')
-            continue;
-
-        if(tx < 0)
-        {
-            ret = sscanf(line, "TX %"PRId32" GAIN %"PRId32" INT %"PRId32, &tx, &tx_gain, &tx_int);
-
-            if(ret == 3)
-                continue;
-            else
-                tx = -1;
-        }
-        if(rx < 0)
-        {
-            ret = sscanf(line, "RX %"PRId32" GAIN %"PRId32" DEC %"PRId32, &rx, &rx_gain, &rx_dec);
-
-            if(ret == 3)
-                continue;
-            else
-                tx = -1;
-        }
-
-        if(rtx < 0)
-        {
-            ret = sscanf(line, "RTX %"PRIu32" %"PRIu32" %"PRIu32" %"PRIu32" %"PRIu32" %"PRIu32, &this->filt_tx_path_clks[0], &this->filt_tx_path_clks[1], &this->filt_tx_path_clks[2], &this->filt_tx_path_clks[3], &this->filt_tx_path_clks[4], &this->filt_tx_path_clks[5]);
-
-            if(ret == 6)
-            {
-                rtx = 0;
-
-                continue;
-            }
-            else
-            {
-                rtx = -1;
-            }
-        }
-
-        if(rrx < 0)
-        {
-            ret = sscanf(line, "RRX %"PRIu32" %"PRIu32" %"PRIu32" %"PRIu32" %"PRIu32" %"PRIu32, &this->filt_rx_path_clks[0], &this->filt_rx_path_clks[1], &this->filt_rx_path_clks[2], &this->filt_rx_path_clks[3], &this->filt_rx_path_clks[4], &this->filt_rx_path_clks[5]);
-
-            if(ret == 6)
-            {
-                rrx = 0;
-                continue;
-            }
-            else
-            {
-                rrx = -1;
-            }
-        }
-
-        if(!this->filt_rx_bw_Hz)
-        {
-            ret = sscanf(line, "BWRX %"PRId32, &this->filt_rx_bw_Hz);
-
-            if(ret == 1)
-                continue;
-            else
-                this->filt_rx_bw_Hz = 0;
-        }
-
-        if(!this->filt_tx_bw_Hz)
-        {
-            ret = sscanf(line, "BWTX %"PRId32, &this->filt_tx_bw_Hz);
-
-            if(ret == 1)
-                continue;
-            else
-                this->filt_tx_bw_Hz = 0;
-        }
-
-        ret = sscanf(line, "%"PRId32",%"PRId32, &txc, &rxc);
-
-        if(ret == 1)
-        {
-            coef_tx[i] = coef_rx[i] = (int16_t)txc;
-
-            i++;
-
-            continue;
-        }
-        else if(ret == 2)
-        {
-            coef_tx[i] = (int16_t)txc;
-            coef_rx[i] = (int16_t)rxc;
-
-            i++;
-
-            continue;
-        }
-    }
-
-    switch(tx)
-    {
-        case FIR_TX1:
-        case FIR_TX2:
-        case FIR_TX1_TX2:
-            this->tx_fir_int = tx_int;
-            ret = ad9361_load_fir_filter_coef((enum ad9361_fir_dest)tx, tx_gain, i, coef_tx);
-        break;
-        default:
-            ret = -EINVAL;
-    }
-
-    switch(rx | FIR_IS_RX)
-    {
-        case FIR_RX1:
-        case FIR_RX2:
-        case FIR_RX1_RX2:
-            this->rx_fir_dec = rx_dec;
-            ret = ad9361_load_fir_filter_coef((enum ad9361_fir_dest)(rx | FIR_IS_RX), rx_gain, i, coef_rx);
-        break;
-        default:
-            ret = -EINVAL;
-    }
-
-    if(ret < 0)
-        return ret;
-
-    if(!(rrx | rtx))
-        this->filt_valid = true;
-
-    return size;
-}
-int32_t ad9361_validate_enable_fir()
-{
-    int32_t ret;
-    uint32_t rx[6], tx[6];
-    uint32_t max, min, valid;
-
-    DBGPRINTLN_CTX("TX FIR - enable: %d, ntaps: %d, int: %d", !this->bypass_tx_fir, this->tx_fir_ntaps, this->tx_fir_int);
-    DBGPRINTLN_CTX("RX FIR - enable: %d, ntaps: %d, dec: %d", !this->bypass_rx_fir, this->rx_fir_ntaps, this->rx_fir_dec);
-
-    if(!this->bypass_tx_fir)
-    {
-        if(!(this->tx_fir_int == 1 || this->tx_fir_int == 2 || this->tx_fir_int == 4))
-        {
-            DBGPRINTLN_CTX("Invalid interpolation %d in filter config", this->tx_fir_int);
-
-            return -EINVAL;
-        }
-
-
-        if(this->tx_fir_int == 1 && this->tx_fir_ntaps > 64)
-        {
-            DBGPRINTLN_CTX("Invalid: ntaps > 64 and interpolation = 1");
-
-            return -EINVAL;
-        }
-    }
-
-    if(!this->bypass_rx_fir)
-    {
-        if(!(this->rx_fir_dec == 1 || this->rx_fir_dec == 2 || this->rx_fir_dec == 4))
-        {
-            DBGPRINTLN_CTX("Invalid decimation %d in filter config", this->rx_fir_dec);
-
-            return -EINVAL;
-        }
-    }
-
-    if(!this->filt_valid || this->bypass_rx_fir || this->bypass_tx_fir)
-    {
-        ret = this->calcClockChain(this->getClockRate(this->ref_clk_scale[TX_SAMPL_CLK]), this->rate_governor, rx, tx);
-
-        if(ret < 0)
-        {
-            min = this->rate_governor ? 1500000U : 1000000U;
-
-            DBGPRINTLN_CTX("Calculating filter rates failed (%"PRId32"), using min frequency", ret);
-
-            ret = this->calcClockChain(min, this->rate_governor, rx, tx);
-
-            if(ret < 0)
-                return ret;
-        }
-
-        valid = false;
-    }
-    else
-    {
-        memcpy(rx, this->filt_rx_path_clks, sizeof(rx));
-        memcpy(tx, this->filt_tx_path_clks, sizeof(tx));
-
-        valid = true;
-    }
-
-    DBGPRINTLN_CTX("RX Rates - BBPLL: %"PRIu32" Hz, ADC: %"PRIu32" Hz, R2CLK: %"PRIu32" Hz, R1CLK: %"PRIu32" Hz, CLKRF: %"PRIu32" Hz, RSAMPL: %"PRIu32" Hz", rx[BBPLL_FREQ], rx[ADC_FREQ], rx[R2_FREQ], rx[R1_FREQ], rx[CLKRF_FREQ], rx[RX_SAMPL_FREQ]);
-    DBGPRINTLN_CTX("TX Rates - BBPLL: %"PRIu32" Hz, DAC: %"PRIu32" Hz, T2CLK: %"PRIu32" Hz, T1CLK: %"PRIu32" Hz, CLKTF: %"PRIu32" Hz, TSAMPL: %"PRIu32" Hz", tx[BBPLL_FREQ], tx[DAC_FREQ], tx[T2_FREQ], tx[T1_FREQ], tx[CLKTF_FREQ], tx[TX_SAMPL_FREQ]);
-
-    if(!this->bypass_tx_fir)
-    {
-        max = (tx[DAC_FREQ] / tx[TX_SAMPL_FREQ]) * 16;
-
-        if(this->tx_fir_ntaps > max)
-        {
-            DBGPRINTLN_CTX("Invalid: ratio DAC / TX_SAMPL * 16 > ntaps (max %"PRIu32", adc %"PRIu32", tx %"PRIu32")", max, tx[DAC_FREQ], tx[TX_SAMPL_FREQ]);
-
-            return -EINVAL;
-        }
-    }
-
-    if(!this->bypass_rx_fir)
-    {
-        max = ((rx[ADC_FREQ] / ((rx[ADC_FREQ] == rx[R2_FREQ]) ? 1 : 2)) / rx[RX_SAMPL_FREQ]) * 16;
-
-        if(this->rx_fir_ntaps > max)
-        {
-            DBGPRINTLN_CTX("Invalid: ratio ADC/2 / RX_SAMPL * 16 > ntaps (max %"PRIu32")", max);
-
-            return -EINVAL;
-        }
-    }
-
-    ret = this->setClockChain(rx, tx);
-
-    if(ret < 0)
-        return ret;
-
-    // See also: this->setClockChain()
-    if(!this->pdata->dig_interface_tune_fir_disable && this->bypass_tx_fir && this->bypass_rx_fir)
-        ad9361_util_dig_tune(0, RESTORE_PREVIOUS);
-
-    return ad9361_update_rf_bandwidth(valid ? this->filt_rx_bw_Hz : this->current_rx_bw_Hz, valid ? this->filt_tx_bw_Hz : this->current_tx_bw_Hz);
-}
-
 int32_t ad9361_rssi_gain_step_calib()
 {
     uint32_t lna_error[4];
@@ -5471,5 +5241,4 @@ int32_t ad9361_rssi_gain_step_calib()
 
     return 0;
 }
-
 */

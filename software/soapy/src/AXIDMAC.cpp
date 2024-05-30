@@ -10,7 +10,7 @@ void AXIDMAC::ISR(void *_this)
 
 void AXIDMAC::handleIRQ()
 {
-    std::unique_lock<std::recursive_mutex> lock(this->mutex);
+    std::unique_lock<std::mutex> lock(this->mutex);
 
     uint32_t pend = this->readReg(AXI_DMAC_REG_IRQ_PENDING);
     this->writeReg(AXI_DMAC_REG_IRQ_PENDING, pend); // Clear pending IRQs
@@ -183,7 +183,7 @@ AXIDMAC::Capabilities AXIDMAC::getCapabilities()
 
 void AXIDMAC::enable(bool enable)
 {
-    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+    std::lock_guard<std::mutex> lock(this->mutex);
 
     uint32_t ctrl = this->readReg(AXI_DMAC_REG_CONTROL);
 
@@ -206,7 +206,7 @@ bool AXIDMAC::enabled()
 }
 void AXIDMAC::pause(bool pause)
 {
-    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+    std::lock_guard<std::mutex> lock(this->mutex);
 
     uint32_t ctrl = this->readReg(AXI_DMAC_REG_CONTROL);
 
@@ -231,37 +231,42 @@ bool AXIDMAC::idle()
 void AXIDMAC::waitIdle(uint32_t timeout_ms)
 {
     uint64_t timeout = (uint64_t)timeout_ms * 100ULL;
+    bool idle = this->idle();
 
-    while(--timeout && !this->idle())
+    while(--timeout && !idle)
+    {
         std::this_thread::sleep_for(std::chrono::microseconds(10));
 
-    if(!this->idle())
+        idle = this->idle();
+    }
+
+    if(!idle)
         throw std::runtime_error("AXI DMAC: Timed out waiting for controller to be idle");
 
     // Wait for all transfer callbacks to complete
-    bool all_complete = false;
+    idle = false;
 
-    while(--timeout && !all_complete)
+    while(--timeout && !idle)
     {
-        all_complete = true;
+        idle = true;
 
         for(uint8_t i = 0; i < AXI_DMAC_NUM_TRANSFERS; i++)
         {
             if(!this->transfer_callback_done[i].load())
             {
-                all_complete = false;
+                idle = false;
 
                 break;
             }
         }
 
-        if(all_complete)
+        if(idle)
             break;
 
         std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
-    if(!all_complete)
+    if(!idle)
         throw std::runtime_error("AXI DMAC: Timed out waiting for transfer callbacks to complete");
 }
 
@@ -270,34 +275,70 @@ void AXIDMAC::setTransferCallback(uint8_t id, AXIDMAC::Transfer::Callback callba
     if(id >= AXI_DMAC_NUM_TRANSFERS)
         throw std::invalid_argument("AXI DMAC: Invalid transfer ID");
 
-    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+    std::lock_guard<std::mutex> lock(this->mutex);
 
     this->transfers[id].cb = callback;
     this->transfers[id].cb_arg = arg;
 }
 void AXIDMAC::submitTransfer(AXIDMAC::Transfer &transfer)
 {
+    if(transfer.size > this->capabilities.max_transfer_size)
+        throw std::invalid_argument("AXI DMAC: Transfer length " + std::to_string(transfer.size) + " is out of range (max: " + std::to_string(this->capabilities.max_transfer_size) + ")");
+
     if(transfer.flags & AXIDMAC::Transfer::Flags::CYCLIC)
     {
         if(!this->capabilities.cyclic_support)
-            throw std::runtime_error("AXI DMAC: Cyclic transfers are not supported");
+            throw std::invalid_argument("AXI DMAC: Cyclic transfers are not supported");
 
         if(this->capabilities.transfer_mode != AXIDMAC::TransferMode::MEM_TO_DEV)
-            throw std::runtime_error("AXI DMAC: Cyclic transfers are only supported in memory to device mode");
+            throw std::invalid_argument("AXI DMAC: Cyclic transfers are only supported in memory to device mode");
     }
 
-    if((this->capabilities.transfer_mode & AXIDMAC::TransferMode::DEV_TO_MEM) && (transfer.dest_addr & ~this->capabilities.dest_addr_mask))
-        throw std::runtime_error("AXI DMAC: Destination address 0x" + std::to_string(transfer.dest_addr) + " is out of range (mask: 0x" + std::to_string(this->capabilities.dest_addr_mask) + ")");
+    if(this->capabilities.transfer_mode & AXIDMAC::TransferMode::DEV_TO_MEM)
+    {
+        if(transfer.dest_addr & ~this->capabilities.dest_addr_mask)
+            throw std::invalid_argument("AXI DMAC: Destination address is out of range");
 
-    if((this->capabilities.transfer_mode & AXIDMAC::TransferMode::MEM_TO_DEV) && (transfer.src_addr & ~this->capabilities.src_addr_mask))
-        throw std::runtime_error("AXI DMAC: Source address 0x" + std::to_string(transfer.src_addr) + " is out of range (mask: 0x" + std::to_string(this->capabilities.src_addr_mask) + ")");
+        if(transfer.dest_addr & (this->capabilities.bytes_per_burst - 1))
+            throw std::invalid_argument("AXI DMAC: Destination address is not aligned with burst size");
 
-    if(transfer.size > this->capabilities.max_transfer_size)
-        throw std::runtime_error("AXI DMAC: Transfer length " + std::to_string(transfer.size) + " is out of range (max: " + std::to_string(this->capabilities.max_transfer_size) + ")");
+        if((transfer.dest_addr & 0xFFF) + std::min(transfer.size, (uint32_t)this->capabilities.bytes_per_burst) > 0x1000)
+            throw std::invalid_argument("AXI DMAC: Destination address crosses 4K boundary");
 
-    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+        if(!(this->capabilities.transfer_mode & AXIDMAC::TransferMode::MEM_TO_DEV)) // If not memory-to-memory xfer
+        {
+            if(transfer.size & ((this->capabilities.src_data_width >> 3) - 1))
+                throw std::invalid_argument("AXI DMAC: Transfer length is not multiple of destination data bus");
+        }
+    }
 
-    if(!this->enabled())
+    if(this->capabilities.transfer_mode & AXIDMAC::TransferMode::MEM_TO_DEV)
+    {
+        if(transfer.src_addr & ~this->capabilities.src_addr_mask)
+            throw std::invalid_argument("AXI DMAC: Source address is out of range");
+
+        if(transfer.src_addr & (this->capabilities.bytes_per_burst - 1))
+            throw std::invalid_argument("AXI DMAC: Source address is not aligned with burst size");
+
+        if((transfer.src_addr & 0xFFF) + std::min(transfer.size, (uint32_t)this->capabilities.bytes_per_burst) > 0x1000)
+            throw std::invalid_argument("AXI DMAC: Source address crosses 4K boundary");
+
+        if(!(this->capabilities.transfer_mode & AXIDMAC::TransferMode::DEV_TO_MEM)) // If not memory-to-memory xfer
+        {
+            if(transfer.size & ((this->capabilities.dest_data_width >> 3) - 1))
+                throw std::invalid_argument("AXI DMAC: Transfer length is not multiple of source data bus");
+        }
+    }
+
+    if(this->capabilities.transfer_mode == AXIDMAC::TransferMode::DEV_TO_DEV)
+    {
+        if(transfer.size & ((std::max(this->capabilities.src_data_width, this->capabilities.dest_data_width) >> 3) - 1))
+            throw std::invalid_argument("AXI DMAC: Transfer length is not multiple of widest data bus");
+    }
+
+    std::lock_guard<std::mutex> lock(this->mutex);
+
+    if(!(this->readReg(AXI_DMAC_REG_CONTROL) & AXI_DMAC_REG_CONTROL_ENABLE))
         throw std::runtime_error("AXI DMAC: Cannot submit transfer while disabled");
 
     bool available = !this->readReg(AXI_DMAC_REG_XFER_SUBMIT);

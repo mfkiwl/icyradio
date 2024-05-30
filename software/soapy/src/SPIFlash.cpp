@@ -61,6 +61,29 @@ void SPIFlash::detectDevice()
             }
         }
         break;
+        case 0xEF4018:
+        {
+            uint16_t mf_dev = this->readMFDeviceID();
+
+            if(mf_dev != 0xEF17)
+                break;
+
+            this->dev_size = 16 * 1024 * 1024;
+
+            // Distinguish between JV and FV variants
+            uint8_t data = this->read(0x00000024);
+            uint8_t data_dual = this->readDualIO(0x00000024, false, true);
+            uint8_t data_dual_cont = this->readDualIO(0x00000024, true, false);
+
+            if(data == data_dual)
+            {
+                if(data_dual != data_dual_cont)
+                    this->dev = SPIFlash::DeviceID::W25Q128JV; // JV does not support continuous read
+                else
+                    this->dev = SPIFlash::DeviceID::W25Q128FV; // FV supports continuous read
+            }
+        }
+        break;
     }
 }
 
@@ -92,6 +115,10 @@ std::string SPIFlash::getDeviceName()
             return "W25Q64BV";
         case SPIFlash::DeviceID::W25Q64FV:
             return "W25Q64FV";
+        case SPIFlash::DeviceID::W25Q128JV:
+            return "W25Q128JV";
+        case SPIFlash::DeviceID::W25Q128FV:
+            return "W25Q128FV";
         case SPIFlash::DeviceID::SST26VF016B:
             return "SST26VF016B";
         case SPIFlash::DeviceID::SST26VF064B:
@@ -278,6 +305,8 @@ uint64_t SPIFlash::readUniqueID()
         case SPIFlash::DeviceID::W25Q64JV:
         case SPIFlash::DeviceID::W25Q64BV:
         case SPIFlash::DeviceID::W25Q64FV:
+        case SPIFlash::DeviceID::W25Q128JV:
+        case SPIFlash::DeviceID::W25Q128FV:
         break;
         default:
             throw std::runtime_error("SPI Flash: Device does not support unique ID read");

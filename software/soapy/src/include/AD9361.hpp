@@ -2094,8 +2094,8 @@
 
 
 // AD9361 Limits
-#define RSSI_MULTIPLIER         100
-#define RSSI_RESOLUTION         ((int) (0.25 * RSSI_MULTIPLIER))
+#define RSSI_OFFSET             -128
+#define RSSI_RESOLUTION         0.25
 #define RSSI_MAX_WEIGHT         255
 
 #define MAX_LMT_INDEX           40
@@ -2126,6 +2126,8 @@
 #define MAX_TX_HB2              320000000UL
 #define MAX_TX_HB3              320000000UL
 
+#define MIN_BASEBAND_RATE       DIV_CEIL(MIN_ADC_CLK, 48) // Min ADC rate divided by maximum decimation
+#define MIN_BASEBAND_RATE_NOFIR DIV_CEIL(MIN_ADC_CLK, 12)// Min ADC rate divided by maximum decimation without FIR
 #define MAX_BASEBAND_RATE       61440000UL
 
 #define RFPLL_MODULUS           8388593UL
@@ -2176,11 +2178,6 @@ public:
         FIR_RX2 = 0x82,
         FIR_RX1_RX2 = 0x83,
         FIR_IS_RX = 0x80,
-    };
-    struct RFGainCtrl
-    {
-        uint32_t ant;
-        uint8_t mode;
     };
     enum RFGainCtrlMode
     {
@@ -2493,14 +2490,6 @@ public:
         uint32_t mixer_index;   /* MIXER Index (Split GT mode only) */
 
     };
-    struct RFRSSI
-    {
-        uint32_t ant;        /* Antenna number for which RSSI is reported */
-        uint32_t symbol;     /* Runtime RSSI */
-        uint32_t preamble;   /* Initial RSSI */
-        int32_t multiplier;  /* Multiplier to convert reported RSSI */
-        uint8_t duration;    /* Duration to be considered for measuring */
-    };
     struct SynthLUT
     {
         uint16_t VCO_MHz;
@@ -2740,6 +2729,10 @@ public:
 
     void setupGPO(AD9361::GPOControl *ctrl);
     void setGPOValue(uint8_t gpo, AD9361::GPOValue value);
+    inline void setGPOValue(uint8_t gpo, bool value)
+    {
+        this->setGPOValue(gpo, value ? AD9361::GPOValue::HIGH : AD9361::GPOValue::LOW);
+    }
     AD9361::GPOValue getGPOValue(uint8_t gpo);
 
     void setupAuxDAC(AD9361::AUXDACControl *ctrl);
@@ -2771,6 +2764,27 @@ public:
     void setupRXADC();
 
     void setupRSSI(AD9361::RSSIControl *ctrl, bool is_update);
+    void readRSSI(uint8_t rx_id, double *symbol, double *preamble = nullptr);
+    inline double readRSSI(uint8_t rx_id)
+    {
+        double d;
+
+        this->readRSSI(rx_id, &d);
+
+        return d;
+    }
+    inline double readSymbolRSSI(uint8_t rx_id)
+    {
+        return this->readRSSI(rx_id);
+    }
+    inline double readPreambleRSSI(uint8_t rx_id)
+    {
+        double d;
+
+        this->readRSSI(rx_id, nullptr, &d);
+
+        return d;
+    }
 
     double getTemperature();
 
@@ -2834,6 +2848,10 @@ public:
         this->calcClockChain(freq, this->rate_governor, rx, tx);
         this->setClockChain(rx, tx);
     }
+
+    void verifyFIRCoefficients(AD9361::FIRDest dest, const int16_t *coefs, uint8_t count);
+    void loadFIRCoefficients(AD9361::FIRDest dest, const int16_t *coefs, uint8_t count, uint8_t int_dec = 1, int8_t gain = 0);
+    void validateAndEnableFIR();
 
     inline void runCalibration(uint8_t mask, uint32_t timeout_ms = 5000)
     {
@@ -2917,6 +2935,7 @@ public:
     void setSplitTableGain(uint16_t idx_reg, AD9361::RFRXGain *rx_gain);
     void setFullTableGain(uint16_t idx_reg, AD9361::RFRXGain *rx_gain);
     void setRXGain(uint8_t rx_id, AD9361::RFRXGain *rx_gain);
+    void setRXGainMode(uint8_t rx_id, AD9361::RFGainCtrlMode mode);
 
     void initRFPLLVCO(bool tx, uint64_t freq, uint32_t ref_freq);
 
@@ -2973,11 +2992,6 @@ public:
     bool bypass_rx_fir;
     bool bypass_tx_fir;
     bool rx_eq_2tx;
-    bool filt_valid;
-    uint32_t filt_rx_path_clks[NUM_RX_CLOCKS];
-    uint32_t filt_tx_path_clks[NUM_TX_CLOCKS];
-    uint32_t filt_rx_bw_Hz;
-    uint32_t filt_tx_bw_Hz;
     uint8_t tx_fir_int;
     uint8_t tx_fir_ntaps;
     uint8_t rx_fir_dec;

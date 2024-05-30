@@ -53,9 +53,9 @@ private:
     struct Config
     {
         bool use_clkin; // Use external clock input (CLKIN) instead of the internal TCXO (XTAL)
-        uint32_t clkin_freq; // External clock input frequency in Hz
+        double clkin_freq; // External clock input frequency in Hz
         bool enable_clkout; // Enable clock output on the u.FL connector
-        uint32_t clkout_freq; // External clock output frequency in Hz
+        double clkout_freq; // External clock output frequency in Hz
     };
     class Stream
     {
@@ -316,12 +316,12 @@ public:
     /*******************************************************************
      * Settings API
      ******************************************************************/
-    //SoapySDR::ArgInfoList getSettingInfo() const;
-    //void writeSetting(const std::string &key, const std::string &value);
-    //std::string readSetting(const std::string &key) const;
-    //SoapySDR::ArgInfoList getSettingInfo(const int direction, const size_t channel) const;
-    //void writeSetting(const int direction, const size_t channel, const std::string &key, const std::string &value);
-    //std::string readSetting(const int direction, const size_t channel, const std::string &key) const;
+    SoapySDR::ArgInfoList getSettingInfo() const;
+    void writeSetting(const std::string &key, const std::string &value);
+    std::string readSetting(const std::string &key) const;
+    SoapySDR::ArgInfoList getSettingInfo(const int direction, const size_t channel) const;
+    void writeSetting(const int direction, const size_t channel, const std::string &key, const std::string &value);
+    std::string readSetting(const int direction, const size_t channel, const std::string &key) const;
 
     /*******************************************************************
      * GPIO API
@@ -405,10 +405,22 @@ private:
 
     std::vector<SoapyIcyRadio::Stream *> getStreams(bool active_only = false) const;
     std::vector<SoapyIcyRadio::Stream *> getStreams(const int direction, bool active_only = false) const;
-    SoapyIcyRadio::Stream *findStream(SoapyIcyRadio::Stream *stream) const;
+    SoapyIcyRadio::Stream *_findStream(SoapyIcyRadio::Stream *stream) const;
+    inline SoapyIcyRadio::Stream *_findStream(SoapySDR::Stream *stream) const
+    {
+        return this->_findStream(reinterpret_cast<SoapyIcyRadio::Stream *>(stream));
+    }
+    inline SoapyIcyRadio::Stream *findStream(SoapyIcyRadio::Stream *stream) const
+    {
+        std::lock_guard<std::mutex> lock(this->streams_mutex);
+
+        return this->_findStream(stream);
+    }
     inline SoapyIcyRadio::Stream *findStream(SoapySDR::Stream *stream) const
     {
-        return this->findStream(reinterpret_cast<SoapyIcyRadio::Stream *>(stream));
+        std::lock_guard<std::mutex> lock(this->streams_mutex);
+
+        return this->_findStream(stream);
     }
 
     bool isChannelVectorValid(const int direction, const std::vector<size_t> &channels) const;
@@ -463,5 +475,5 @@ public:
 private:
     // Streaming metadata
     std::vector<SoapyIcyRadio::Stream *> streams;
-    mutable std::recursive_mutex streams_mutex;
+    mutable std::mutex streams_mutex;
 };
