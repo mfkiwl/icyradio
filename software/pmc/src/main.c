@@ -537,7 +537,7 @@ int main()
     DBGPRINTLN_CTX("LT7182S:");
 
     if(!lt7182s_read_mfr_id(szMFRBuf, sizeof(szMFRBuf)))
-        DBGPRINTLN_CTX("Failed to read manufacturer IF!");
+        DBGPRINTLN_CTX("Failed to read manufacturer ID!");
     else
         DBGPRINTLN_CTX("  MFR ID: %s", szMFRBuf);
 
@@ -575,6 +575,7 @@ int main()
     }
 
     DBGPRINTLN_CTX("  MFR Special ID: 0x%04X", lt7182s_read_mfr_special_id());
+    DBGPRINTLN_CTX("  MFR Fault Log Timestamp: %llu", lt7182s_mfr_fault_log_get_timestamp());
 
     // Configure Channel 0
     lt7182s_set_operation(0, LT7182S_OPERATION_TURN_OFF_IMMED);
@@ -704,6 +705,9 @@ int main()
     DBGPRINTLN_CTX("Enabling 5V0 and 1V0 in 100 ms...");
     delay_ms(100);
 
+    lt7182s_mfr_fault_clear();
+    lt7182s_cleak_faults();
+
     lt7182s_set_operation(1, LT7182S_OPERATION_ON); // First enable 1V0, it is held off by the 5V0 PG line
     lt7182s_set_operation(0, LT7182S_OPERATION_ON);
     delay_ms(50);
@@ -733,12 +737,12 @@ int main()
             DBGPRINTLN_CTX("  VOUT: 0x%02X", ubStatusVOUT);
             DBGPRINTLN_CTX("  IOUT: 0x%02X", ubStatusIOUT);
             DBGPRINTLN_CTX("  Input: 0x%02X", ubStatusInput);
-            DBGPRINTLN_CTX("  Temperature: 0x%02X", ubStatusTemperature);
+            DBGPRINTLN_CTX("  Temp: 0x%02X", ubStatusTemperature);
             DBGPRINTLN_CTX("  CML: 0x%02X", ubStatusCML);
-            DBGPRINTLN_CTX("  MFR Specific: 0x%02X", ubStatusMFRSpecific);
-            DBGPRINTLN_CTX("  MFR Common: 0x%02X", ubStatusMFRCommon);
+            DBGPRINTLN_CTX("  MFR Spec: 0x%02X", ubStatusMFRSpecific);
+            DBGPRINTLN_CTX("  MFR Com: 0x%02X", ubStatusMFRCommon);
             DBGPRINTLN_CTX("  MFR Pads: 0x%04X", usStatusMFRPads);
-            DBGPRINTLN_CTX("  MFR Pin Config: 0x%02X", ubStatusMFRPinConfig);
+            DBGPRINTLN_CTX("  MFR PinCfg: 0x%02X", ubStatusMFRPinConfig);
 
             // TODO: Further investigate status bits to determine the cause
 
@@ -750,10 +754,17 @@ int main()
         }
     }
 
-    // Done with I2C master, switch to slave
-    DBGPRINTLN_CTX("Switching I2C bus 1 to slave mode...");
+    if(!DBG_PRESENT())
+    {
+        // Done with I2C master, switch to slave
+        DBGPRINTLN_CTX("Switching I2C bus 1 to slave mode...");
 
-    sercom1_i2c_slave_init(I2C_SLAVE_ADDRESS);
+        sercom1_i2c_slave_init(I2C_SLAVE_ADDRESS);
+    }
+    else
+    {
+        DBGPRINTLN_CTX("Debugger detected, I2C will remain in master mode");
+    }
 
     DBGPRINTLN_CTX("Releasing FPGA init in 100 ms...");
     delay_ms(100);
@@ -777,18 +788,18 @@ int main()
 
         if(!CM4_RUNNING())
         {
-            DBGPRINTLN_CTX("CM4 failed to start, assuming it is not present");
+            DBGPRINTLN_CTX("CM4 failed to start, assuming not present");
 
             CM4_GLOBAL_DISABLE();
         }
         else
         {
-            DBGPRINTLN_CTX("CM4 is running!");
+            DBGPRINTLN_CTX("CM4 is running");
         }
     }
     else
     {
-        DBGPRINTLN_CTX("Board is powered via PCIe 12V, CM4 is not supported in this configuration");
+        DBGPRINTLN_CTX("Board is powered via PCIe 12V, CM4 is not supported");
     }
 
     wdt_enable();
@@ -897,32 +908,62 @@ int main()
                 I2C_SLAVE_REGISTER(uint32_t, I2C_SLAVE_REGISTER_CORE_VOLTAGE) = ulCoreVDD;
             }
 
-            // DBGPRINTLN("------------------------------");
-            // DBGPRINTLN("IOVDD: %u mV", ulIOVDD);
-            // DBGPRINTLN("Core: %u mV", ulCoreVDD);
-            // DBGPRINTLN("VIN: %u mV", ulVIN);
-            // DBGPRINTLN("VEXT: %u mV", ulVEXT);
-            // DBGPRINTLN("12V0: %u mV", ul12V0);
-            // DBGPRINTLN("VBUS: %u mV", ulVBUS);
-            // DBGPRINTLN("Temp: %d.%02u C", lTemp / 1000, ABS(lTemp % 1000));
+            if(DBG_PRESENT())
+            {
+                DBGPRINTLN("------------------------------");
+                DBGPRINTLN("IOVDD: %u mV", ulIOVDD);
+                DBGPRINTLN("Core: %u mV", ulCoreVDD);
+                DBGPRINTLN("VIN: %u mV", ulVIN);
+                DBGPRINTLN("VEXT: %u mV", ulVEXT);
+                DBGPRINTLN("12V0: %u mV", ul12V0);
+                DBGPRINTLN("VBUS: %u mV", ulVBUS);
+                DBGPRINTLN("Temp: %d.%02u C", lTemp / 1000, ABS(lTemp % 1000));
 
-            // DBGPRINTLN("LT7182S:");
+                DBGPRINTLN("LT7182S:");
 
-            // for(uint8_t i = 0; i < 2; i++)
-            // {
-            //     DBGPRINTLN("  Channel #%hhu:", i);
-            //     DBGPRINTLN("    VIN: %.3f V (Pk: %.3f V)", lt7182s_read_vin(i), lt7182s_read_vin_peak(i));
-            //     DBGPRINTLN("    IIN: %.3f A", lt7182s_read_iin(i));
-            //     DBGPRINTLN("    VOUT: %.3f V (Set: %.3f V, Pk: %.3f V)", lt7182s_read_vout(i), lt7182s_get_vout(i), lt7182s_read_vout_peak(i));
-            //     DBGPRINTLN("    IOUT: %.3f A (Pk: %.3f A)", lt7182s_read_iout(i), lt7182s_read_iout_peak(i));
-            //     DBGPRINTLN("    FREQ: %.3f kHz", lt7182s_read_freq(i));
-            //     DBGPRINTLN("    POUT: %.3f W", lt7182s_read_pout(i));
-            //     DBGPRINTLN("    VITH: %.3f V", lt7182s_read_ith(i));
-            // }
+                for(uint8_t i = 0; i < 2; i++)
+                {
+                    DBGPRINTLN("  Channel #%hhu:", i);
 
-            // DBGPRINTLN("  EXTVCC: %.3f V", lt7182s_read_extvcc());
-            // DBGPRINTLN("  Temp: %.3f C (Pk: %.3f C)", lt7182s_read_temperature(), lt7182s_read_temperature_peak());
-            // DBGPRINTLN("CM4: %s", CM4_RUNNING() ? "Running" : "OFF");
+                    uint16_t usStatus = lt7182s_get_status_word(i);
+
+                    if(usStatus != 0x0000)
+                    {
+                        uint8_t ubStatusVOUT = lt7182s_get_status_vout(i);
+                        uint8_t ubStatusIOUT = lt7182s_get_status_iout(i);
+                        uint8_t ubStatusInput = lt7182s_get_status_input(i);
+                        uint8_t ubStatusTemperature = lt7182s_get_status_temperature();
+                        uint8_t ubStatusCML = lt7182s_get_status_cml();
+                        uint8_t ubStatusMFRSpecific = lt7182s_get_status_mfr_specific(i);
+                        uint8_t ubStatusMFRCommon = lt7182s_get_status_mfr_common();
+                        uint16_t usStatusMFRPads = lt7182s_get_status_mfr_pads();
+                        uint8_t ubStatusMFRPinConfig = lt7182s_get_status_mfr_pin_config();
+
+                        DBGPRINTLN("    Status (0x%04X):", usStatus);
+                        DBGPRINTLN("      VOUT: 0x%02X", ubStatusVOUT);
+                        DBGPRINTLN("      IOUT: 0x%02X", ubStatusIOUT);
+                        DBGPRINTLN("      Input: 0x%02X", ubStatusInput);
+                        DBGPRINTLN("      Temp: 0x%02X", ubStatusTemperature);
+                        DBGPRINTLN("      CML: 0x%02X", ubStatusCML);
+                        DBGPRINTLN("      MFR Spec: 0x%02X", ubStatusMFRSpecific);
+                        DBGPRINTLN("      MFR Com: 0x%02X", ubStatusMFRCommon);
+                        DBGPRINTLN("      MFR Pads: 0x%04X", usStatusMFRPads);
+                        DBGPRINTLN("      MFR PinCfg: 0x%02X", ubStatusMFRPinConfig);
+                    }
+
+                    DBGPRINTLN("    VIN: %.3f V (Pk: %.3f V)", lt7182s_read_vin(i), lt7182s_read_vin_peak(i));
+                    DBGPRINTLN("    IIN: %.3f A", lt7182s_read_iin(i));
+                    DBGPRINTLN("    VOUT: %.3f V (Set: %.3f V, Pk: %.3f V)", lt7182s_read_vout(i), lt7182s_get_vout(i), lt7182s_read_vout_peak(i));
+                    DBGPRINTLN("    IOUT: %.3f A (Pk: %.3f A)", lt7182s_read_iout(i), lt7182s_read_iout_peak(i));
+                    DBGPRINTLN("    FREQ: %.3f kHz", lt7182s_read_freq(i));
+                    DBGPRINTLN("    POUT: %.3f W", lt7182s_read_pout(i));
+                    DBGPRINTLN("    VITH: %.3f V", lt7182s_read_ith(i));
+                }
+
+                DBGPRINTLN("  EXTVCC: %.3f V", lt7182s_read_extvcc());
+                DBGPRINTLN("  Temp: %.3f C (Pk: %.3f C)", lt7182s_read_temperature(), lt7182s_read_temperature_peak());
+                DBGPRINTLN("CM4: %s", CM4_RUNNING() ? "Running" : "OFF");
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 #include "lt7182s.h"
 
-static float lt7182s_pow2(int8_t bExp)
+static float lt7182s_pow2f(int8_t bExp)
 {
     switch(bExp)
     {
@@ -72,6 +72,132 @@ static float lt7182s_pow2(int8_t bExp)
 
     return 0.f;
 }
+static uint64_t lt7182s_pow2ull1e9(int8_t bExp) // Full precision for bExp in range [-9, 15], lower precision for bExp in range [-16, -10]
+{
+    if(bExp < -16 || bExp > 15)
+        return 0;
+
+    switch(bExp)
+    {
+        case -16:
+            return 15259ULL;
+        case -15:
+            return 30518ULL;
+        case -14:
+            return 61035ULL;
+        case -13:
+            return 122070ULL;
+        case -12:
+            return 244141ULL;
+        case -11:
+            return 488281ULL;
+        case -10:
+            return 976563ULL;
+        default:
+            return 1953125ULL << (bExp + 9);
+    }
+}
+
+static float lt7182s_from_l11f(uint16_t usData)
+{
+    int8_t bExp = (usData >> 11) & 0xF;
+
+    if(usData & BIT(15))
+        bExp = -1 * (bExp ^ 0xF) - 1;
+
+    int16_t sMant = usData & 0x3FF;
+
+    if(usData & BIT(10))
+        sMant = -1 * (sMant ^ 0x3FF) - 1;
+
+    return (float)sMant * lt7182s_pow2f(bExp);
+}
+static int64_t lt7182s_from_l11ll1e9(uint16_t usData) // NOT full precision
+{
+    int8_t bExp = (usData >> 11) & 0xF;
+
+    if(usData & BIT(15))
+        bExp = -1 * (bExp ^ 0xF) - 1;
+
+    int16_t sMant = usData & 0x3FF;
+
+    if(usData & BIT(10))
+        sMant = -1 * (sMant ^ 0x3FF) - 1;
+
+    return (int64_t)sMant * (int64_t)lt7182s_pow2ull1e9(bExp);
+}
+static uint16_t lt7182s_to_l11f(float fData)
+{
+    int8_t bExp = -16;
+    int32_t lMant = (int32_t)(fData / lt7182s_pow2f(bExp));
+
+    // Search for an exponent that produces valid 11-bit mantissa
+    do
+    {
+        if(lMant >= -512 && lMant <= 511)
+            break;
+
+        lMant = (int32_t)(fData / lt7182s_pow2f(++bExp));
+    } while(bExp < 15);
+
+    if(lMant < -512 || lMant > 511)
+        return 0;
+
+    if(bExp < -16 || bExp > 15)
+        return 0;
+
+    uint16_t usExp = bExp << 11;
+    uint16_t usMant = lMant & 0x07FF;
+
+    return usExp | usMant;
+}
+static uint16_t lt7182s_to_l11ll1e9(int64_t llData) // NOT full precision
+{
+    int8_t bExp = -16;
+    int64_t p = lt7182s_pow2ull1e9(bExp);
+    int32_t lMant = (int32_t)DIV_ROUND(llData, p);
+
+    // Search for an exponent that produces valid 11-bit mantissa
+    do
+    {
+        if(lMant >= -512 && lMant <= 511)
+            break;
+
+        p = lt7182s_pow2ull1e9(++bExp);
+        lMant = (int32_t)DIV_ROUND(llData, p);
+    } while(bExp < 15);
+
+    if(lMant < -512 || lMant > 511)
+        return 0;
+
+    if(bExp < -16 || bExp > 15)
+        return 0;
+
+    uint16_t usExp = bExp << 11;
+    uint16_t usMant = lMant & 0x07FF;
+
+    return usExp | usMant;
+}
+
+static float lt7182s_from_ul16f(uint16_t usData)
+{
+    return (float)usData / 4096.f;
+}
+static uint64_t lt7182s_from_ul16ull1e12(uint16_t usData) // Full precision
+{
+    return (uint64_t)usData * 1000000000000ULL / 4096ULL;
+}
+static uint16_t lt7182s_to_ul16f(float fData)
+{
+    if(fData < 0.f || fData > 16.f)
+        return 0;
+
+    return (uint16_t)(fData * 4096.f);
+}
+static uint16_t lt7182s_to_ul16ull1e12(uint64_t ullData) // Full precision
+{
+    return (uint16_t)(ullData * 4096ULL / 1000000000000ULL);
+}
 
 static uint8_t lt7182s_pmbus_send_command(uint8_t ubCommand)
 {
@@ -114,39 +240,31 @@ static uint8_t lt7182s_pmbus_write_word(uint8_t ubCommand, uint16_t usData)
 
     return 1;
 }
+static uint8_t lt7182s_pmbus_write_dword(uint8_t ubCommand, uint32_t ulData)
+{
+    uint8_t ubTemp[5];
+
+    ubTemp[0] = ubCommand;
+    ubTemp[1] = ulData & 0xFF;
+    ubTemp[2] = (ulData >> 8) & 0xFF;
+    ubTemp[3] = (ulData >> 16) & 0xFF;
+    ubTemp[4] = ulData >> 24;
+
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        if(!sercom1_i2c_master_write(LT7182S_I2C_ADDR, ubTemp, 5, SERCOM_I2C_STOP))
+            return 0;
+    }
+
+    return 1;
+}
 static uint8_t lt7182s_pmbus_write_l11(uint8_t ubCommand, float fData)
 {
-    int8_t bExp = -16;
-    int32_t lMant = (int32_t)(fData / lt7182s_pow2(bExp));
-
-    // Search for an exponent that produces valid 11-bit mantissa
-    do
-    {
-        if(lMant >= -1024 && lMant <= 1023)
-            break;
-
-        lMant = (int32_t)(fData / lt7182s_pow2(++bExp));
-    } while(bExp < 15);
-
-    if(lMant < -1024 || lMant > 1023)
-        return 0;
-
-    if(bExp < -16 || bExp > 15)
-        return 0;
-
-    uint16_t usExp = bExp << 11;
-    uint16_t usMant = lMant & 0x07FF;
-
-    return lt7182s_pmbus_write_word(ubCommand, usExp | usMant);
+    return lt7182s_pmbus_write_word(ubCommand, lt7182s_to_l11f(fData));
 }
 static uint8_t lt7182s_pmbus_write_ul16(uint8_t ubCommand, float fData)
 {
-    if(fData < 0.f || fData > 16.f)
-        return 0;
-
-    uint16_t usData = (uint16_t)(fData * 4096.f);
-
-    return lt7182s_pmbus_write_word(ubCommand, usData);
+    return lt7182s_pmbus_write_word(ubCommand, lt7182s_to_ul16f(fData));
 }
 static uint8_t lt7182s_pmbus_read_byte(uint8_t ubCommand)
 {
@@ -178,27 +296,28 @@ static uint16_t lt7182s_pmbus_read_word(uint8_t ubCommand)
 
     return (((uint16_t)ubTemp[1]) << 8) | ubTemp[0];
 }
+static uint32_t lt7182s_pmbus_read_dword(uint8_t ubCommand)
+{
+    uint8_t ubTemp[4];
+
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        if(!sercom1_i2c_master_write_byte(LT7182S_I2C_ADDR, ubCommand, SERCOM_I2C_RESTART))
+            return 0;
+
+        if(!sercom1_i2c_master_read(LT7182S_I2C_ADDR, ubTemp, 4, SERCOM_I2C_STOP))
+            return 0;
+    }
+
+    return (((uint32_t)ubTemp[3]) << 24) | (((uint32_t)ubTemp[2]) << 16) | (((uint32_t)ubTemp[1]) << 8) | ubTemp[0];
+}
 static float lt7182s_pmbus_read_l11(uint8_t ubCommand)
 {
-    uint16_t usTemp = lt7182s_pmbus_read_word(ubCommand);
-
-    int8_t bExp = (usTemp >> 11) & 0xF;
-
-    if(usTemp & BIT(15))
-        bExp = -1 * (bExp ^ 0xF) - 1;
-
-    int16_t sMant = usTemp & 0x3FF;
-
-    if(usTemp & BIT(10))
-        sMant = -1 * (sMant ^ 0x3FF) - 1;
-
-    return (float)sMant * lt7182s_pow2(bExp);
+    return lt7182s_from_l11f(lt7182s_pmbus_read_word(ubCommand));
 }
 static float lt7182s_pmbus_read_ul16(uint8_t ubCommand)
 {
-    uint16_t usTemp = lt7182s_pmbus_read_word(ubCommand);
-
-    return (float)usTemp / 4096.f;
+    return lt7182s_from_ul16f(lt7182s_pmbus_read_word(ubCommand));
 }
 static uint8_t lt7182s_pmbus_read_block(uint8_t ubCommand, uint8_t *pubBuffer, uint8_t ubBufferMaxSize)
 {
@@ -283,6 +402,34 @@ uint8_t lt7182s_read_mfr_serial(uint8_t *pubBuffer, uint8_t ubBufferMaxSize)
 uint16_t lt7182s_read_mfr_special_id()
 {
     return lt7182s_pmbus_read_word(0xE7);
+}
+
+uint64_t lt7182s_mfr_fault_log_get_timestamp()
+{
+    uint64_t ullTime = lt7182s_pmbus_read_dword(0xE8);
+
+    ullTime = (ullTime << 32) | lt7182s_pmbus_read_dword(0xE9);
+
+    return ullTime;
+}
+uint8_t lt7182s_mfr_fault_log_set_timestamp(uint64_t ullTime)
+{
+    if(!lt7182s_pmbus_write_dword(0xE8, ullTime >> 32))
+        return 0;
+
+    return lt7182s_pmbus_write_dword(0xE9, ullTime & 0xFFFFFFFF);
+}
+uint8_t lt7182s_mfr_fault_store()
+{
+    return lt7182s_pmbus_send_command(0xEA);
+}
+uint8_t lt7182s_mfr_fault_clear()
+{
+    return lt7182s_pmbus_send_command(0xEC);
+}
+uint8_t lt7182s_mfr_fault_log_read(/* ... */)
+{
+    // TODO: Implement
 }
 
 uint8_t lt7182s_get_status_byte(uint8_t ubChannel)

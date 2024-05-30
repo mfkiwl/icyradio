@@ -195,23 +195,23 @@ int32_t adc_get_temperature()
     {
         uint8_t ubRoomTempInt = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_NVMCTRL_ROOM_TEMP_VAL_INT_Msk) >> FUSES_TEMP_LOG_WORD_0_NVMCTRL_ROOM_TEMP_VAL_INT_Pos;
         uint8_t ubRoomTempDec = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_NVMCTRL_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_TEMP_LOG_WORD_0_NVMCTRL_ROOM_TEMP_VAL_DEC_Pos;
-        lRoomTemp = (uint32_t)ubRoomTempInt * 1000UL + (uint32_t)ubRoomTempDec * 100UL;
+        lRoomTemp = (int32_t)ubRoomTempInt * 1000UL + (int32_t)ubRoomTempDec * 100UL;
 
         int8_t bRoom1V0 = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_NVMCTRL_ROOM_INT1V_VAL_Msk) >> FUSES_TEMP_LOG_WORD_0_NVMCTRL_ROOM_INT1V_VAL_Pos;
         lRoom1V0 = 1000UL - bRoom1V0;
 
         uint16_t usRoomADCCode = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_1 & FUSES_TEMP_LOG_WORD_1_NVMCTRL_ROOM_ADC_VAL_Msk) >> FUSES_TEMP_LOG_WORD_1_NVMCTRL_ROOM_ADC_VAL_Pos;
-        lRoomVoltage = (uint32_t)usRoomADCCode * lRoom1V0 / 4095UL;
+        lRoomVoltage = (int32_t)usRoomADCCode * lRoom1V0 / 4095UL;
 
         uint8_t ubHotTempInt = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_NVMCTRL_HOT_TEMP_VAL_INT_Msk) >> FUSES_TEMP_LOG_WORD_0_NVMCTRL_HOT_TEMP_VAL_INT_Pos;
         uint8_t ubHotTempDec = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_0 & FUSES_TEMP_LOG_WORD_0_NVMCTRL_HOT_TEMP_VAL_DEC_Msk) >> FUSES_TEMP_LOG_WORD_0_NVMCTRL_HOT_TEMP_VAL_DEC_Pos;
-        lHotTemp = (uint32_t)ubHotTempInt * 1000UL + (uint32_t)ubHotTempDec * 100UL;
+        lHotTemp = (int32_t)ubHotTempInt * 1000UL + (int32_t)ubHotTempDec * 100UL;
 
         int8_t bHot1V0 = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_1 & FUSES_TEMP_LOG_WORD_1_NVMCTRL_HOT_INT1V_VAL_Msk) >> FUSES_TEMP_LOG_WORD_1_NVMCTRL_HOT_INT1V_VAL_Pos;
         lHot1V0 = 1000UL - bHot1V0;
 
         uint16_t usHotADCCode = (TEMP_LOG_FUSES_REGS->FUSES_TEMP_LOG_WORD_1 & FUSES_TEMP_LOG_WORD_1_NVMCTRL_HOT_ADC_VAL_Msk) >> FUSES_TEMP_LOG_WORD_1_NVMCTRL_HOT_ADC_VAL_Pos;
-        lHotVoltage = (uint32_t)usHotADCCode * lHot1V0 / 4095UL;
+        lHotVoltage = (int32_t)usHotADCCode * lHot1V0 / 4095UL;
 
         ubCalibInit = 1;
     }

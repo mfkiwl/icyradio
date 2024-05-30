@@ -268,7 +268,7 @@ void sercom0_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM0_MODE_SPI
 #ifdef SERCOM0_MODE_UART
-static volatile uint8_t *pubSERCOM0UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM0UARTFIFO[SERCOM0_FIFO_SIZE];
 static volatile uint16_t usSERCOM0UARTFIFOWritePos, usSERCOM0UARTFIFOReadPos;
 
 void _sercom0_uart_isr()
@@ -287,15 +287,6 @@ void sercom0_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM0_Msk, 1);
 
     while(SERCOM0_REGS->USART_INT.SERCOM_STATUS & SERCOM_USART_INT_STATUS_SYNCBUSY_Msk);
-
-    free((uint8_t *)pubSERCOM0UARTFIFO);
-
-    pubSERCOM0UARTFIFO = (volatile uint8_t *)malloc(SERCOM0_FIFO_SIZE);
-
-    if(!pubSERCOM0UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM0UARTFIFO, 0, SERCOM0_FIFO_SIZE);
 
     usSERCOM0UARTFIFOWritePos = 0;
     usSERCOM0UARTFIFOReadPos = 0;
@@ -641,7 +632,7 @@ void sercom1_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM1_MODE_SPI
 #ifdef SERCOM1_MODE_UART
-static volatile uint8_t *pubSERCOM1UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM1UARTFIFO[SERCOM1_FIFO_SIZE];
 static volatile uint16_t usSERCOM1UARTFIFOWritePos, usSERCOM1UARTFIFOReadPos;
 
 void _sercom1_uart_isr()
@@ -660,15 +651,6 @@ void sercom1_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM1_Msk, 1);
 
     while(SERCOM1_REGS->USART_INT.SERCOM_STATUS & SERCOM_USART_INT_STATUS_SYNCBUSY_Msk);
-
-    free((uint8_t *)pubSERCOM1UARTFIFO);
-
-    pubSERCOM1UARTFIFO = (volatile uint8_t *)malloc(SERCOM1_FIFO_SIZE);
-
-    if(!pubSERCOM1UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM1UARTFIFO, 0, SERCOM1_FIFO_SIZE);
 
     usSERCOM1UARTFIFOWritePos = 0;
     usSERCOM1UARTFIFOReadPos = 0;
@@ -1014,7 +996,7 @@ void sercom2_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM2_MODE_SPI
 #ifdef SERCOM2_MODE_UART
-static volatile uint8_t *pubSERCOM2UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM2UARTFIFO[SERCOM2_FIFO_SIZE];
 static volatile uint16_t usSERCOM2UARTFIFOWritePos, usSERCOM2UARTFIFOReadPos;
 
 void _sercom2_uart_isr()
@@ -1033,15 +1015,6 @@ void sercom2_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM2_Msk, 1);
 
     while(SERCOM2_REGS->USART_INT.SERCOM_STATUS & SERCOM_USART_INT_STATUS_SYNCBUSY_Msk);
-
-    free((uint8_t *)pubSERCOM2UARTFIFO);
-
-    pubSERCOM2UARTFIFO = (volatile uint8_t *)malloc(SERCOM2_FIFO_SIZE);
-
-    if(!pubSERCOM2UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM2UARTFIFO, 0, SERCOM2_FIFO_SIZE);
 
     usSERCOM2UARTFIFOWritePos = 0;
     usSERCOM2UARTFIFOReadPos = 0;
@@ -1387,7 +1360,7 @@ void sercom3_spi_write_byte(const uint8_t ubData, const uint8_t ubWait)
 }
 #endif // SERCOM3_MODE_SPI
 #ifdef SERCOM3_MODE_UART
-static volatile uint8_t *pubSERCOM3UARTFIFO = NULL;
+static volatile uint8_t pubSERCOM3UARTFIFO[SERCOM3_FIFO_SIZE];
 static volatile uint16_t usSERCOM3UARTFIFOWritePos, usSERCOM3UARTFIFOReadPos;
 
 void _sercom3_uart_isr()
@@ -1406,15 +1379,6 @@ void sercom3_uart_init(uint32_t ulBaud, uint32_t ulFrameSettings, uint8_t ubRXPO
     pm_apbc_clock_gate(PM_APBCMASK_SERCOM3_Msk, 1);
 
     while(SERCOM3_REGS->USART_INT.SERCOM_STATUS & SERCOM_USART_INT_STATUS_SYNCBUSY_Msk);
-
-    free((uint8_t *)pubSERCOM3UARTFIFO);
-
-    pubSERCOM3UARTFIFO = (volatile uint8_t *)malloc(SERCOM3_FIFO_SIZE);
-
-    if(!pubSERCOM3UARTFIFO)
-        return;
-
-    memset((uint8_t *)pubSERCOM3UARTFIFO, 0, SERCOM3_FIFO_SIZE);
 
     usSERCOM3UARTFIFOWritePos = 0;
     usSERCOM3UARTFIFOReadPos = 0;

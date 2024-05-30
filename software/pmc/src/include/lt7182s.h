@@ -23,6 +23,12 @@ uint8_t lt7182s_read_mfr_revision(uint8_t *pubBuffer, uint8_t ubBufferMaxSize);
 uint8_t lt7182s_read_mfr_serial(uint8_t *pubBuffer, uint8_t ubBufferMaxSize);
 uint16_t lt7182s_read_mfr_special_id();
 
+uint64_t lt7182s_mfr_fault_log_get_timestamp();
+uint8_t lt7182s_mfr_fault_log_set_timestamp(uint64_t ullTime);
+uint8_t lt7182s_mfr_fault_store();
+uint8_t lt7182s_mfr_fault_clear();
+uint8_t lt7182s_mfr_fault_log_read(/* ... */);
+
 uint8_t lt7182s_get_status_byte(uint8_t ubChannel);
 uint8_t lt7182s_clear_status_byte(uint8_t ubChannel, uint8_t ubMask);
 uint16_t lt7182s_get_status_word(uint8_t ubChannel);

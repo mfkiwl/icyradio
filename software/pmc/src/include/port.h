@@ -47,6 +47,9 @@
 #define FPGA_INIT_ASSERT()    PORT_REGS->GROUP[0].PORT_DIRSET = BIT(1)
 #define FPGA_INIT_DEASSERT()  PORT_REGS->GROUP[0].PORT_DIRCLR = BIT(1)
 
+// DBG MACROS
+#define DBG_PRESENT()         !(PORT_REGS->GROUP[0].PORT_IN & BIT(30)) // SWCLK is high when no debugger is connected
+
 void port_init();
 
 #endif  // __PORT_H__
