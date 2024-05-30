@@ -55,7 +55,7 @@ jobs:
     - name: Build PMC firmware
       run: |
         cd ${{github.workspace}}/software/pmc
-        make
+        make BUILD_TYPE=release
 
     - name: Upload results
       uses: actions/upload-artifact@v3
