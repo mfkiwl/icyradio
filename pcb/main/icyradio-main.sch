@@ -15775,11 +15775,11 @@ Button commonly used for reset or general input. Spark Fun Electronics SKU : COM
 <part name="L602" library="Inductor" deviceset="INDUCTOR" device="-0402" value="18nH"/>
 <part name="C620" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF"/>
 <part name="GND431" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="R608" library="Resistor" deviceset="RESISTOR" device="-0402" value="62 Ohms"/>
-<part name="C616" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="220nF"/>
-<part name="R609" library="Resistor" deviceset="RESISTOR" device="-0402" value="20 Ohms"/>
-<part name="C617" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="2.2nF"/>
-<part name="C618" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="680pF"/>
+<part name="R608" library="Resistor" deviceset="RESISTOR" device="-0402" value="20 Ohms"/>
+<part name="C616" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="1uF"/>
+<part name="R609" library="Resistor" deviceset="RESISTOR" device="-0402" value="62 Ohms"/>
+<part name="C617" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF"/>
+<part name="C618" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="2.2nF"/>
 <part name="GND432" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="GND433" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="GND434" library="Supply Symbol" deviceset="GND" device=""/>
