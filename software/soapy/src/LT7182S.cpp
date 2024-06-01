@@ -8,100 +8,6 @@ static const float EAmp_GM_LUT[2][8] = {
     {150.f, 300.f, 450.f, 600.f, 750.f, 900.f, 1050.f, 1200.f} // Low VOUT Mode
 };
 
-float LT7182S::Pow2(int8_t e)
-{
-    switch(e)
-    {
-        case -16:
-            return 0.0000152587890625f;
-        case -15:
-            return 0.000030517578125f;
-        case -14:
-            return 0.00006103515625f;
-        case -13:
-            return 0.0001220703125f;
-        case -12:
-            return 0.000244140625f;
-        case -11:
-            return 0.00048828125f;
-        case -10:
-            return 0.0009765625f;
-        case -9:
-            return 0.001953125f;
-        case -8:
-            return 0.00390625f;
-        case -7:
-            return 0.0078125f;
-        case -6:
-            return 0.015625f;
-        case -5:
-            return 0.03125f;
-        case -4:
-            return 0.0625f;
-        case -3:
-            return 0.125f;
-        case -2:
-            return 0.25f;
-        case -1:
-            return 0.5f;
-        case 0:
-            return 1.f;
-        case 1:
-            return 2.f;
-        case 2:
-            return 4.f;
-        case 3:
-            return 8.f;
-        case 4:
-            return 16.f;
-        case 5:
-            return 32.f;
-        case 6:
-            return 64.f;
-        case 7:
-            return 128.f;
-        case 8:
-            return 256.f;
-        case 9:
-            return 512.f;
-        case 10:
-            return 1024.f;
-        case 11:
-            return 2048.f;
-        case 12:
-            return 4096.f;
-        case 13:
-            return 8192.f;
-        case 14:
-            return 16384.f;
-        case 15:
-            return 32768.f;
-    }
-
-    return 0.f;
-}
-uint8_t LT7182S::FindClosest(float val, const float *arr, uint8_t size)
-{
-    if(arr == nullptr || size == 0)
-        throw std::runtime_error("LT7182S: Invalid array");
-
-    uint8_t idx = 0;
-    float diff = ABS(val - arr[0]);
-
-    for(uint8_t i = 1; i < size; i++)
-    {
-        float _diff = ABS(val - arr[i]);
-
-        if(_diff < diff)
-        {
-            idx = i;
-            diff = _diff;
-        }
-    }
-
-    return idx;
-}
-
 void LT7182S::ISR(void *_this)
 {
     if(_this == nullptr)
@@ -166,7 +72,7 @@ void LT7182S::writeDWord(uint8_t cmd, uint32_t data)
 void LT7182S::writeL11(uint8_t cmd, float data)
 {
     int8_t exp = -16;
-    int32_t mant = (int32_t)(data / LT7182S::Pow2(exp));
+    int32_t mant = (int32_t)(data / std::pow(2.f, exp));
 
     // Search for an exponent that produces valid 11-bit mantissa
     do
@@ -174,19 +80,14 @@ void LT7182S::writeL11(uint8_t cmd, float data)
         if(mant >= -1024 && mant <= 1023)
             break;
 
-        mant = (int32_t)(data / LT7182S::Pow2(++exp));
+        exp++;
+        mant = (int32_t)(data / (exp >= 0 ? (1 << exp) : std::pow(2.f, exp)));
     } while(exp < 15);
 
     if(mant < -1024 || mant > 1023)
         throw std::runtime_error("LT7182S: Invalid L11 mantissa");
 
-    if(exp < -16 || exp > 15)
-        throw std::runtime_error("LT7182S: Invalid L11 exponent");
-
-    uint16_t exp16 = exp << 11;
-    uint16_t mant16 = mant & 0x07FF;
-
-    this->writeWord(cmd, exp16 | mant16);
+    this->writeWord(cmd, ((uint16_t)exp << 11) | (mant & 0x07FF));
 }
 void LT7182S::writeUL16(uint8_t cmd, float data)
 {
@@ -259,7 +160,7 @@ float LT7182S::readL11(uint8_t cmd)
     if(data & BIT(10))
         mant = -1 * (mant ^ 0x7FF) - 1;
 
-    return (float)mant * LT7182S::Pow2(exp);
+    return (float)mant * (exp >= 0 ? (1 << exp) : std::pow(2.f, exp));
 }
 float LT7182S::readUL16(uint8_t cmd)
 {
@@ -793,11 +694,11 @@ void LT7182S::setChannelPWMConfig(LT7182S::ChanPWMConfig config, LT7182S::Chan c
     if(config.fcm_at_toff)
         reg |= BIT(2);
 
-    reg |= (LT7182S::FindClosest(config.rith, R_ITH_LUT, 8) << 3) & 0x0038;
+    reg |= (Utils::FindClosestIndex<float>(R_ITH_LUT, 8, config.rith) << 3) & 0x0038;
     reg |= (((uint8_t)(config.cith / 10.f) - 1) << 6) & 0x01C0;
-    reg |= (LT7182S::FindClosest(config.neg_ilim, Neg_ILim_LUT, 4) << 9) & 0x0600;
-    reg |= (LT7182S::FindClosest(config.pos_ilim, Pos_ILim_LUT, 4) << 9) & 0x0600;
-    reg |= (LT7182S::FindClosest(config.ea_gm, EAmp_GM_LUT[config.low_vout_mode ? 1 : 0], 8) << 11) & 0x3800;
+    reg |= (Utils::FindClosestIndex<float>(Neg_ILim_LUT, 4, config.neg_ilim) << 9) & 0x0600;
+    reg |= (Utils::FindClosestIndex<float>(Pos_ILim_LUT, 4, config.pos_ilim) << 9) & 0x0600;
+    reg |= (Utils::FindClosestIndex<float>(EAmp_GM_LUT[config.low_vout_mode ? 1 : 0], 8, config.ea_gm) << 11) & 0x3800;
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 

@@ -44,69 +44,54 @@ namespace Utils
     // Find last set bit in word
     uint32_t FindLastSetBit(uint32_t word);
 
-    // Locate the closest element in an array
-    uint32_t FindClosest(int32_t val, const int32_t *array, uint32_t size);
-    // Shift the value and apply the specified mask
-    uint32_t FieldPrep(uint32_t mask, uint32_t val);
-    // Get a field specified by a mask from a word
-    uint32_t FieldGet(uint32_t mask, uint32_t word);
-    // Log base 2 of the given number
-    int32_t LogBase2(uint32_t x);
-    // Find greatest common divisor of the given two numbers
-    uint32_t GreatestCommonDivisor(uint32_t a, uint32_t b);
-    // Find lowest common multiple of the given two numbers
-    uint32_t LowestCommonMultiple(uint32_t a, uint32_t b);
-    // Calculate best rational approximation for a given fraction
-    void RationalBestApproximation(uint32_t givenNumerator, uint32_t givenDenominator, uint32_t maxNumerator, uint32_t maxDenominator, uint32_t *bestNumerator, uint32_t *bestDenominator);
-    // Calculate the number of set bits (8-bit size)
-    unsigned int Hweight8(uint8_t word);
-    // Calculate the number of set bits (16-bit size)
-    unsigned int Hweight16(uint16_t word);
-    // Calculate the number of set bits (32-bit size)
-    unsigned int Hweight32(uint32_t word);
-    // Calculate the quotient and the remainder of an integer division
     uint64_t DoDiv(uint64_t* n, uint64_t base);
-    // Unsigned 64bit divide with 64bit divisor and remainder
-    uint64_t Div64U64Rem(uint64_t dividend, uint64_t divisor, uint64_t *remainder);
-    // Unsigned 64bit divide with 32bit divisor with remainder
-    uint64_t DivU64Rem(uint64_t dividend, uint32_t divisor, uint32_t *remainder);
-    int64_t DivS64Rem(int64_t dividend, int32_t divisor, int32_t *remainder);
-    // Unsigned 64bit divide with 32bit divisor
-    uint64_t DivU64(uint64_t dividend, uint32_t divisor);
-    int64_t DivS64(int64_t dividend, int32_t divisor);
-    // Converts from string to int32_t
-    int32_t StrToInt32(const char *str);
-    // Converts from string to uint32_t
-    uint32_t StrToUint32(const char *str);
-
-    void PutUnalignedBe16(uint16_t val, uint8_t *buf);
-    uint16_t GetUnalignedBe16(uint8_t *buf);
-    void PutUnalignedLe16(uint16_t val, uint8_t *buf);
-    uint16_t GetUnalignedLe16(uint8_t *buf);
-    void PutUnalignedBe24(uint32_t val, uint8_t *buf);
-    uint32_t GetUnalignedBe24(uint8_t *buf);
-    void PutUnalignedLe24(uint32_t val, uint8_t *buf);
-    uint32_t GetUnalignedLe24(uint8_t *buf);
-    void PutUnalignedBe32(uint32_t val, uint8_t *buf);
-    uint32_t GetUnalignedBe32(uint8_t *buf);
-    void PutUnalignedLe32(uint32_t val, uint8_t *buf);
-    uint32_t GetUnalignedLe32(uint8_t *buf);
-
-    int16_t SignExtend16(uint16_t value, int index);
-    int32_t SignExtend32(uint32_t value, int index);
-    uint64_t MulU32U32(uint32_t a, uint32_t b);
-    uint64_t MulU64U32Shr(uint64_t a, uint32_t mul, unsigned int shift);
-
-    bool IsBigEndian(void);
-    void Memswap64(void *buf, uint32_t bytes, uint32_t step);
 
     uint32_t IntSqrt(uint32_t x);
     int32_t Ilog2(int32_t x);
 
+    // Convert to/from Sign-Integer-Fraction 1.1.14 (1-bit signal, 1-bit integer, 1-bit fraction) format
     uint16_t IntToSIF1_1_14(int32_t val); // Fractional part is in micro units
     uint16_t ToSIF1_1_14(double val);
     int32_t IntFromSIF1_1_14(uint16_t val); // Fractional part is in micro units
     double FromSIF1_1_14(uint16_t val);
+
+    // Find closest value (or its index) in vector
+    template<typename T>
+    size_t FindClosestIndex(std::vector<T> &vec, T value)
+    {
+        size_t idx = 0;
+        T min_diff = std::abs(vec[0] - value);
+
+        for(size_t i = 1; i < vec.size(); i++)
+        {
+            T diff = std::abs(vec[i] - value);
+
+            if(diff < min_diff)
+            {
+                min_diff = diff;
+                idx = i;
+            }
+        }
+
+        return idx;
+    }
+    template<typename T>
+    inline size_t FindClosestIndex(const T *vec, size_t size, T value)
+    {
+        std::vector<T> v(vec, vec + size);
+
+        return Utils::FindClosestIndex(v, value);
+    }
+    template<typename T>
+    T FindClosestValue(std::vector<T> &vec, T value)
+    {
+        return vec[Utils::FindClosestIndex(vec, value)];
+    }
+    template<typename T>
+    inline T FindClosestValue(const T *vec, size_t size, T value)
+    {
+        return vec[Utils::FindClosestIndex(vec, size, value)];
+    }
 
     template<typename T>
     std::pair<size_t, size_t> FindLongestSequence(std::vector<T> &vec, T value)
@@ -144,5 +129,12 @@ namespace Utils
         }
 
         return std::make_pair(max_start, max_cnt);
+    }
+    template<typename T>
+    inline std::pair<size_t, size_t> FindLongestSequence(const T *vec, size_t size, T value)
+    {
+        std::vector<T> v(vec, vec + size);
+
+        return Utils::FindLongestSequence(v, value);
     }
 }

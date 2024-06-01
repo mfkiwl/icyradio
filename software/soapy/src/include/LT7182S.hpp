@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <cmath>
 #include <sstream>
 #include <iomanip>
 #include <thread>
@@ -74,9 +75,6 @@ public:
     };
 
 private:
-    static float Pow2(int8_t e);
-    static uint8_t FindClosest(float val, const float *arr, uint8_t size);
-
     static void ISR(void *_this);
     void handleIRQ();
 

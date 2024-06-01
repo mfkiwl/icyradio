@@ -160,19 +160,23 @@ void SoapyIcyRadio::setupMemoryMaps()
     this->axi_ad9361 = new AXIAD9361(this->mm_axi_periph->getVirt(AXI_AD9361_BASE));
 
     // Allocate DMA buffer memory
-    uint32_t dma_sz = ICYRADIO_DEFAULT_TOTAL_DMA_POOL_SIZE_BYTES; // TODO: make this configurable
+    icyradio_ioctl_dma_buffer_t arg = {
+        .ullPhysAddr = 0,
+        .ulSize = ICYRADIO_DEFAULT_TOTAL_DMA_POOL_SIZE_BYTES // TODO: make this configurable
+    };
 
-    DLOGF(SOAPY_SDR_DEBUG, "Allocating DMA buffer pool of %u bytes", dma_sz);
+    DLOGF(SOAPY_SDR_DEBUG, "Allocating DMA buffer pool of %u bytes", arg.ulSize);
 
-    uint64_t arg = dma_sz;
-
-    ioctl(this->fd, ICYRADIO_IOCTL_DMA_FREE); // TODO: Implement getting an existing buffer
+    ioctl(this->fd, ICYRADIO_IOCTL_DMA_FREE_ALL); // TODO: Implement getting an existing buffer
 
     if(ioctl(this->fd, ICYRADIO_IOCTL_DMA_ALLOC, &arg) < 0)
         throw std::runtime_error("Could not allocate DMA buffer memory (" + std::string(std::strerror(errno)) + ")");
 
+    if(arg.ulSize != ICYRADIO_DEFAULT_TOTAL_DMA_POOL_SIZE_BYTES)
+        DLOGF(SOAPY_SDR_WARNING, "Requested DMA buffer of length %u bytes, actually got %u bytes!", ICYRADIO_DEFAULT_TOTAL_DMA_POOL_SIZE_BYTES, arg.ulSize);
+
     // Map DMA buffer memory
-    this->mm_dma_buffer = new MappedRegion(this->fd, arg | BIT(48), dma_sz);
+    this->mm_dma_buffer = new MappedRegion(this->fd, arg.ullPhysAddr | BIT(48), arg.ulSize);
 
     DLOGF(SOAPY_SDR_TRACE, "DMA Buffer: Phys = %016llX, Virt = %016llX, Size = %016llX", this->mm_dma_buffer->getPhys() & (BIT(48) - 1), this->mm_dma_buffer->getVirt(), this->mm_dma_buffer->getSize());
 }
@@ -311,7 +315,7 @@ void SoapyIcyRadio::freeMemoryMaps()
         this->mm_dma_buffer = nullptr;
     }
 
-    ioctl(this->fd, ICYRADIO_IOCTL_DMA_FREE);
+    ioctl(this->fd, ICYRADIO_IOCTL_DMA_FREE_ALL);
 }
 
 void SoapyIcyRadio::initPeripheralsPreClocks()
@@ -1123,7 +1127,7 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
     this->mmw_synth->setLockDetectPrecision(IDT8V97003::LDPrecision::LD_PREC_1p0ns);
 
     this->mmw_synth->configReferenceInput(this->clk_mngr->getClockFrequency(Si5351::ClockOutput::CLK_SYNTH_REF_CLK), false);
-    this->mmw_synth->configPFD(250000000UL, IDT8V97003::PFDPulseWidth::PFD_PW_260ps);
+    this->mmw_synth->configPFD(250e6, IDT8V97003::PFDPulseWidth::PFD_PW_260ps);
 
     this->mmw_synth->setLoopFilter(
         {
@@ -1143,7 +1147,7 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
     this->mmw_synth->setRFOutputPower(IDT8V97003::RFOutput::RFOUT_A, 12);
     this->mmw_synth->setRFOutputPower(IDT8V97003::RFOutput::RFOUT_B, 12);
 
-    // this->mmw_synth->setFrequency(6000000000ULL); // 8 GHz
+    this->mmw_synth->setFrequency(8e9); // 8 GHz
 
     {
         DLOGF(SOAPY_SDR_DEBUG, "mmWave Synth:");
@@ -1179,16 +1183,16 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
         DLOGF(SOAPY_SDR_TRACE, "    Phase Margin: %.3f deg", lfr.phase_margin);
         DLOGF(SOAPY_SDR_TRACE, "  Target Loop Bandwidth: %.3f kHz", this->mmw_synth->getTargetLoopBandwidth() * 1e-3);
 
-        // DLOGF(SOAPY_SDR_DEBUG, "  VCO Frequency: %.6f MHz", this->mmw_synth->getVCOFrequency() * 1e-6);
-        // DLOGF(SOAPY_SDR_DEBUG, "  Output Frequency: %.6f MHz", this->mmw_synth->getFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "  VCO Frequency: %.6f MHz", this->mmw_synth->getVCOFrequency() * 1e-6);
+        DLOGF(SOAPY_SDR_DEBUG, "  Output Frequency: %.6f MHz", this->mmw_synth->getFrequency() * 1e-6);
 
-        // double dist = 0;
-        // bool frac = this->mmw_synth->isFeedbackDividerFractional(dist);
+        double dist = 0;
+        bool frac = this->mmw_synth->isFeedbackDividerFractional(dist);
 
-        // if(frac)
-        //     DLOGF(SOAPY_SDR_DEBUG, "  Distance to integer boundary: %.6f %%", dist * 100);
-        // else
-        //     DLOGF(SOAPY_SDR_DEBUG, "  PLL in integer mode");
+        if(frac)
+            DLOGF(SOAPY_SDR_DEBUG, "  Distance to integer boundary: %.6f %%", dist * 100);
+        else
+            DLOGF(SOAPY_SDR_DEBUG, "  PLL in integer mode");
     }
 
     this->mmw_synth->powerDown();
@@ -1224,7 +1228,7 @@ void SoapyIcyRadio::initClocks()
     // Inputs
     DLOGF(SOAPY_SDR_DEBUG, "Clock Inputs:");
 
-    this->clk_mngr->configXTAL(26000000UL, Si5351::XTALCapacitance::C_10pF);
+    this->clk_mngr->configXTAL(26e6, Si5351::XTALCapacitance::C_10pF);
 
     uint32_t timeout = 500;
     while(--timeout && !this->clk_mngr->isXTALDetected())
@@ -1270,7 +1274,7 @@ void SoapyIcyRadio::initClocks()
     //// PLLA
     DLOGF(SOAPY_SDR_DEBUG, "  PLL A:");
 
-    this->clk_mngr->configPLL(Si5351::PLL::PLLA, 650000000UL, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
+    this->clk_mngr->configPLL(Si5351::PLL::PLLA, 650e6, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
 
     timeout = 500;
     while(--timeout && !this->clk_mngr->isPLLLocked(Si5351::PLL::PLLA))
@@ -1295,7 +1299,7 @@ void SoapyIcyRadio::initClocks()
     //// PLLB
     DLOGF(SOAPY_SDR_DEBUG, "  PLL B:");
 
-    this->clk_mngr->configPLL(Si5351::PLL::PLLB, 780000000UL, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
+    this->clk_mngr->configPLL(Si5351::PLL::PLLB, 780e6, this->config.use_clkin ? Si5351::PLLSource::PLL_SRC_CLKIN : Si5351::PLLSource::PLL_SRC_XTAL, false);
 
     timeout = 500;
     while(--timeout && !this->clk_mngr->isPLLLocked(Si5351::PLL::PLLB))
@@ -1322,7 +1326,7 @@ void SoapyIcyRadio::initClocks()
     //// FPGA Clock #0
     DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK0):", Si5351::ClockOutput::CLK_FPGA_CLK0);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK0, 50000000UL, 0.f, Si5351::PLL::PLLA, false);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK0, 50e6, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK0, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK0, Si5351::ClockOutputDriveCurrent::I_4mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK0, true); // Controlled by OE pin
@@ -1347,7 +1351,7 @@ void SoapyIcyRadio::initClocks()
     //// FPGA Clock #1
     DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (FPGA_CLK1):", Si5351::ClockOutput::CLK_FPGA_CLK1);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK1, 49152000UL, 0.f, Si5351::PLL::PLLA, false);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_FPGA_CLK1, 49.152e6, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_FPGA_CLK1, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_FPGA_CLK1, Si5351::ClockOutputDriveCurrent::I_4mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_FPGA_CLK1, true); // Controlled by OE pin
@@ -1422,7 +1426,7 @@ void SoapyIcyRadio::initClocks()
     //// Transceiver Reference clock
     DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (TRX_REF_CLK):", Si5351::ClockOutput::CLK_TRX_REF_CLK);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_TRX_REF_CLK, 39000000UL, 0.f, Si5351::PLL::PLLB, false);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_TRX_REF_CLK, 39e6, 0.f, Si5351::PLL::PLLB, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_TRX_REF_CLK, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_TRX_REF_CLK, Si5351::ClockOutputDriveCurrent::I_4mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_TRX_REF_CLK, true); // Controlled by OE pin
@@ -1447,7 +1451,7 @@ void SoapyIcyRadio::initClocks()
     //// mmWave Synthesizer Reference clock
     DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (SYNTH_REF_CLK):", Si5351::ClockOutput::CLK_SYNTH_REF_CLK);
 
-    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, 25000000UL, 0.f, Si5351::PLL::PLLA, false);
+    this->clk_mngr->configClock(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, 25e6, 0.f, Si5351::PLL::PLLA, false);
     this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, Si5351::ClockOutputDisableState::LOW);
     this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, Si5351::ClockOutputDriveCurrent::I_8mA);
     this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_SYNTH_REF_CLK, true); // Controlled by OE pin
@@ -1472,7 +1476,7 @@ void SoapyIcyRadio::initClocks()
     //// External clock output (on frontend interface pin 2_3)
     // DLOGF(SOAPY_SDR_DEBUG, "  Clock #%hhu (EXT_CLK_2_3):", Si5351::ClockOutput::CLK_EXT_CLK_2_3);
 
-    // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3, 10000000UL, 0.f, Si5351::PLL::PLL_AUTO, false);
+    // this->clk_mngr->configClock(Si5351::ClockOutput::CLK_EXT_CLK_2_3, 10e6, 0.f, Si5351::PLL::PLL_AUTO, false);
     // this->clk_mngr->setClockDisableState(Si5351::ClockOutput::CLK_EXT_CLK_2_3, Si5351::ClockOutputDisableState::LOW);
     // this->clk_mngr->setClockDriveCurrent(Si5351::ClockOutput::CLK_EXT_CLK_2_3, Si5351::ClockOutputDriveCurrent::I_8mA);
     // this->clk_mngr->setClockOutputEnableMode(Si5351::ClockOutput::CLK_EXT_CLK_2_3, true); // Controlled by OE pin
@@ -1569,6 +1573,16 @@ void SoapyIcyRadio::initClocks()
         throw std::runtime_error("FPGA DDR3 AXI interface did not come out of reset, aborting!");
     else
         DLOGF(SOAPY_SDR_DEBUG, "FPGA DDR3 AXI interface reset released!");
+
+    // Check DDR3 init & calib done
+    timeout = 500;
+    while(--timeout && !this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_MIG_INIT_CALIB_COMPLETE_BIT))
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+    if(!this->axi_gpio[AXI_GPIO_SYS_INST]->getValue(AXI_GPIO_MIG_INIT_CALIB_COMPLETE_BIT))
+        throw std::runtime_error("FPGA DDR3 initialization and/or calibration failed, aborting!");
+    else
+        DLOGF(SOAPY_SDR_DEBUG, "FPGA DDR3 initialized and calibrated!");
 
     // De-assert I2S Core reset
     this->axi_gpio[AXI_GPIO_SYS_INST]->setValue(AXI_GPIO_RST_FPGA_CLK1_49M152_AUX_RESET_IN_BIT, AXIGPIO::Value::LOW);
