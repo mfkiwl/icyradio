@@ -8,7 +8,17 @@
 #include <linux/spinlock.h>
 #include <linux/mutex.h>
 
-typedef struct
+typedef struct icyradio_dma_buffer_t icyradio_dma_buffer_t;
+typedef struct icyradio_dev_t icyradio_dev_t;
+struct icyradio_dma_buffer_t
+{
+    void *pVirt;
+    dma_addr_t ulPhys;
+    uint32_t ulSize;
+    icyradio_dma_buffer_t *pNext;
+};
+
+struct icyradio_dev_t
 {
     struct mutex sMutex;
     uint32_t ulDevID;
@@ -16,14 +26,12 @@ typedef struct
     struct pci_dev *pPCIDev;
     struct file *pFile;
     struct cdev sCharDev;
-    void *pDMAVirtAddr;
-    dma_addr_t ulDMAPhysAddr;
-    uint32_t ulDMABufSize;
+    icyradio_dma_buffer_t *pDMABuffers;
     int iNumIRQs;
     wait_queue_head_t sIRQWaitQueue;
     spinlock_t sIRQLock;
     uint64_t ullIRQCount;
     uint8_t ubIRQFlush;
-} icyradio_dev_t;
+};
 
 #endif  // __STRUCTS_H__

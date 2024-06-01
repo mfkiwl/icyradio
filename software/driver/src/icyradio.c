@@ -29,6 +29,8 @@
 #define ICYRADIO_CLASS_NAME     "IcyRadio"
 #define ICYRADIO_MAX_DEVICES    16
 
+#define ICYRADIO_MAX_DMA_BUFFERS    16
+
 #define ICYRADIO_PCIE_NUM_BARS       3
 #define ICYRADIO_PCIE_BAR0_AXI_XLATE 0x40000000 // Registers, 2 MB (End at 0x401FFFFF)
 #define ICYRADIO_PCIE_BAR1_AXI_XLATE 0x20000000 // DDR3, 512 MB (End at 0x3FFFFFFF)
@@ -57,6 +59,167 @@ static const struct pci_device_id icyradio_pci_tbl[] = {
     },
     {}
 };
+
+// DMA buffer linked list functions
+static icyradio_dma_buffer_t *icyradio_dma_buffer_store(icyradio_dev_t *pDev, void *pVirt, dma_addr_t ulPhys, uint32_t ulSize)
+{
+    icyradio_dma_buffer_t *pBuf = (icyradio_dma_buffer_t *)kzalloc(sizeof(icyradio_dma_buffer_t), GFP_KERNEL);
+
+    pr_debug("Storing DMA buffer for device %u of size 0x%08X at virt 0x%016lX and phys 0x%016llX", pDev->ulDevID, ulSize, (uintptr_t)pVirt, ulPhys);
+
+    if(!pBuf)
+    {
+        pr_warn("Can't allocate memory for DMA buffer, aborting");
+
+        return NULL;
+    }
+
+    pBuf->pVirt = pVirt;
+    pBuf->ulPhys = ulPhys;
+    pBuf->ulSize = ulSize;
+
+    pBuf->pNext = pDev->pDMABuffers;
+    pDev->pDMABuffers = pBuf;
+
+    return pBuf;
+}
+static icyradio_dma_buffer_t *icyradio_dma_buffer_alloc(icyradio_dev_t *pDev, uint32_t ulSize)
+{
+    void *pVirt;
+    dma_addr_t ulPhys;
+    icyradio_dma_buffer_t *pBuf;
+
+    pr_notice("Allocating DMA buffer for device %u of size 0x%08X", pDev->ulDevID, ulSize);
+
+    pVirt = dma_alloc_coherent(&pDev->pPCIDev->dev, ulSize, &ulPhys, GFP_ATOMIC);
+
+    if(!pVirt)
+    {
+        pr_warn("Can't allocate DMA buffer for device %u, aborting", pDev->ulDevID);
+
+        return NULL;
+    }
+
+    pr_notice("DMA buffer for device %u allocated at virt 0x%016lX and phys 0x%016llX", pDev->ulDevID, (uintptr_t)pVirt, ulPhys);
+
+    pBuf = icyradio_dma_buffer_store(pDev, pVirt, ulPhys, ulSize);
+
+    if(!pBuf)
+    {
+        pr_warn("Can't store DMA buffer for device %u, aborting", pDev->ulDevID);
+
+        dma_free_coherent(&pDev->pPCIDev->dev, ulSize, pVirt, ulPhys);
+
+        return NULL;
+    }
+
+    return pBuf;
+}
+static void icyradio_dma_buffer_free(icyradio_dev_t *pDev, icyradio_dma_buffer_t *pBuf)
+{
+    icyradio_dma_buffer_t *pPrev = NULL;
+    icyradio_dma_buffer_t *pCurr = pDev->pDMABuffers;
+
+    if(!pBuf)
+        return;
+
+    while(pCurr)
+    {
+        if(pCurr == pBuf)
+        {
+            if(pPrev)
+                pPrev->pNext = pCurr->pNext;
+            else
+                pDev->pDMABuffers = pCurr->pNext;
+
+            pr_notice("Freeing DMA buffer of size 0x%08X at virt 0x%016lX and phys 0x%016llX", pCurr->ulSize, (uintptr_t)pCurr->pVirt, pCurr->ulPhys);
+
+            dma_free_coherent(&pDev->pPCIDev->dev, pCurr->ulSize, pCurr->pVirt, pCurr->ulPhys);
+
+            kfree(pCurr);
+
+            return;
+        }
+
+        pPrev = pCurr;
+        pCurr = pCurr->pNext;
+    }
+}
+static void icyradio_dma_buffer_free_all(icyradio_dev_t *pDev)
+{
+    icyradio_dma_buffer_t *pBuf = pDev->pDMABuffers;
+    icyradio_dma_buffer_t *pNext;
+
+    pr_debug("Freeing all DMA buffers for device %u", pDev->ulDevID);
+
+    while(pBuf)
+    {
+        pr_notice("Freeing DMA buffer of size 0x%08X at virt 0x%016lX and phys 0x%016llX", pBuf->ulSize, (uintptr_t)pBuf->pVirt, pBuf->ulPhys);
+
+        dma_free_coherent(&pDev->pPCIDev->dev, pBuf->ulSize, pBuf->pVirt, pBuf->ulPhys);
+
+        pNext = pBuf->pNext;
+
+        kfree(pBuf);
+
+        pBuf = pNext;
+    }
+
+    pDev->pDMABuffers = NULL;
+}
+static size_t icyradio_dma_buffer_get_count(icyradio_dev_t *pDev)
+{
+    size_t ulCount = 0;
+    icyradio_dma_buffer_t *pBuf = pDev->pDMABuffers;
+
+    while(pBuf)
+    {
+        ulCount++;
+        pBuf = pBuf->pNext;
+    }
+
+    return ulCount;
+}
+static icyradio_dma_buffer_t *icyradio_dma_buffer_get_from_phys(icyradio_dev_t *pDev, dma_addr_t ulPhys)
+{
+    icyradio_dma_buffer_t *pBuf = pDev->pDMABuffers;
+
+    while(pBuf)
+    {
+        if(pBuf->ulPhys == ulPhys)
+            return pBuf;
+
+        pBuf = pBuf->pNext;
+    }
+
+    return NULL;
+}
+static icyradio_dma_buffer_t *icyradio_dma_buffer_get_from_phys_range(icyradio_dev_t *pDev, dma_addr_t ulPhys, uint32_t ulSize)
+{
+    icyradio_dma_buffer_t *pBuf = pDev->pDMABuffers;
+
+    while(pBuf)
+    {
+        if(ulPhys >= pBuf->ulPhys && ulPhys < pBuf->ulPhys + pBuf->ulSize && ulPhys + ulSize <= pBuf->ulPhys + pBuf->ulSize)
+            return pBuf;
+
+        pBuf = pBuf->pNext;
+    }
+
+    return NULL;
+}
+static icyradio_dma_buffer_t *icyradio_dma_buffer_get_from_index(icyradio_dev_t *pDev, size_t ulIndex)
+{
+    icyradio_dma_buffer_t *pBuf = pDev->pDMABuffers;
+
+    while(pBuf && ulIndex)
+    {
+        ulIndex--;
+        pBuf = pBuf->pNext;
+    }
+
+    return ulIndex ? NULL : pBuf;
+}
 
 // IRQ handlers
 static irqreturn_t icyradio_irq_handler(int iIRQ, void *pArg)
@@ -162,82 +325,125 @@ static long icyradio_ioctl(struct file *pFile, unsigned int ulCmd, unsigned long
     {
         case ICYRADIO_IOCTL_DMA_ALLOC:
         {
-            void *pVirtAddr = NULL;
-            dma_addr_t ulPhysAddr = 0;
-            uint64_t ullPhysAddr = 0;
-            uint64_t ullSize = 0;
+            icyradio_ioctl_dma_buffer_t sBuf;
+            icyradio_dma_buffer_t *pBuf;
 
-            if(pDev->pDMAVirtAddr)
+            if(icyradio_dma_buffer_get_count(pDev) >= ICYRADIO_MAX_DMA_BUFFERS)
             {
-                pr_warn("DMA buffer for device %u already allocated, aborting", pDev->ulDevID);
+                pr_warn("Too many DMA buffers allocated for device %u, aborting", pDev->ulDevID);
 
-                return -EBUSY;
+                return -ENOMEM;
             }
 
-            if(copy_from_user(&ullSize, (void __user *)ulArg, sizeof(uint32_t)))
+            if(copy_from_user(&sBuf, (void __user *)ulArg, sizeof(icyradio_ioctl_dma_buffer_t)))
             {
-                pr_warn("Can't copy DMA buffer size for device %u from user space, aborting", pDev->ulDevID);
+                pr_warn("Can't copy DMA buffer info for device %u from user space, aborting", pDev->ulDevID);
 
                 return -EFAULT;
             }
 
-            if(!ullSize)
+            if(!sBuf.ulSize)
             {
                 pr_warn("Invalid DMA buffer size for device %u, aborting", pDev->ulDevID);
 
                 return -EINVAL;
             }
 
-            pr_notice("Allocating DMA buffer for device %u of size 0x%08X", pDev->ulDevID, (uint32_t)ullSize);
+            pBuf = icyradio_dma_buffer_alloc(pDev, sBuf.ulSize);
 
-            pVirtAddr = dma_alloc_coherent(&pDev->pPCIDev->dev, (uint32_t)ullSize, &ulPhysAddr, GFP_USER | GFP_ATOMIC | GFP_DMA);
-
-            if(!pVirtAddr)
-            {
-                pr_warn("Can't allocate DMA buffer for device %u, aborting", pDev->ulDevID);
-
+            if(!pBuf)
                 return -ENOMEM;
-            }
 
-            pr_notice("DMA buffer for device %u allocated at virt 0x%016lX and phys 0x%016llX", pDev->ulDevID, (uintptr_t)pVirtAddr, ulPhysAddr);
+            sBuf.ullPhysAddr = pBuf->ulPhys;
+            sBuf.ulSize = pBuf->ulSize;
 
-            ullPhysAddr = ulPhysAddr; // Copy to 64-bit variable to avoid warnings
-
-            if(copy_to_user((void __user *)ulArg, &ullPhysAddr, sizeof(uint64_t)))
+            if(copy_to_user((void __user *)ulArg, &sBuf, sizeof(icyradio_ioctl_dma_buffer_t)))
             {
-                pr_warn("Can't copy DMA buffer phys address for device %u to user space, aborting", pDev->ulDevID);
+                pr_warn("Can't copy DMA buffer info for device %u to user space, aborting", pDev->ulDevID);
 
-                dma_free_coherent(&pDev->pPCIDev->dev, (uint32_t)ullSize, pVirtAddr, ulPhysAddr);
+                icyradio_dma_buffer_free(pDev, pBuf);
+
+                return -EFAULT;
+            }
+        }
+        break;
+        case ICYRADIO_IOCTL_DMA_GET_COUNT:
+        {
+            uint64_t ullCount = icyradio_dma_buffer_get_count(pDev);
+
+            pr_notice("DMA buffer count for device %u is %llu", pDev->ulDevID, ullCount);
+
+            if(copy_to_user((void __user *)ulArg, &ullCount, sizeof(uint64_t)))
+            {
+                pr_warn("Can't copy DMA buffer count for device %u to user space, aborting", pDev->ulDevID);
+
+                return -EFAULT;
+            }
+        }
+        break;
+        case ICYRADIO_IOCTL_DMA_QUERY_BY_ADDR:
+        {
+            icyradio_ioctl_dma_buffer_t sBuf;
+            icyradio_dma_buffer_t *pBuf;
+
+            if(copy_from_user(&sBuf, (void __user *)ulArg, sizeof(icyradio_ioctl_dma_buffer_t)))
+            {
+                pr_warn("Can't copy DMA buffer info for device %u from user space, aborting", pDev->ulDevID);
 
                 return -EFAULT;
             }
 
-            pDev->pDMAVirtAddr = pVirtAddr;
-            pDev->ulDMAPhysAddr = ulPhysAddr;
-            pDev->ulDMABufSize = (uint32_t)ullSize;
+            pBuf = icyradio_dma_buffer_get_from_phys(pDev, sBuf.ullPhysAddr);
 
-            pci_set_master(pDev->pPCIDev); // Set as bus master so it can initiate DMA transfers
-        }
-        break;
-        case ICYRADIO_IOCTL_DMA_QUERY:
-        {
-            icyradio_ioctl_dma_buffer_query_t sQuery;
-
-            if(!pDev->pDMAVirtAddr)
+            if(!pBuf)
             {
-                pr_warn("DMA buffer not allocated for device %u, aborting", pDev->ulDevID);
+                pr_warn("Can't find DMA buffer for device %u at phys 0x%016llX, aborting", pDev->ulDevID, sBuf.ullPhysAddr);
 
                 return -ENODEV;
             }
 
-            pr_notice("DMA buffer of size 0x%08X for device %u is at virt 0x%016lX and phys 0x%016llX", pDev->ulDMABufSize, pDev->ulDevID, (uintptr_t)pDev->pDMAVirtAddr, pDev->ulDMAPhysAddr);
+            pr_notice("DMA buffer for device %u of size 0x%08X is at virt 0x%016lX and phys 0x%016llX", pDev->ulDevID, pBuf->ulSize, (uintptr_t)pBuf->pVirt, pBuf->ulPhys);
 
-            sQuery.ullPhysAddr = (uint64_t)pDev->ulDMAPhysAddr;
-            sQuery.ulBufSize = pDev->ulDMABufSize;
+            sBuf.ullPhysAddr = pBuf->ulPhys;
+            sBuf.ulSize = pBuf->ulSize;
 
-            if(copy_to_user((void __user *)ulArg, &sQuery, sizeof(icyradio_ioctl_dma_buffer_query_t)))
+            if(copy_to_user((void __user *)ulArg, &sBuf, sizeof(icyradio_ioctl_dma_buffer_t)))
             {
-                pr_warn("Can't copy DMA buffer phys address for device %u to user space, aborting", pDev->ulDevID);
+                pr_warn("Can't copy DMA buffer info for device %u to user space, aborting", pDev->ulDevID);
+
+                return -EFAULT;
+            }
+        }
+        break;
+        case ICYRADIO_IOCTL_DMA_QUERY_BY_INDEX:
+        {
+            icyradio_ioctl_dma_buffer_t sBuf;
+            icyradio_dma_buffer_t *pBuf;
+
+            if(copy_from_user(&sBuf, (void __user *)ulArg, sizeof(icyradio_ioctl_dma_buffer_t)))
+            {
+                pr_warn("Can't copy DMA buffer info for device %u from user space, aborting", pDev->ulDevID);
+
+                return -EFAULT;
+            }
+
+            pBuf = icyradio_dma_buffer_get_from_index(pDev, sBuf.ullIndex);
+
+            if(!pBuf)
+            {
+                pr_warn("Can't find DMA buffer for device %u at index %llu, aborting", pDev->ulDevID, sBuf.ullIndex);
+
+                return -ENODEV;
+            }
+
+            pr_notice("DMA buffer for device %u of size 0x%08X is at virt 0x%016lX and phys 0x%016llX", pDev->ulDevID, pBuf->ulSize, (uintptr_t)pBuf->pVirt, pBuf->ulPhys);
+
+            sBuf.ullPhysAddr = pBuf->ulPhys;
+            sBuf.ulSize = pBuf->ulSize;
+
+            if(copy_to_user((void __user *)ulArg, &sBuf, sizeof(icyradio_ioctl_dma_buffer_t)))
+            {
+                pr_warn("Can't copy DMA buffer info for device %u to user space, aborting", pDev->ulDevID);
 
                 return -EFAULT;
             }
@@ -245,24 +451,34 @@ static long icyradio_ioctl(struct file *pFile, unsigned int ulCmd, unsigned long
         break;
         case ICYRADIO_IOCTL_DMA_FREE:
         {
-            if(!pDev->pDMAVirtAddr)
+            icyradio_ioctl_dma_buffer_t sBuf;
+            icyradio_dma_buffer_t *pBuf;
+
+            if(copy_from_user(&sBuf, (void __user *)ulArg, sizeof(icyradio_ioctl_dma_buffer_t)))
             {
-                pr_warn("DMA buffer not allocated for device %u, aborting", pDev->ulDevID);
+                pr_warn("Can't copy DMA buffer info for device %u from user space, aborting", pDev->ulDevID);
+
+                return -EFAULT;
+            }
+
+            pBuf = icyradio_dma_buffer_get_from_phys(pDev, sBuf.ullPhysAddr);
+
+            if(!pBuf)
+            {
+                pr_warn("Can't find DMA buffer for device %u at phys 0x%016llX, aborting", pDev->ulDevID, sBuf.ullPhysAddr);
 
                 return -ENODEV;
             }
 
-            pr_notice("Freeing DMA buffer for device %u at virt 0x%016lX and phys 0x%016llX", pDev->ulDevID, (uintptr_t)pDev->pDMAVirtAddr, pDev->ulDMAPhysAddr);
-
-            pci_clear_master(pDev->pPCIDev); // Clear bus master so it can't initiate DMA transfers
-
-            dma_free_coherent(&pDev->pPCIDev->dev, pDev->ulDMABufSize, pDev->pDMAVirtAddr, pDev->ulDMAPhysAddr);
-
-            pDev->pDMAVirtAddr = NULL;
-            pDev->ulDMAPhysAddr = 0;
-            pDev->ulDMABufSize = 0;
+            icyradio_dma_buffer_free(pDev, pBuf);
         }
         break;
+        case ICYRADIO_IOCTL_DMA_FREE_ALL:
+        {
+            icyradio_dma_buffer_free_all(pDev);
+        }
+        break;
+
         case ICYRADIO_IOCTL_IRQ_QUERY:
         {
             uint8_t ubIRQs = 0;
@@ -388,29 +604,26 @@ static int icyradio_mmap(struct file *pFile, struct vm_area_struct *pVMA)
 
     if(ulOffset >= BIT(48)) // Above 48 bits is the DMA buffer space
     {
-        if(!pDev->pDMAVirtAddr)
-        {
-            pr_warn("mmap to DMA buffer for device %u but no memory allocated, aborting", pDev->ulDevID);
-
-            return -EINVAL;
-        }
+        icyradio_dma_buffer_t *pBuf;
 
         ulOffset &= BIT(48) - 1;
 
-        if(ulOffset - pDev->ulDMAPhysAddr + ulLength > pDev->ulDMABufSize)
+        pBuf = icyradio_dma_buffer_get_from_phys_range(pDev, ulOffset, ulLength);
+
+        if(!pBuf)
         {
-            pr_warn("Requested range exceeds DMA buffer size for device %u, aborting", pDev->ulDevID);
+            pr_warn("Region 0x%016lX to 0x%016lX not found in DMA buffer space for device %u, aborting", ulOffset, ulOffset + ulLength - 1, pDev->ulDevID);
 
             return -EINVAL;
         }
 
-        pr_notice("DMA Buffer, Phys start: 0x%016llX, Phys offset: 0x%016llX, map offset: 0x%016lX, map len: 0x%08lX", pDev->ulDMAPhysAddr, ulOffset - pDev->ulDMAPhysAddr, ulOffset, ulLength);
+        pr_notice("DMA Buffer, Phys start: 0x%016llX, Phys offset: 0x%016llX, map offset: 0x%016lX, map len: 0x%08lX", pBuf->ulPhys, ulOffset - pBuf->ulPhys, ulOffset, ulLength);
 
-        ulOffset -= pDev->ulDMAPhysAddr;
+        ulOffset -= pBuf->ulPhys;
 
         pVMA->vm_pgoff = ulOffset >> PAGE_SHIFT;
 
-        if(dma_mmap_coherent(&pDev->pPCIDev->dev, pVMA, pDev->pDMAVirtAddr + ulOffset, pDev->ulDMAPhysAddr + ulOffset, ulLength))
+        if(dma_mmap_coherent(&pDev->pPCIDev->dev, pVMA, pBuf->pVirt + ulOffset, pBuf->ulPhys + ulOffset, ulLength))
         {
             pr_warn("Can't remap DMA buffer range for device %u, aborting", pDev->ulDevID);
 
@@ -444,7 +657,7 @@ static int icyradio_mmap(struct file *pFile, struct vm_area_struct *pVMA)
 
         if(!ubFound)
         {
-            pr_warn("Region 0x%08lX to 0x%08lX not found in AXI address space for device %u, aborting", ulOffset, ulOffset + ulLength - 1, pDev->ulDevID);
+            pr_warn("Region 0x%016lX to 0x%016lX not found in AXI address space for device %u, aborting", ulOffset, ulOffset + ulLength - 1, pDev->ulDevID);
 
             return -EINVAL;
         }
@@ -851,6 +1064,8 @@ static int icyradio_pci_probe(struct pci_dev *pPCIDev, const struct pci_device_i
 
     pr_info("Device %u file created at /dev/%s%u", ulDevID, ICYRADIO_DEV_NAME, ulDevID);
 
+    pci_set_master(pPCIDev);
+
     // After all configuration is successful, register the device in the array and set its drvdata
     icyradio_devs[ulDevID] = pDev;
     pci_set_drvdata(pPCIDev, pDev);
@@ -894,8 +1109,7 @@ static void icyradio_pci_remove(struct pci_dev *pPCIDev)
         for(int i = 0; i < pDev->iNumIRQs; i++)
             free_irq(pci_irq_vector(pPCIDev, i), pDev);
 
-        if(pDev->pDMAVirtAddr)
-            dmam_free_coherent(&pPCIDev->dev, pDev->ulDMABufSize, pDev->pDMAVirtAddr, pDev->ulDMAPhysAddr);
+        icyradio_dma_buffer_free_all(pDev);
 
         device_destroy(icyradio_class, MKDEV(MAJOR(icyradio_dev_num), MINOR(icyradio_dev_num) + pDev->ulDevID));
         cdev_del(&pDev->sCharDev);
