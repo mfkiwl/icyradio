@@ -491,7 +491,7 @@ int init()
     DBGPRINTLN_CTX("  VEXT: %u mV", adc_get_vext());
     DBGPRINTLN_CTX("  12V0: %u mV", adc_get_12v0());
     DBGPRINTLN_CTX("  VBUS: %u mV", adc_get_vbus());
-    DBGPRINTLN_CTX("  Temp: %d.%02u C", lTemp / 1000, ABS(lTemp % 1000));
+    DBGPRINTLN_CTX("  Temp: %d.%03u C", lTemp / 1000, ABS(lTemp % 1000));
 
     nvmctrl_config_waitstates(PM_CPU_CLOCK_FREQ, adc_get_iovdd()); // Optimize flash wait states for frequency and voltage
 
@@ -581,81 +581,91 @@ int main()
     lt7182s_set_operation(0, LT7182S_OPERATION_TURN_OFF_IMMED);
     lt7182s_set_on_off_config(0, BIT(3)); // Only care about OPERATION commands, ignore RUN pin
     lt7182s_set_pwm_config(0, (3 << 11) | (2 << 9) | (7 << 6) | (3 << 3) | BIT(2)); // GMEA = 150 uS, ILIM = 6.5 A / -4 A, CITH = 80 pF, RITH = 40 kOhm, FCM, Low VOUT Disabled
-    lt7182s_set_vin_on(0, 7.f); // 7 V Input Voltage to start power conversion
-    lt7182s_set_vin_off(0, 6.5f); // 6.5 V Input Voltage to stop power conversion (UVLO)
-    lt7182s_set_vin_uv_warn(0, 6.75f); // 6.75 V Input Undervoltage Warning
-    lt7182s_set_iin_oc_warn(0, 4.5f); // 4.5 A Input Overcurrent Warning
-    lt7182s_set_vout_max(0, 5.4f); // 5.4 V Maximum Output Voltage
-    lt7182s_set_vout(0, 5.2f); // 5.2 V Nominal Output Voltage
-    lt7182s_set_vout_margin_high(0, 5.25f); // 5.25 V High Margin
-    lt7182s_set_vout_margin_low(0, 5.15f); // 5.15 V Low Margin
-    lt7182s_set_vout_ov_fault(0, 5.5f); // 5.5 V Overvoltage Fault
-    lt7182s_set_vout_ov_warn(0, 5.4f); // 5.4 V Overvoltage Warning
-    lt7182s_set_vout_uv_fault(0, 4.95f); // 4.95 V Undervoltage Fault
-    lt7182s_set_vout_uv_warn(0, 5.05f); // 5.05 V Undervoltage Warning
-    lt7182s_set_iout_oc_warn(0, 5.5f); // 5.5 A Output Overcurrent Warning
+    lt7182s_set_vin_on(0, 7000); // 7 V Input Voltage to start power conversion
+    lt7182s_set_vin_off(0, 6500); // 6.5 V Input Voltage to stop power conversion (UVLO)
+    lt7182s_set_vin_uv_warn(0, 6750); // 6.75 V Input Undervoltage Warning
+    lt7182s_set_iin_oc_warn(0, 4500); // 4.5 A Input Overcurrent Warning
+    lt7182s_set_vout_max(0, 5400); // 5.4 V Maximum Output Voltage
+    lt7182s_set_vout(0, 5200); // 5.2 V Nominal Output Voltage
+    lt7182s_set_vout_margin_high(0, 5250); // 5.25 V High Margin
+    lt7182s_set_vout_margin_low(0, 5150); // 5.15 V Low Margin
+    lt7182s_set_vout_transition_rate(0, 100); // 0.1 V/ms Output Voltage Transition Rate
+    lt7182s_set_vout_ov_fault(0, 5500); // 5.5 V Overvoltage Fault
+    lt7182s_set_vout_ov_warn(0, 5400); // 5.4 V Overvoltage Warning
+    lt7182s_set_vout_uv_fault(0, 4950); // 4.95 V Undervoltage Fault
+    lt7182s_set_vout_uv_warn(0, 5050); // 5.05 V Undervoltage Warning
+    lt7182s_set_iout_oc_warn(0, 5500); // 5.5 A Output Overcurrent Warning
 
     // Configure Channel 1
     lt7182s_set_operation(1, LT7182S_OPERATION_TURN_OFF_IMMED);
     lt7182s_set_on_off_config(1, BIT(3) | BIT(2) | BIT(0)); // Only start if OPERATION is on and RUN is high (PGOOD from previous regulator)
     lt7182s_set_pwm_config(1, (0 << 11) | (2 << 9) | (7 << 6) | (3 << 3) | BIT(2) | BIT(1)); // GMEA = 150 uS, ILIM = 6.5 A / -4 A, CITH = 80 pF, RITH = 40 kOhm, FCM, Low VOUT Enabled
-    lt7182s_set_vin_on(1, 7.f); // 7 V Input Voltage to start power conversion
-    lt7182s_set_vin_off(1, 6.5f); // 6.5 V Input Voltage to stop power conversion (UVLO)
-    lt7182s_set_vin_uv_warn(1, 6.75f); // 6.75 V Input Undervoltage Warning
-    lt7182s_set_iin_oc_warn(1, 0.8f); // 0.8 A Input Overcurrent Warning
-    lt7182s_set_vout_max(1, 1.1f); // 1.1 V Maximum Output Voltage
-    lt7182s_set_vout(1, 1.f); // 1 V Nominal Output Voltage
-    lt7182s_set_vout_margin_high(1, 1.05f); // 1.05 V High Margin
-    lt7182s_set_vout_margin_low(1, 1.f); // 1 V Low Margin
-    lt7182s_set_vout_ov_fault(1, 1.15f); // 1.15 V Overvoltage Fault
-    lt7182s_set_vout_ov_warn(1, 1.1f); // 1.1 V Overvoltage Warning
-    lt7182s_set_vout_uv_fault(1, 0.9f); // 0.9 V Undervoltage Fault
-    lt7182s_set_vout_uv_warn(1, 0.95f); // 0.95 V Undervoltage Warning
-    lt7182s_set_iout_oc_warn(1, 3.f); // 3 A Output Overcurrent Warning TODO: Up up
+    lt7182s_set_vin_on(1, 7000); // 7 V Input Voltage to start power conversion
+    lt7182s_set_vin_off(1, 6500); // 6.5 V Input Voltage to stop power conversion (UVLO)
+    lt7182s_set_vin_uv_warn(1, 6750); // 6.75 V Input Undervoltage Warning
+    lt7182s_set_iin_oc_warn(1, 800); // 0.8 A Input Overcurrent Warning
+    lt7182s_set_vout_max(1, 1100); // 1.1 V Maximum Output Voltage
+    lt7182s_set_vout(1, 1000); // 1 V Nominal Output Voltage
+    lt7182s_set_vout_margin_high(1, 1050); // 1.05 V High Margin
+    lt7182s_set_vout_margin_low(1, 1000); // 1 V Low Margin
+    lt7182s_set_vout_transition_rate(1, 250); // 0.25 V/ms Output Voltage Transition Rate
+    lt7182s_set_vout_ov_fault(1, 1150); // 1.15 V Overvoltage Fault
+    lt7182s_set_vout_ov_warn(1, 1100); // 1.1 V Overvoltage Warning
+    lt7182s_set_vout_uv_fault(1, 900); // 0.9 V Undervoltage Fault
+    lt7182s_set_vout_uv_warn(1, 950); // 0.95 V Undervoltage Warning
+    lt7182s_set_iout_oc_warn(1, 3000); // 3 A Output Overcurrent Warning TODO: Up up
 
     for(uint8_t i = 0; i < 2; i++)
     {
         DBGPRINTLN_CTX("  Channel #%hhu:", i);
-        DBGPRINTLN_CTX("    VIN: %.3f V (Pk: %.3f V)", lt7182s_read_vin(i), lt7182s_read_vin_peak(i));
-        DBGPRINTLN_CTX("    VIN ON: %.3f V", lt7182s_get_vin_on(i));
-        DBGPRINTLN_CTX("    VIN OFF: %.3f V", lt7182s_get_vin_off(i));
-        DBGPRINTLN_CTX("    VIN UV Warn: %.3f V", lt7182s_get_vin_uv_warn(i));
-        DBGPRINTLN_CTX("    IIN: %.3f A", lt7182s_read_iin(i));
-        DBGPRINTLN_CTX("    IIN OC Warn: %.3f A", lt7182s_get_iin_oc_warn(i));
-        DBGPRINTLN_CTX("    VOUT: %.3f V (Set: %.3f V, Pk: %.3f V)", lt7182s_read_vout(i), lt7182s_get_vout(i), lt7182s_read_vout_peak(i));
-        DBGPRINTLN_CTX("    VOUT Max: %.3f V", lt7182s_get_vout_max(i));
-        DBGPRINTLN_CTX("    VOUT Mg High: %.3f V", lt7182s_get_vout_margin_high(i));
-        DBGPRINTLN_CTX("    VOUT Mg Low: %.3f V", lt7182s_get_vout_margin_low(i));
-        DBGPRINTLN_CTX("    VOUT Tr Rate: %.3f V/ms", lt7182s_get_vout_transition_rate(i));
-        DBGPRINTLN_CTX("    VOUT OV Fault: %.3f V", lt7182s_get_vout_ov_fault(i));
-        DBGPRINTLN_CTX("    VOUT OV Warn: %.3f V", lt7182s_get_vout_ov_warn(i));
-        DBGPRINTLN_CTX("    VOUT UV Fault: %.3f V", lt7182s_get_vout_uv_fault(i));
-        DBGPRINTLN_CTX("    VOUT UV Warn: %.3f V", lt7182s_get_vout_uv_warn(i));
-        DBGPRINTLN_CTX("    IOUT: %.3f A (Pk: %.3f A)", lt7182s_read_iout(i), lt7182s_read_iout_peak(i));
-        DBGPRINTLN_CTX("    IOUT OC Warn: %.3f A", lt7182s_get_iout_oc_warn(i));
-        DBGPRINTLN_CTX("    FREQ: %.3f kHz", lt7182s_read_freq(i));
-        DBGPRINTLN_CTX("    POUT: %.3f W", lt7182s_read_pout(i));
-        DBGPRINTLN_CTX("    VITH: %.3f V", lt7182s_read_ith(i));
+        DBGPRINTLN_CTX("    VIN: %hu mV (Pk: %hu mV)", lt7182s_read_vin(i), lt7182s_read_vin_peak(i));
+        DBGPRINTLN_CTX("    VIN ON: %hu mV", lt7182s_get_vin_on(i));
+        DBGPRINTLN_CTX("    VIN OFF: %hu mV", lt7182s_get_vin_off(i));
+        DBGPRINTLN_CTX("    VIN UV Warn: %hd mV", lt7182s_get_vin_uv_warn(i));
+        DBGPRINTLN_CTX("    IIN: %hu mA", lt7182s_read_iin(i));
+        DBGPRINTLN_CTX("    IIN OC Warn: %hu mA", lt7182s_get_iin_oc_warn(i));
+        DBGPRINTLN_CTX("    VOUT: %hu mV (Set: %hu mV, Pk: %hu mV)", lt7182s_read_vout(i), lt7182s_get_vout(i), lt7182s_read_vout_peak(i));
+        DBGPRINTLN_CTX("    VOUT Max: %hu mV", lt7182s_get_vout_max(i));
+        DBGPRINTLN_CTX("    VOUT Mg High: %hu mV", lt7182s_get_vout_margin_high(i));
+        DBGPRINTLN_CTX("    VOUT Mg Low: %hu mV", lt7182s_get_vout_margin_low(i));
+        DBGPRINTLN_CTX("    VOUT Rate: %hu mV/ms", lt7182s_get_vout_transition_rate(i));
+        DBGPRINTLN_CTX("    VOUT OV Fault: %hu mV", lt7182s_get_vout_ov_fault(i));
+        DBGPRINTLN_CTX("    VOUT OV Warn: %hu mV", lt7182s_get_vout_ov_warn(i));
+        DBGPRINTLN_CTX("    VOUT UV Fault: %hu mV", lt7182s_get_vout_uv_fault(i));
+        DBGPRINTLN_CTX("    VOUT UV Warn: %hu mV", lt7182s_get_vout_uv_warn(i));
+        DBGPRINTLN_CTX("    IOUT: %hu mA (Pk: %hu mA)", lt7182s_read_iout(i), lt7182s_read_iout_peak(i));
+        DBGPRINTLN_CTX("    IOUT OC Warn: %hu mA", lt7182s_get_iout_oc_warn(i));
+        DBGPRINTLN_CTX("    FREQ: %u Hz", lt7182s_read_freq(i));
+        DBGPRINTLN_CTX("    POUT: %hu mW", lt7182s_read_pout(i));
+        DBGPRINTLN_CTX("    VITH: %hu mV", lt7182s_read_ith(i));
 
         uint16_t usPWMConfig = lt7182s_get_pwm_config(i);
 
         DBGPRINTLN_CTX("    PWM Config:");
-        DBGPRINTLN_CTX("      GMEA: %.3f uS", l17182s_pwm_config_parse_gmea(usPWMConfig));
-        DBGPRINTLN_CTX("      ILIM Pos: %.3f A", l17182s_pwm_config_parse_pos_ilim(usPWMConfig));
-        DBGPRINTLN_CTX("      ILIM Neg: %.3f A", l17182s_pwm_config_parse_neg_ilim(usPWMConfig));
-        DBGPRINTLN_CTX("      CITH: %.3f pF", l17182s_pwm_config_parse_cith(usPWMConfig));
-        DBGPRINTLN_CTX("      RITH: %.3f kOhm", l17182s_pwm_config_parse_rith(usPWMConfig));
+        DBGPRINTLN_CTX("      GMEA: %lu nS", l17182s_pwm_config_parse_gmea(usPWMConfig));
+        DBGPRINTLN_CTX("      ILIM Pos: %hu mA", l17182s_pwm_config_parse_pos_ilim(usPWMConfig));
+        DBGPRINTLN_CTX("      ILIM Neg: %hd mA", l17182s_pwm_config_parse_neg_ilim(usPWMConfig));
+        DBGPRINTLN_CTX("      CITH: %hhu pF", l17182s_pwm_config_parse_cith(usPWMConfig));
+        DBGPRINTLN_CTX("      RITH: %hhu kOhm", l17182s_pwm_config_parse_rith(usPWMConfig));
         DBGPRINTLN_CTX("      Pulse Skip: %s", l17182s_pwm_config_parse_pulse_skipping(usPWMConfig) ? "Enabled" : "Disabled");
         DBGPRINTLN_CTX("      FCM at TOFF: %s", l17182s_pwm_config_parse_fcm_at_toff(usPWMConfig) ? "Enabled" : "Disabled");
         DBGPRINTLN_CTX("      Low VOUT: %s", l17182s_pwm_config_parse_low_vout_mode(usPWMConfig) ? "Enabled" : "Disabled");
-        DBGPRINTLN_CTX("      Phase: %.3f deg", lt7182s_get_pwm_phase(i));
+        DBGPRINTLN_CTX("      Phase: %lu mdeg", lt7182s_get_pwm_phase(i));
     }
 
-    DBGPRINTLN_CTX("  EXTVCC: %.3f V", lt7182s_read_extvcc());
-    DBGPRINTLN_CTX("  Temp: %.3f C (Pk: %.3f C)", lt7182s_read_temperature(), lt7182s_read_temperature_peak());
-    DBGPRINTLN_CTX("  OT Fault Temp: %.3f C", lt7182s_get_ot_fault());
-    DBGPRINTLN_CTX("  OT Warn Temp: %.3f C", lt7182s_get_ot_warn());
-    DBGPRINTLN_CTX("  Freq: %.3f kHz", lt7182s_get_freq());
+    DBGPRINTLN_CTX("  EXTVCC: %hu mV", lt7182s_read_extvcc());
+
+    int32_t lTemp = lt7182s_read_temperature();
+    int32_t lTempPeak = lt7182s_read_temperature_peak();
+    DBGPRINTLN_CTX("  Temp: %d.%03u C (Pk: %d.%03u C)", lTemp / 1000, ABS(lTemp % 1000), lTempPeak / 1000, ABS(lTempPeak % 1000));
+
+    lTemp = lt7182s_get_ot_fault();
+    DBGPRINTLN_CTX("  OT Fault Temp: %d.%03u C", lTemp / 1000, ABS(lTemp % 1000));
+
+    lTemp = lt7182s_get_ot_warn();
+    DBGPRINTLN_CTX("  OT Warn Temp: %d.%03u C", lTemp / 1000, ABS(lTemp % 1000));
+
+    DBGPRINTLN_CTX("  Freq: %u Hz", lt7182s_get_freq());
 
     //// UPD test
     // UPD350_SELECT();
@@ -754,6 +764,8 @@ int main()
         }
     }
 
+    uint8_t ubI2CIsMaster = 0;
+
     if(!DBG_PRESENT())
     {
         // Done with I2C master, switch to slave
@@ -763,6 +775,8 @@ int main()
     }
     else
     {
+        ubI2CIsMaster = 1;
+
         DBGPRINTLN_CTX("Debugger detected, I2C will remain in master mode");
     }
 
@@ -917,51 +931,59 @@ int main()
                 DBGPRINTLN("VEXT: %u mV", ulVEXT);
                 DBGPRINTLN("12V0: %u mV", ul12V0);
                 DBGPRINTLN("VBUS: %u mV", ulVBUS);
-                DBGPRINTLN("Temp: %d.%02u C", lTemp / 1000, ABS(lTemp % 1000));
+                DBGPRINTLN("Temp: %d.%03u C", lTemp / 1000, ABS(lTemp % 1000));
 
-                DBGPRINTLN("LT7182S:");
-
-                for(uint8_t i = 0; i < 2; i++)
+                if(ubI2CIsMaster)
                 {
-                    DBGPRINTLN("  Channel #%hhu:", i);
+                    DBGPRINTLN("LT7182S:");
 
-                    uint16_t usStatus = lt7182s_get_status_word(i);
-
-                    if(usStatus != 0x0000)
+                    for(uint8_t i = 0; i < 2; i++)
                     {
-                        uint8_t ubStatusVOUT = lt7182s_get_status_vout(i);
-                        uint8_t ubStatusIOUT = lt7182s_get_status_iout(i);
-                        uint8_t ubStatusInput = lt7182s_get_status_input(i);
-                        uint8_t ubStatusTemperature = lt7182s_get_status_temperature();
-                        uint8_t ubStatusCML = lt7182s_get_status_cml();
-                        uint8_t ubStatusMFRSpecific = lt7182s_get_status_mfr_specific(i);
-                        uint8_t ubStatusMFRCommon = lt7182s_get_status_mfr_common();
-                        uint16_t usStatusMFRPads = lt7182s_get_status_mfr_pads();
-                        uint8_t ubStatusMFRPinConfig = lt7182s_get_status_mfr_pin_config();
+                        DBGPRINTLN("  Channel #%hhu:", i);
 
-                        DBGPRINTLN("    Status (0x%04X):", usStatus);
-                        DBGPRINTLN("      VOUT: 0x%02X", ubStatusVOUT);
-                        DBGPRINTLN("      IOUT: 0x%02X", ubStatusIOUT);
-                        DBGPRINTLN("      Input: 0x%02X", ubStatusInput);
-                        DBGPRINTLN("      Temp: 0x%02X", ubStatusTemperature);
-                        DBGPRINTLN("      CML: 0x%02X", ubStatusCML);
-                        DBGPRINTLN("      MFR Spec: 0x%02X", ubStatusMFRSpecific);
-                        DBGPRINTLN("      MFR Com: 0x%02X", ubStatusMFRCommon);
-                        DBGPRINTLN("      MFR Pads: 0x%04X", usStatusMFRPads);
-                        DBGPRINTLN("      MFR PinCfg: 0x%02X", ubStatusMFRPinConfig);
+                        uint16_t usStatus = lt7182s_get_status_word(i);
+
+                        if(usStatus != 0x0000)
+                        {
+                            uint8_t ubStatusVOUT = lt7182s_get_status_vout(i);
+                            uint8_t ubStatusIOUT = lt7182s_get_status_iout(i);
+                            uint8_t ubStatusInput = lt7182s_get_status_input(i);
+                            uint8_t ubStatusTemperature = lt7182s_get_status_temperature();
+                            uint8_t ubStatusCML = lt7182s_get_status_cml();
+                            uint8_t ubStatusMFRSpecific = lt7182s_get_status_mfr_specific(i);
+                            uint8_t ubStatusMFRCommon = lt7182s_get_status_mfr_common();
+                            uint16_t usStatusMFRPads = lt7182s_get_status_mfr_pads();
+                            uint8_t ubStatusMFRPinConfig = lt7182s_get_status_mfr_pin_config();
+
+                            DBGPRINTLN("    Status (0x%04X):", usStatus);
+                            DBGPRINTLN("      VOUT: 0x%02X", ubStatusVOUT);
+                            DBGPRINTLN("      IOUT: 0x%02X", ubStatusIOUT);
+                            DBGPRINTLN("      Input: 0x%02X", ubStatusInput);
+                            DBGPRINTLN("      Temp: 0x%02X", ubStatusTemperature);
+                            DBGPRINTLN("      CML: 0x%02X", ubStatusCML);
+                            DBGPRINTLN("      MFR Spec: 0x%02X", ubStatusMFRSpecific);
+                            DBGPRINTLN("      MFR Com: 0x%02X", ubStatusMFRCommon);
+                            DBGPRINTLN("      MFR Pads: 0x%04X", usStatusMFRPads);
+                            DBGPRINTLN("      MFR PinCfg: 0x%02X", ubStatusMFRPinConfig);
+                        }
+
+                        DBGPRINTLN("    VIN: %hu mV (Pk: %hu mV)", lt7182s_read_vin(i), lt7182s_read_vin_peak(i));
+                        DBGPRINTLN("    IIN: %hu mA", lt7182s_read_iin(i));
+                        DBGPRINTLN("    VOUT: %hu V (Set: %hu V, Pk: %hu V)", lt7182s_read_vout(i), lt7182s_get_vout(i), lt7182s_read_vout_peak(i));
+                        DBGPRINTLN("    IOUT: %hu mA (Pk: %hu mA)", lt7182s_read_iout(i), lt7182s_read_iout_peak(i));
+                        DBGPRINTLN("    FREQ: %u Hz", lt7182s_read_freq(i));
+                        DBGPRINTLN("    POUT: %hu mW", lt7182s_read_pout(i));
+                        DBGPRINTLN("    VITH: %hu mV", lt7182s_read_ith(i));
                     }
 
-                    DBGPRINTLN("    VIN: %.3f V (Pk: %.3f V)", lt7182s_read_vin(i), lt7182s_read_vin_peak(i));
-                    DBGPRINTLN("    IIN: %.3f A", lt7182s_read_iin(i));
-                    DBGPRINTLN("    VOUT: %.3f V (Set: %.3f V, Pk: %.3f V)", lt7182s_read_vout(i), lt7182s_get_vout(i), lt7182s_read_vout_peak(i));
-                    DBGPRINTLN("    IOUT: %.3f A (Pk: %.3f A)", lt7182s_read_iout(i), lt7182s_read_iout_peak(i));
-                    DBGPRINTLN("    FREQ: %.3f kHz", lt7182s_read_freq(i));
-                    DBGPRINTLN("    POUT: %.3f W", lt7182s_read_pout(i));
-                    DBGPRINTLN("    VITH: %.3f V", lt7182s_read_ith(i));
+                    DBGPRINTLN("  EXTVCC: %hu mV", lt7182s_read_extvcc());
+
+                    int32_t lTemp = lt7182s_read_temperature();
+                    int32_t lTempPeak = lt7182s_read_temperature_peak();
+
+                    DBGPRINTLN("  Temp: %d.%03u C (Pk: %d.%03u C)", lTemp / 1000, ABS(lTemp % 1000), lTempPeak / 1000, ABS(lTempPeak % 1000));
                 }
 
-                DBGPRINTLN("  EXTVCC: %.3f V", lt7182s_read_extvcc());
-                DBGPRINTLN("  Temp: %.3f C (Pk: %.3f C)", lt7182s_read_temperature(), lt7182s_read_temperature_peak());
                 DBGPRINTLN("CM4: %s", CM4_RUNNING() ? "Running" : "OFF");
             }
         }
