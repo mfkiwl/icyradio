@@ -92,7 +92,7 @@ jobs:
         sudo ldconfig
       timeout-minutes: 5
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 1
         clean: true
@@ -146,7 +146,7 @@ jobs:
         dpkg-deb --build --root-owner-group ./deb ${{github.workspace}}/software/soapy/soapysdr-module-icyradio_${{matrix.arch}}.deb
 
     - name: Upload results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: soapy_module_${{matrix.arch}}
         path: |

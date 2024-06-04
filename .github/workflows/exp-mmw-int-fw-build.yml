@@ -47,7 +47,7 @@ jobs:
         unzip Microchip.SAMD21_DFP.3.6.144.zip -d $ARM_LIBROOT/Microchip.SAMD21_DFP
       timeout-minutes: 5
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 1
         clean: true
@@ -58,7 +58,7 @@ jobs:
         make BUILD_TYPE=release
 
     - name: Upload results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: exp_mmw_int_firmware
         path: ${{github.workspace}}/software/exp/mmw-int/bin/v*

@@ -47,7 +47,7 @@ jobs:
         unzip Microchip.SAMD20_DFP.3.6.112.zip -d $ARM_LIBROOT/Microchip.SAMD20_DFP
       timeout-minutes: 5
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 1
         clean: true
@@ -58,7 +58,7 @@ jobs:
         make BUILD_TYPE=release
 
     - name: Upload results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pmc_firmware
         path: ${{github.workspace}}/software/pmc/bin/v*
