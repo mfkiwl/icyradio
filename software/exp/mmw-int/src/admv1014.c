@@ -51,6 +51,19 @@ uint8_t admv1014_init()
     if(admv1014_get_chip_id() != 0x09)
         return 0;
 
+    // Test SPI write and reset
+    uint16_t usValue = admv1014_read_register(ADMV1014_REG_VVA_TEMP_COMP);
+
+    admv1014_write_register(ADMV1014_REG_VVA_TEMP_COMP, 0x727C);
+
+    if(admv1014_read_register(ADMV1014_REG_VVA_TEMP_COMP) != 0x727C)
+        return 0;
+
+    admv1014_reset();
+
+    if(admv1014_read_register(ADMV1014_REG_VVA_TEMP_COMP) != usValue)
+        return 0;
+
     admv1014_write_register(ADMV1014_REG_VVA_TEMP_COMP, 0x727C); // DS recommended value
     admv1014_rmw_register(ADMV1014_REG_QUAD, ~0x03C0, ADMV1014_REG_QUAD_QUAD_SE_MODE_SE_NEG_DIS); // Single-ended positive LO
     admv1014_rmw_register(ADMV1014_REG_ENABLE, ~(ADMV1014_REG_ENABLE_P1DB_COMPENSATION | ADMV1014_REG_ENABLE_IF_AMP_PD | ADMV1014_REG_ENABLE_BB_AMP_PD | ADMV1014_REG_ENABLE_DET_EN), ADMV1014_REG_ENABLE_P1DB_COMPENSATION | ADMV1014_REG_ENABLE_BB_AMP_PD | ADMV1014_REG_ENABLE_DET_EN); // Enable P1dB Comp., enable IF amp, disable BB amp, enable detector

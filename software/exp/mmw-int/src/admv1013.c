@@ -48,6 +48,19 @@ uint8_t admv1013_init()
     if(admv1013_get_chip_id() != 0x0A)
         return 0;
 
+    // Test SPI write and reset
+    uint16_t usValue = admv1013_read_register(ADMV1013_REG_VVA_TEMP_COMP);
+
+    admv1013_write_register(ADMV1013_REG_VVA_TEMP_COMP, 0xE700);
+
+    if(admv1013_read_register(ADMV1013_REG_VVA_TEMP_COMP) != 0xE700)
+        return 0;
+
+    admv1013_reset();
+
+    if(admv1013_read_register(ADMV1013_REG_VVA_TEMP_COMP) != usValue)
+        return 0;
+
     admv1013_write_register(ADMV1013_REG_VVA_TEMP_COMP, 0xE700); // DS recommended value
     admv1013_rmw_register(ADMV1013_REG_QUAD, ~0x03C0, ADMV1013_REG_QUAD_QUAD_SE_MODE_SE_NEG_DIS); // Single-ended positive LO
     admv1013_rmw_register(ADMV1013_REG_ENABLE, ~(ADMV1013_REG_ENABLE_MIXER_IF_EN | ADMV1013_REG_ENABLE_DET_EN), ADMV1013_REG_ENABLE_MIXER_IF_EN | ADMV1013_REG_ENABLE_DET_EN); // Enable mixer IF and detector

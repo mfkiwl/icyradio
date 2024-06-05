@@ -184,7 +184,7 @@ uint32_t adc_get_rx_pwr_vdet()
 {
     uint16_t usResult = adc_read_rx_pwr_vdet();
 
-    return (uint64_t)usResult * 100000UL * (ADC_RX_PWR_VDET_DIV_RT + ADC_RX_PWR_VDET_DIV_RB) / (ADC_RX_PWR_VDET_DIV_RB * 4095UL);
+    return (uint64_t)usResult * 1000000UL * (ADC_RX_PWR_VDET_DIV_RT + ADC_RX_PWR_VDET_DIV_RB) / (ADC_RX_PWR_VDET_DIV_RB * 4095UL);
 }
 
 #ifndef ADC_DISABLE_FLOAT

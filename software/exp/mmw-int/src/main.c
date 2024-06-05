@@ -451,7 +451,7 @@ int init()
     port_init(); // Init GPIOs
     adc_init(); // Init ADC
 
-    sercom0_spi_init(6000000, 0, SERCOM_SPI_MSB_FIRST, 1, 1);
+    sercom0_spi_init(3000000, 0, SERCOM_SPI_MSB_FIRST, 1, 1);
     sercom2_i2c_master_init(SERCOM_I2C_FAST, SERCOM_I2C_TRISE_DEFAULT);
     sercom3_uart_init(500000, SERCOM_USART_INT_CTRLA_DORD_LSB | SERCOM_USART_INT_CTRLA_FORM_USART_FRAME_NO_PARITY | SERCOM_USART_INT_CTRLB_SBMODE_1_BIT | SERCOM_SPIM_CTRLB_CHSIZE_8_BIT, 0, 1);
 
@@ -522,7 +522,7 @@ int init()
 
     TX_DIG_PWR_EN();
     TX_ANA_PWR_EN();
-    delay_ms(5);
+    delay_ms(50);
 
     if(admv1013_init())
     {
@@ -540,11 +540,11 @@ int init()
 
     RX_DIG_PWR_EN();
     RX_ANA_PWR_EN();
-    delay_ms(5);
+    delay_ms(50);
 
     if(admv1014_init())
     {
-        admv1014_power_down();
+        // admv1014_power_down();
 
         DBGPRINTLN_CTX("ADMV1014 rev. %hhu init OK!", admv1014_get_revision());
     }
@@ -632,6 +632,8 @@ int main()
                 DBGPRINTLN("IOVDD: %u mV", ulIOVDD);
                 DBGPRINTLN("Core: %u mV", ulCoreVDD);
                 DBGPRINTLN("Temp: %d.%02u C", lTemp / 1000, ABS(lTemp % 1000));
+                DBGPRINTLN("TX Pwr: %u uV", ulTXPwr);
+                DBGPRINTLN("RX Pwr: %u uV", ulRXPwr);
             }
         }
     }
