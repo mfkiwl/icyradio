@@ -91,7 +91,7 @@ static icyradio_dma_buffer_t *icyradio_dma_buffer_alloc(icyradio_dev_t *pDev, ui
 
     pr_notice("Allocating DMA buffer for device %u of size 0x%08X", pDev->ulDevID, ulSize);
 
-    pVirt = dma_alloc_coherent(&pDev->pPCIDev->dev, ulSize, &ulPhys, GFP_ATOMIC);
+    pVirt = dma_alloc_coherent(&pDev->pPCIDev->dev, ulSize, &ulPhys, GFP_USER | GFP_ATOMIC | GFP_DMA);
 
     if(!pVirt)
     {
