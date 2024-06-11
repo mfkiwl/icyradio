@@ -29,9 +29,9 @@ jobs:
 
     - name: Install build dependencies
       run: |
-        # Install armmem
-        wget https://github.com/vankxr/armmem/releases/download/1.0-1/armmem_1.0-1_amd64.deb
-        sudo dpkg -i armmem_1.0-1_amd64.deb
+        # Install elfmem
+        wget https://github.com/vankxr/elfmem/releases/download/2.0-0/elfmem_2.0-0_amd64.deb
+        sudo dpkg -i elfmem_2.0-0_amd64.deb
 
         # Install Core pack
         git clone https://github.com/vankxr/Core-CMSIS

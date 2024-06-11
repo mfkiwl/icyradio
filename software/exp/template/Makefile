@@ -148,7 +148,7 @@ version:
 
 mem-usage: $(TARGET).elf
 	@echo ---------------------------------------------------------------------------
-	@armmem -l $(LDSCRIPT) -d -h $<
+	@armmem -l $(LDSCRIPT) -d -h -z -e ".ARM,.ARM.attributes,.debug_info,.debug_abbrev,.debug_loclists,.debug_aranges,.debug_rnglists,.debug_line,.debug_str,.comment,.debug_frame,.debug_line_str,.symtab,.strtab,.shstrtab,.min_heap_stack" $<
 
 make-dir:
 	@mkdir -p $(OBJECTDIRSTRUCT)
