@@ -14870,7 +14870,7 @@ Button commonly used for reset or general input. Spark Fun Electronics SKU : COM
 <part name="GND89" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="R903" library="Resistor" deviceset="RESISTOR" device="-0402" value="10K Ohms"/>
 <part name="GND90" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="C907" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10pF"/>
+<part name="C907" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="100nF"/>
 <part name="RFCON901" library="RF Connector" deviceset="RFCON" device="-U.FL"/>
 <part name="GND91" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="R912" library="Resistor" deviceset="RESISTOR" device="-0402" value="100nF"/>
