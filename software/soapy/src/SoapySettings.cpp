@@ -255,11 +255,11 @@ void SoapyIcyRadio::setAntenna(const int direction, const size_t channel, const 
 
     if(channel <= 1)
     {
-        toggle_pa = false;
-
         // RF Channels
         if(direction == SOAPY_SDR_RX)
         {
+            toggle_pa = false;
+
             if(name == ("RX" + std::to_string(BIT(channel)) + "A"))
             {
                 this->rf_phy->pdata->rf_rx_input_sel = 0;
@@ -292,10 +292,7 @@ void SoapyIcyRadio::setAntenna(const int direction, const size_t channel, const 
         this->rf_phy->setupRFPort(false, this->rf_phy->pdata->rf_rx_input_sel, this->rf_phy->pdata->rf_tx_output_sel);
 
         if(toggle_pa)
-        {
-            this->rf_phy->setGPOValue(2, this->rf_phy->pdata->rf_tx_output_sel == 1);
-            this->rf_phy->setGPOValue(3, this->rf_phy->pdata->rf_tx_output_sel == 1);
-        }
+            this->rf_phy->setGPOValue(2 + channel, this->rf_phy->pdata->rf_tx_output_sel == 1);
     }
 
 }
@@ -688,25 +685,46 @@ void SoapyIcyRadio::setSampleRate(const int direction, const size_t channel, con
             this->reinitStreamChannels(s);
     }
 
-    if(rate < MIN_BASEBAND_RATE_NOFIR) // Below this value requires FIR decimation/interpolation
-    {
-        if(this->rf_phy->bypass_rx_fir || this->rf_phy->bypass_tx_fir)
-        {
-            // FIR was already loaded on transceiver init
-            this->rf_phy->bypass_rx_fir = false;
-            this->rf_phy->bypass_tx_fir = false;
+    uint8_t int_dec = 0;
+    uint8_t ntaps = 0;
 
-            // No need to call this since changes will apply when we set the clocks below
-            // This also validates some things that "can" be invalid, but should we really care?
-            // this->rf_phy->validateAndEnableFIR();
-        }
+    if(rate <= MAX_DAC_CLK / 16.0) // TODO: Check why libad9361-iio uses this value as limit for int/dec 4
+    {
+        int_dec = 4;
+        ntaps = 128;
     }
-    else
+    else if(rate <= MAX_DAC_CLK / 8.0) // The TX FIR can process 128 (16 * 8) taps up to this rate
+    {
+        int_dec = 2;
+        ntaps = 128;
+    }
+    else if(rate <= MAX_DAC_CLK / 6.0) // The TX FIR can process 96 (16 * 6) taps up to this rate
+    {
+        int_dec = 2;
+        ntaps = 96;
+    }
+    else if(rate <= MAX_DAC_CLK / 4.0) // The TX FIR can process 64 (16 * 4) taps up to this rate
+    {
+        int_dec = 2;
+        ntaps = 64;
+    }
+
+    if(!int_dec || !ntaps)
     {
         if(!this->rf_phy->bypass_rx_fir || !this->rf_phy->bypass_tx_fir)
         {
             this->rf_phy->bypass_rx_fir = true;
             this->rf_phy->bypass_tx_fir = true;
+        }
+    }
+    else
+    {
+        this->loadRFPhyFIR(ntaps, int_dec, false); // Will do nothing if the correct FIR is already loaded
+
+        if(this->rf_phy->bypass_rx_fir || this->rf_phy->bypass_tx_fir)
+        {
+            this->rf_phy->bypass_rx_fir = false;
+            this->rf_phy->bypass_tx_fir = false;
 
             // No need to call this since changes will apply when we set the clocks below
             // This also validates some things that "can" be invalid, but should we really care?
@@ -743,10 +761,24 @@ void SoapyIcyRadio::setBandwidth(const int direction, const size_t channel, cons
     if(direction != SOAPY_SDR_RX && direction != SOAPY_SDR_TX)
         throw std::runtime_error("setBandwidth: Unknown direction");
 
-    if(bw < 200e3 || bw > 56e6)
-        throw std::runtime_error("setBandwidth: Bandwidth out of range");
+    double _bw = bw;
 
-    this->rf_phy->setRFBandwidth(direction == SOAPY_SDR_RX ? bw : this->rf_phy->current_rx_bw_Hz, direction == SOAPY_SDR_TX ? bw : this->rf_phy->current_tx_bw_Hz);
+    if(_bw == 0.0)
+    {
+        _bw = this->getSampleRate(direction, channel) * 0.9;
+
+        if(_bw > 56e6)
+            _bw = 56e6;
+
+        SoapySDR_logf(SOAPY_SDR_DEBUG, "setBandwidth: Auto-setting bandwidth to 90%% of sample rate (%.0f Hz)", _bw);
+    }
+
+    if(_bw < 200e3 || _bw > 56e6)
+    {
+        throw std::runtime_error("setBandwidth: Bandwidth out of range");
+    }
+
+    this->rf_phy->setRFBandwidth(direction == SOAPY_SDR_RX ? _bw : this->rf_phy->current_rx_bw_Hz, direction == SOAPY_SDR_TX ? _bw : this->rf_phy->current_tx_bw_Hz);
 }
 double SoapyIcyRadio::getBandwidth(const int direction, const size_t channel) const
 {

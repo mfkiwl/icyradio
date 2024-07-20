@@ -1,6 +1,6 @@
 #include "SoapyIcyRadio.hpp"
 
-// Default FIR coefficients for decimation/interpolation when sample rates below 2.0833... MHz are needed
+// Default FIR coefficients for decimation/interpolation
 // Gain is 6 dB, set AD9361 gain to -6 dB to compensate
 static const int16_t rf_phy_fir_128_dec4[] = {
 	   -15,   -27,   -23,    -6,    17,    33,    31,     9,   -23,   -47,   -45,   -13,    34,    69,    67,    21,
@@ -21,6 +21,20 @@ static const int16_t rf_phy_fir_128_dec2[] = {
       880,     0,  -724,     0,   595,     0,  -489,     0,   401,     0,  -327,     0,   264,     0,  -213,     0,
       169,     0,  -134,     0,   104,     0,   -80,     0,    61,     0,   -45,     0,    33,     0,   -24,     0,
        17,     0,   -11,     0,     8,     0,    -5,     0,     3,     0,    -2,     0,     1,     0,    -0,     0
+};
+static const int16_t rf_phy_fir_96_dec2[] = {
+       -4,     0,     8,     0,   -14,     0,    23,     0,   -36,     0,    52,     0,   -75,     0,   104,     0,
+     -140,     0,   186,     0,  -243,     0,   314,     0,  -400,     0,   505,     0,  -634,     0,   793,     0,
+     -993,     0,  1247,     0, -1585,     0,  2056,     0, -2773,     0,  4022,     0, -6862,     0, 20830, 32767,
+    20830,     0, -6862,     0,  4022,     0, -2773,     0,  2056,     0, -1585,     0,  1247,     0,  -993,     0,
+      793,     0,  -634,     0,   505,     0,  -400,     0,   314,     0,  -243,     0,   186,     0,  -140,     0,
+      104,     0,   -75,     0,    52,     0,   -36,     0,    23,     0,   -14,     0,     8,     0,    -4,     0
+};
+static const int16_t rf_phy_fir_64_dec2[] = {
+      -58,     0,    83,     0,  -127,     0,   185,     0,  -262,     0,   361,     0,  -488,     0,   648,     0,
+     -853,     0,  1117,     0, -1466,     0,  1954,     0, -2689,     0,  3960,     0, -6825,     0, 20818, 32767,
+    20818,     0, -6825,     0,  3960,     0, -2689,     0,  1954,     0, -1466,     0,  1117,     0,  -853,     0,
+      648,     0,  -488,     0,   361,     0,  -262,     0,   185,     0,  -127,     0,    83,     0,   -58,     0
 };
 
 void SoapyIcyRadio::parseConfig(const SoapySDR::Kwargs &args)
@@ -2085,6 +2099,9 @@ void SoapyIcyRadio::reconfigureDataPath(bool rx2tx2, size_t rx_ch, size_t tx_ch)
     this->rf_phy->pdata->rx1tx1_mode_use_rx_num = BIT(rx_ch);
     this->rf_phy->pdata->rx1tx1_mode_use_tx_num = BIT(tx_ch);
 
+    uint8_t int_dec = this->rf_phy->tx_fir_int; // TODO: Actually back up and restore filter coefficients to allow custom FIRs
+    uint8_t ntaps = this->rf_phy->tx_fir_ntaps;
+
     this->rf_phy->reset();
     this->rf_phy->clear();
 
@@ -2093,9 +2110,17 @@ void SoapyIcyRadio::reconfigureDataPath(bool rx2tx2, size_t rx_ch, size_t tx_ch)
 
     this->rf_phy->setup();
 
-    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_RX1_RX2, rf_phy_fir_128_dec4, ARRAY_SIZE(rf_phy_fir_128_dec4), 4, -6);
-    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_TX1_TX2, rf_phy_fir_128_dec4, ARRAY_SIZE(rf_phy_fir_128_dec4), 4, 0);
-    this->rf_phy->validateAndEnableFIR();
+    if(int_dec > 1)
+    {
+        try
+        {
+            this->loadRFPhyFIR(ntaps, int_dec, true, true);
+        }
+        catch(const std::exception &e)
+        {
+            // May fail if a custom FIR is loaded
+        }
+    }
 
     this->axi_ad9361->updateActiveChannels();
 
@@ -2114,6 +2139,30 @@ void SoapyIcyRadio::validateSampleRateAndChannelCombination(const double rate, c
 
     if(rate > (2 * MAX_BASEBAND_RATE)) // 122.88 MSPS overclock
         throw std::runtime_error("validateSampleRateAndChannelCombination: Rate too high for single channel, maximum is " + std::to_string(2 * MAX_BASEBAND_RATE) + " Sps");
+}
+void SoapyIcyRadio::loadRFPhyFIR(uint8_t ntaps, uint8_t int_dec, bool validate, bool force) const
+{
+    if(!force && this->rf_phy->tx_fir_int == int_dec && this->rf_phy->rx_fir_dec == int_dec && this->rf_phy->tx_fir_ntaps == ntaps && this->rf_phy->rx_fir_ntaps == ntaps)
+        return;
+
+    const int16_t *fir = nullptr;
+
+    if(ntaps == 128 && int_dec == 4)
+        fir = rf_phy_fir_128_dec4;
+    else if(ntaps == 128 && int_dec == 2)
+        fir = rf_phy_fir_128_dec2;
+    else if(ntaps == 96 && int_dec == 2)
+        fir = rf_phy_fir_96_dec2;
+    else if(ntaps == 64 && int_dec == 2)
+        fir = rf_phy_fir_64_dec2;
+    else
+        throw std::runtime_error("loadRFPhyFIR: Unsupported FIR configuration");
+
+    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_RX1_RX2, fir, ntaps, int_dec, -6);
+    this->rf_phy->loadFIRCoefficients(AD9361::FIRDest::FIR_TX1_TX2, fir, ntaps, int_dec, 0);
+
+    if(validate)
+        this->rf_phy->validateAndEnableFIR();
 }
 
 size_t SoapyIcyRadio::getDMAControllerIndex(const int direction, const size_t channel) const

@@ -738,6 +738,7 @@ AD9361::AD9361(AD9361::SPIConfig spi, AD9361::GPIOConfig reset_gpio, AD9361::GPI
 AD9361::~AD9361()
 {
     //TODO: Implement graceful shutdown
+    this->writeRegField(AD9361_REG_GPO_FORCE_AND_INIT, 0xF0, 0x00);
 
     this->unregisterClocks();
 
@@ -809,8 +810,8 @@ void AD9361::init()
     this->pdata->tx_clocks[CLKTF_FREQ] = 30720000UL; // TODO: Auto
     this->pdata->tx_clocks[TX_SAMPL_FREQ] = 30720000UL; // TODO: Auto
 
-    this->pdata->rf_rx_bandwidth_Hz = 56000000UL; // TODO: Auto
-    this->pdata->rf_tx_bandwidth_Hz = 56000000UL; // TODO: Auto
+    this->pdata->rf_rx_bandwidth_Hz = 30000000UL; // TODO: Auto
+    this->pdata->rf_tx_bandwidth_Hz = 30000000UL; // TODO: Auto
 
     /* RF Port Control */
     this->pdata->rf_rx_input_sel = 0;

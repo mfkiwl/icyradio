@@ -19,6 +19,7 @@
 #include "Log.hpp"
 #include "ioctl.hpp"
 #include "MappedRegion.hpp"
+#include "DMAMemoryManager.hpp"
 #include "AXI.hpp"
 #include "AXIGPIO.hpp"
 #include "AXISPI.hpp"
@@ -374,7 +375,6 @@ private:
 
     void resetSystem();
 
-    // Stream helpers
     static void DMAHandler(void *arg); // DMA callback
     void handleDMAData(SoapyIcyRadio::Stream::Channel::DMABuffer *buf); // DMA callback
 
@@ -382,6 +382,7 @@ private:
     bool requiresDataPathReconfiguration(const double new_rate) const;
     void reconfigureDataPath(bool rx2tx2, size_t rx_ch = 0, size_t tx_ch = 0);
     void validateSampleRateAndChannelCombination(const double rate, const size_t channel_count) const;
+    void loadRFPhyFIR(uint8_t ntaps, uint8_t int_dec, bool validate = true, bool force = false) const;
 
     size_t getDMAControllerIndex(const int direction, const size_t channel) const;
     AXIDMAC *getDMAController(const int direction, const size_t channel) const;
