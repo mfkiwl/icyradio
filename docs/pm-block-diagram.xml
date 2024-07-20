@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2023-10-17T12:41:15.460Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.3.7 Chrome/112.0.5615.204 Electron/24.5.0 Safari/537.36" etag="mpbsgVTY9Hip083C6Q9_" version="21.3.7" type="device">
+<mxfile host="Electron" modified="2024-06-12T19:06:29.224Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.8 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="q8aAwmV2hm19gFD176qK" version="24.3.1" type="device">
   <diagram name="Page-1" id="v1AtcYmajk1-s87kq1Yy">
-    <mxGraphModel dx="1434" dy="1673" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="1195" dy="1533" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -106,7 +106,7 @@
             <mxPoint x="1200" y="240.28571428571422" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="8R71aE67rUWi0ICzoh51-5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="GqQS4keKhcLQkb79MrzN-6" target="8R71aE67rUWi0ICzoh51-1">
+        <mxCell id="8R71aE67rUWi0ICzoh51-5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="GqQS4keKhcLQkb79MrzN-6" target="8R71aE67rUWi0ICzoh51-1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="GqQS4keKhcLQkb79MrzN-6" value="&lt;b&gt;LT7182S&lt;/b&gt;&lt;br&gt;Dual Step-down Converter" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
@@ -187,10 +187,10 @@
         <mxCell id="GqQS4keKhcLQkb79MrzN-56" value="&lt;b&gt;ADM7171&lt;/b&gt;&lt;br&gt;Low-noise Linear Regulator" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="599.5" y="480" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="GqQS4keKhcLQkb79MrzN-60" value="&lt;b&gt;3.3 V @ 2 A&lt;/b&gt;&lt;br&gt;FPGA IO" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
+        <mxCell id="GqQS4keKhcLQkb79MrzN-60" value="&lt;b&gt;3.3 V @ 2 A&lt;/b&gt;&lt;br&gt;FPGA IO / Exp. Card" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
           <mxGeometry x="810" y="500" width="78" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="GqQS4keKhcLQkb79MrzN-63" value="&lt;b&gt;2.5 V @ 2 A&lt;/b&gt;&lt;br&gt;FPGA IO" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
+        <mxCell id="GqQS4keKhcLQkb79MrzN-63" value="&lt;b&gt;2.5 V @ 2 A&lt;/b&gt;&lt;br&gt;FPGA IO / Exp. Card" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
           <mxGeometry x="750" y="500" width="78" height="40" as="geometry" />
         </mxCell>
         <mxCell id="GqQS4keKhcLQkb79MrzN-67" value="&lt;b&gt;1.3 V @ 1 A&lt;/b&gt;&lt;br&gt;AD9361" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
@@ -208,8 +208,8 @@
         <mxCell id="GqQS4keKhcLQkb79MrzN-84" value="&lt;b&gt;EXT 7 - 20 V&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="160" y="107" width="78" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="GqQS4keKhcLQkb79MrzN-85" value="&lt;b&gt;USB-C 9 - 20 V&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="150" y="67" width="88" height="20" as="geometry" />
+        <mxCell id="GqQS4keKhcLQkb79MrzN-85" value="&lt;b&gt;USB PD 9 - 20 V&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="140" y="67" width="98" height="20" as="geometry" />
         </mxCell>
         <mxCell id="GqQS4keKhcLQkb79MrzN-86" value="&lt;font color=&quot;#004c99&quot;&gt;MGMT I2C&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="443" y="-63" width="80" height="30" as="geometry" />
@@ -229,18 +229,18 @@
         <mxCell id="FSHkjjU8uLz_AbFYbMnz-5" value="&lt;b&gt;3.3 V @ 150 mA&lt;/b&gt;&lt;br&gt;CODEC" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
           <mxGeometry x="929.75" y="-30.75" width="99.5" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="FSHkjjU8uLz_AbFYbMnz-8" value="&lt;b&gt;5.2 V @ 6 A&lt;/b&gt;&lt;br&gt;CM4" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=0;" parent="1" vertex="1">
+        <mxCell id="FSHkjjU8uLz_AbFYbMnz-8" value="&lt;b&gt;5.2 V @ 6 A&lt;/b&gt;&lt;br&gt;CM4 / Exp. Card" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=0;" parent="1" vertex="1">
           <mxGeometry x="1200" y="220" width="80" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="8R71aE67rUWi0ICzoh51-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="8R71aE67rUWi0ICzoh51-1">
+        <mxCell id="8R71aE67rUWi0ICzoh51-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="8R71aE67rUWi0ICzoh51-1" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1139.857142857143" y="40" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="8R71aE67rUWi0ICzoh51-1" value="&lt;b&gt;ADM7172&lt;/b&gt;&lt;br&gt;Low-noise Linear Regulator" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="8R71aE67rUWi0ICzoh51-1" value="&lt;b&gt;ADM7172&lt;/b&gt;&lt;br&gt;Low-noise Linear Regulator" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1080" y="80" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="8R71aE67rUWi0ICzoh51-3" value="&lt;b&gt;5.0 V @ 2 A&lt;/b&gt;&lt;br&gt;RF Misc" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" vertex="1" parent="1">
+        <mxCell id="8R71aE67rUWi0ICzoh51-3" value="&lt;b&gt;5.0 V @ 2 A&lt;/b&gt;&lt;br&gt;RF Misc" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
           <mxGeometry x="1090.25" y="-30.75" width="99.5" height="40" as="geometry" />
         </mxCell>
       </root>
