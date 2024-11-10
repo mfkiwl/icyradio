@@ -12,11 +12,25 @@ SPIFlash::SPIFlash(SPIFlash::SPIConfig spi)
 
     this->resetContinuousRead();
 
-    this->writeEnable();
-    this->writeStatus2(BIT(1)); // Set the QE bit
-    this->writeEnable();
-    this->writeStatus3(0x00); // Set maximum drive strength
-    this->writeDisable(); // Needed in case device does not support status 3 register, otherwise the WE bit may be left set
+    // Set the QE bit
+    uint8_t sr2 = this->readStatus2();
+
+    if(!(sr2 & BIT(1)))
+    {
+        this->writeEnable();
+        this->writeStatus2(sr2 | BIT(1));
+        this->writeDisable(); // Needed in case device does not support status 2 register, otherwise the WE bit may be left set
+    }
+
+    // Set drive strength (0 = 100%, 1 = 75%, 2 = 50%, 3 = 25%)
+    uint8_t sr3 = this->readStatus3();
+
+    if(sr3 != 0xFF && (sr3 & 0x60) != 0x00)
+    {
+        this->writeEnable();
+        this->writeStatus3(0x00);
+        this->writeDisable(); // Needed in case device does not support status 3 register, otherwise the WE bit may be left set
+    }
 
     this->detectDevice();
 }

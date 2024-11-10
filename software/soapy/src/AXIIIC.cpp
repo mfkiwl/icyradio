@@ -122,16 +122,28 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
     if((this->readReg(AXI_IIC_REG_SR) & AXI_IIC_REG_SR_BB) && !(this->readReg(AXI_IIC_REG_ISR) & AXI_IIC_REG_IxR_INT2_TX_EMPTY)) // Bus busy and not owner
         throw std::runtime_error("AXI IIC: Bus busy");
 
+    uint32_t cr = this->readReg(AXI_IIC_REG_CR);
+
+    if(!(cr & AXI_IIC_REG_CR_EN))
+        throw std::runtime_error("AXI IIC: Peripheral not enabled");
+
     if(!(this->readReg(AXI_IIC_REG_SR) & AXI_IIC_REG_SR_TX_FIFO_EMPTY)) // Clear TX FIFO
     {
-        uint32_t reg = this->readReg(AXI_IIC_REG_CR);
-
-        this->writeReg(AXI_IIC_REG_CR, reg | AXI_IIC_REG_CR_TXFIFO_RESET);
-        this->writeReg(AXI_IIC_REG_CR, reg & ~AXI_IIC_REG_CR_TXFIFO_RESET);
+        this->writeReg(AXI_IIC_REG_CR, cr | AXI_IIC_REG_CR_TXFIFO_RESET);
+        this->writeReg(AXI_IIC_REG_CR, cr & ~AXI_IIC_REG_CR_TXFIFO_RESET);
     }
 
-    while(!(this->readReg(AXI_IIC_REG_SR) & AXI_IIC_REG_SR_RX_FIFO_EMPTY)) // Clear RX FIFO
+    uint32_t timeout = 50;
+
+    while(--timeout && !(this->readReg(AXI_IIC_REG_SR) & AXI_IIC_REG_SR_RX_FIFO_EMPTY)) // Clear RX FIFO
         (void)this->readReg(AXI_IIC_REG_RX_FIFO);
+
+    if(!timeout)
+    {
+        this->reinit();
+
+        throw std::runtime_error("AXI IIC: Timeout while clearing RX FIFO");
+    }
 
     this->writeReg(AXI_IIC_REG_ISR, this->readReg(AXI_IIC_REG_ISR)); // Clear IRQs
     this->writeReg(AXI_IIC_REG_TX_FIFO, ((stop == AXIIIC::Stop::STOP && !count) ? AXI_IIC_REG_TX_FIFO_STOP : 0) | AXI_IIC_REG_TX_FIFO_START | address);
@@ -142,16 +154,22 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
     {
         this->writeReg(AXI_IIC_REG_TX_FIFO, (stop == AXIIIC::Stop::STOP ? AXI_IIC_REG_TX_FIFO_STOP : 0) | count);
     }
-    else
+    else // Write
     {
-        uint32_t timeout = 50;
+        timeout = 50;
 
         flags = this->readReg(AXI_IIC_REG_ISR);
 
-        while(--timeout && (flags & AXI_IIC_REG_IxR_INT4_BUS_NOT_BUSY))
+        while(--timeout)
         {
             this->writeReg(AXI_IIC_REG_ISR, flags & AXI_IIC_REG_IxR_INT4_BUS_NOT_BUSY);
             flags = this->readReg(AXI_IIC_REG_ISR);
+
+            if(!(flags & AXI_IIC_REG_IxR_INT4_BUS_NOT_BUSY))
+                break; // Bus busy, START + ADDR sent, good to go!
+
+            if(flags & (AXI_IIC_REG_IxR_INT1_TERR_STC | AXI_IIC_REG_IxR_INT0_ARB_LOST))
+                break; // Some kind of error occured, will be handled later, but the START + ADDR was sent, good to go!
 
             std::this_thread::sleep_for(std::chrono::microseconds(1));
         }
@@ -170,7 +188,7 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
         {
             if(address & 1) // Read
             {
-                uint32_t timeout = 500;
+                timeout = 500;
 
                 while(--timeout)
                 {
@@ -202,7 +220,7 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
             }
             else // Write
             {
-                uint32_t timeout = 500;
+                timeout = 500;
 
                 while(--timeout)
                 {
@@ -239,7 +257,7 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
             this->writeReg(AXI_IIC_REG_ISR, this->readReg(AXI_IIC_REG_ISR) & AXI_IIC_REG_IxR_INT4_BUS_NOT_BUSY); // Clear NOT_BUSY IRQ, so that if we encounter it set again it is really not busy
     }
 
-    uint32_t timeout = 500;
+    timeout = 500;
 
     while(--timeout)
     {
@@ -262,15 +280,13 @@ void AXIIIC::transmit(uint8_t address, uint8_t *buf, uint8_t count, AXIIIC::Stop
         if(stop == AXIIIC::Stop::STOP && (flags & AXI_IIC_REG_IxR_INT4_BUS_NOT_BUSY))
             break; // Stop was requested and bus is free, we are done!
 
-        if(stop == AXIIIC::Stop::RESTART && !(address & 1) && (flags & AXI_IIC_REG_IxR_INT2_TX_EMPTY))
+        if(stop != AXIIIC::Stop::STOP && !(address & 1) && (flags & AXI_IIC_REG_IxR_INT2_TX_EMPTY))
             break; // No stop was requested and bus is throttled by the master, waiting for another transaction, we are done!
 
-        if(stop == AXIIIC::Stop::RESTART && (address & 1))
+        if(stop != AXIIIC::Stop::STOP && (address & 1))
             break; // No stop was requested and we already read all the bytes we wanted, no need to wait for the bus to be free, we are done!
 
         std::this_thread::sleep_for(std::chrono::microseconds(1));
-
-        flags = this->readReg(AXI_IIC_REG_ISR);
     }
 
     if(!timeout)
