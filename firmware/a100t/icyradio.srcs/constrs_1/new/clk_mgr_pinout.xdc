@@ -4,6 +4,8 @@ set_property IOSTANDARD LVCMOS33 [get_ports {CLK_MNGR_OEn[0]}]
 set_property PULLUP true [get_ports CLK_MNGR_IRQn]
 set_property PACKAGE_PIN U21 [get_ports CLK_MNGR_IRQn]
 set_property PACKAGE_PIN T20 [get_ports {CLK_MNGR_OEn[0]}]
+set_property DRIVE 4 [get_ports {CLK_MNGR_OEn[0]}]
+set_property SLEW SLOW [get_ports {CLK_MNGR_OEn[0]}]
 
 
 # Clocks

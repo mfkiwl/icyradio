@@ -15,6 +15,12 @@ set_property PACKAGE_PIN AB17 [get_ports SYNTH_SPI_io0_io]
 set_property PACKAGE_PIN AB18 [get_ports SYNTH_SPI_io1_io]
 set_property PACKAGE_PIN AA19 [get_ports SYNTH_SPI_sck_io]
 set_property PACKAGE_PIN AA20 [get_ports {SYNTH_SPI_ss_io[0]}]
+set_property DRIVE 4 [get_ports SYNTH_SPI_io0_io]
+set_property DRIVE 4 [get_ports SYNTH_SPI_sck_io]
+set_property DRIVE 4 [get_ports {SYNTH_SPI_ss_io[0]}]
+set_property SLEW SLOW [get_ports SYNTH_SPI_io0_io]
+set_property SLEW SLOW [get_ports SYNTH_SPI_sck_io]
+set_property SLEW SLOW [get_ports {SYNTH_SPI_ss_io[0]}]
 
 create_generated_clock -name SYNTH_SPI_SCK -source [get_pins -hier -filter {NAME =~ "*axi_spi_1/aclk"}] -divide_by 4
 
@@ -29,5 +35,13 @@ set_property PACKAGE_PIN Y17 [get_ports {SYNTH_CE[0]}]
 set_property PACKAGE_PIN AB21 [get_ports {SYNTH_MUTE[0]}]
 set_property PACKAGE_PIN AB20 [get_ports SYNTH_LD]
 set_property PACKAGE_PIN AB16 [get_ports {SYNTH_SYNC[0]}]
+set_property DRIVE 4 [get_ports {SYNTH_RESETn[0]}]
+set_property DRIVE 4 [get_ports {SYNTH_CE[0]}]
+set_property DRIVE 4 [get_ports {SYNTH_MUTE[0]}]
+set_property DRIVE 4 [get_ports {SYNTH_SYNC[0]}]
+set_property SLEW SLOW [get_ports {SYNTH_RESETn[0]}]
+set_property SLEW SLOW [get_ports {SYNTH_CE[0]}]
+set_property SLEW SLOW [get_ports {SYNTH_MUTE[0]}]
+set_property SLEW SLOW [get_ports {SYNTH_SYNC[0]}]
 
 
