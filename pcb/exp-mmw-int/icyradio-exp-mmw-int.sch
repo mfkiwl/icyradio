@@ -8993,8 +8993,8 @@ Logo</text>
 <part name="R18" library="Resistor" deviceset="RESISTOR" device="-0402" value="10K Ohms"/>
 <part name="3V21" library="Supply Symbol" deviceset="3V3" device=""/>
 <part name="3V22" library="Supply Symbol" deviceset="3V3" device=""/>
-<part name="R22" library="Resistor" deviceset="RESISTOR" device="-0402" value="DNP"/>
-<part name="R21" library="Resistor" deviceset="RESISTOR" device="-0402" value="0 Ohms"/>
+<part name="R22" library="Resistor" deviceset="RESISTOR" device="-0402" value="0 Ohms"/>
+<part name="R21" library="Resistor" deviceset="RESISTOR" device="-0402" value="DNP"/>
 <part name="R17" library="Resistor" deviceset="RESISTOR" device="-0402" value="10K Ohms"/>
 <part name="GND40" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="3V14" library="Supply Symbol" deviceset="3V3" device=""/>
@@ -9252,12 +9252,16 @@ Logo</text>
 <part name="C125" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
 <attribute name="SERIES" value="ATC520L"/>
 </part>
-<part name="R70" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms"/>
+<part name="R70" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
 <part name="GND428" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="C126" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
 <attribute name="SERIES" value="ATC520L"/>
 </part>
-<part name="R69" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms"/>
+<part name="R69" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
 <part name="GND429" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="C124" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
 <attribute name="SERIES" value="ATC520L"/>
@@ -9521,8 +9525,8 @@ Logo</text>
 <part name="GND214" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="GND215" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="GND216" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="R13" library="Resistor" deviceset="RESISTOR" device="-0402" value="DNP"/>
-<part name="R12" library="Resistor" deviceset="RESISTOR" device="-0402" value="0 Ohms"/>
+<part name="R13" library="Resistor" deviceset="RESISTOR" device="-0402" value="0 Ohms"/>
+<part name="R12" library="Resistor" deviceset="RESISTOR" device="-0402" value="DNP"/>
 <part name="U2" library="Microchip" deviceset="MCP9802-A*" device="" technology="0"/>
 <part name="U3" library="Microchip" deviceset="MCP9802-A*" device="" technology="1"/>
 <part name="GND77" library="Supply Symbol" deviceset="GND" device=""/>
@@ -14933,6 +14937,7 @@ in layout</text>
 <attribute name="VALUE" x="322.3514" y="124.46" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="327.8886" y="124.46" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="319.8114" y="124.46" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="325.12" y="124.46" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="GND428" gate="G$1" x="325.12" y="106.68" smashed="yes">
 <attribute name="VALUE" x="325.12" y="101.6" size="1.778" layer="96" align="bottom-center"/>
@@ -14947,6 +14952,7 @@ in layout</text>
 <attribute name="VALUE" x="322.3514" y="175.26" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="327.8886" y="175.26" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="319.8114" y="175.26" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="325.12" y="175.26" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="GND429" gate="G$1" x="325.12" y="157.48" smashed="yes">
 <attribute name="VALUE" x="325.12" y="152.4" size="1.778" layer="96" align="bottom-center"/>
