@@ -41,10 +41,10 @@ jobs:
         sudo mkdir -p $ARM_LIBROOT
         sudo mv ARM.CMSIS.5.9.0 $ARM_LIBROOT/ARM.CMSIS
 
-        # Install SAMD21 pack
-        sudo mkdir -p $ARM_LIBROOT/Microchip.SAMD21_DFP
-        wget -O Microchip.SAMD21_DFP.3.6.144.zip https://packs.download.microchip.com/Microchip.SAMD21_DFP.3.6.144.atpack
-        unzip Microchip.SAMD21_DFP.3.6.144.zip -d $ARM_LIBROOT/Microchip.SAMD21_DFP
+        # Install EFM32GG11B pack
+        sudo mkdir -p $ARM_LIBROOT/SiliconLabs.EFM32GG11B_DFP
+        wget -O SiliconLabs.GeckoPlatform_EFM32GG11B_DFP.4.4.0.zip https://www.silabs.com/documents/public/cmsis-packs/SiliconLabs.GeckoPlatform_EFM32GG11B_DFP.4.4.0.pack
+        unzip SiliconLabs.GeckoPlatform_EFM32GG11B_DFP.4.4.0.zip -d $ARM_LIBROOT/SiliconLabs.EFM32GG11B_DFP
       timeout-minutes: 5
 
     - uses: actions/checkout@v4
