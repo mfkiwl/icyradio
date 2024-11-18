@@ -1,4 +1,4 @@
-name: P*icoRV32 firmware build tests
+name: PicoRV32 firmware build tests
 
 on:
   pull_request:
