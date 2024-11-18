@@ -1,10 +1,9 @@
 #ifndef __MCP4728_H__
 #define __MCP4728_H__
 
-#include <sam.h>
-#include "sercom.h"
+#include <em_device.h>
+#include "i2c.h"
 #include "atomic.h"
-#include "systick.h"
 
 #define MCP4728_I2C_ADDR 0x60
 
@@ -28,8 +27,10 @@
 #define MCP4728_CHAN_GAIN_X2        0x1000
 
 // Constants
+#define MCP4728_INTERNAL_REF_V  2.048
 #define MCP4728_INTERNAL_REF_MV 2048
 #define MCP4728_INTERNAL_REF_UV (MCP4728_INTERNAL_REF_MV * 1000)
+#define MCP4728_EXTERNAL_REF_V  3.3
 #define MCP4728_EXTERNAL_REF_MV 3300
 #define MCP4728_EXTERNAL_REF_UV (MCP4728_EXTERNAL_REF_MV * 1000)
 

@@ -1,7 +1,7 @@
 #ifndef __ATOMIC_H__
 #define __ATOMIC_H__
 
-#include <sam.h>
+#include <em_device.h>
 
 static inline uint32_t __iEnableIRQRetVal()
 {

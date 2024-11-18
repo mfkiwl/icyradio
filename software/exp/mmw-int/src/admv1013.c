@@ -12,7 +12,7 @@ static uint16_t admv1013_read_register(uint8_t ubRegister)
     {
         TX_SELECT();
 
-        sercom0_spi_transfer(ubData, 3, ubData);
+        usart0_spi_transfer(ubData, 3, ubData);
 
         TX_UNSELECT();
     }
@@ -31,7 +31,7 @@ static void admv1013_write_register(uint8_t ubRegister, uint16_t usValue)
     {
         TX_SELECT();
 
-        sercom0_spi_write(ubData, 3, 1);
+        usart0_spi_write(ubData, 3, 1);
 
         TX_UNSELECT();
     }
@@ -62,7 +62,7 @@ uint8_t admv1013_init()
         return 0;
 
     admv1013_write_register(ADMV1013_REG_VVA_TEMP_COMP, 0xE700); // DS recommended value
-    admv1013_rmw_register(ADMV1013_REG_QUAD, ~0x03C0, ADMV1013_REG_QUAD_QUAD_SE_MODE_SE_NEG_DIS); // Single-ended positive LO
+    admv1013_rmw_register(ADMV1013_REG_QUAD, ~0x03C0, ADMV1013_REG_QUAD_QUAD_SE_MODE_DIFF); // Single-ended positive LO
     admv1013_rmw_register(ADMV1013_REG_ENABLE, ~(ADMV1013_REG_ENABLE_MIXER_IF_EN | ADMV1013_REG_ENABLE_DET_EN), ADMV1013_REG_ENABLE_MIXER_IF_EN | ADMV1013_REG_ENABLE_DET_EN); // Enable mixer IF and detector
 
     return 1;
@@ -95,18 +95,18 @@ uint8_t admv1013_get_revision()
 {
     return admv1013_read_register(ADMV1013_REG_SPI_CONTROL) & 0x0F;
 }
-void admv1013_update_lo_filters(uint64_t ullFreq)
+void admv1013_update_lo_filters(float fFreq)
 {
-    if(ullFreq < 5400000000ULL || ullFreq > 10250000000ULL)
+    if(fFreq < 5.4e9 || fFreq > 10.25e9)
         return;
 
     uint16_t usValue;
 
-    if(ullFreq >= 5400000000ULL && ullFreq <= 7000000000ULL)
+    if(fFreq >= 5.4e9 && fFreq <= 7e9)
         usValue = ADMV1013_REG_QUAD_QUAD_FILTERS_5G4_7G0;
-    else if(ullFreq >= 5400000000ULL && ullFreq <= 8000000000ULL)
+    else if(fFreq >= 5.4e9 && fFreq <= 8e9)
         usValue = ADMV1013_REG_QUAD_QUAD_FILTERS_5G4_8G0;
-    else if(ullFreq >= 6600000000ULL && ullFreq <= 9200000000ULL)
+    else if(fFreq >= 6.6e9 && fFreq <= 9.2e9)
         usValue = ADMV1013_REG_QUAD_QUAD_FILTERS_6G6_9G2;
     else
         usValue = ADMV1013_REG_QUAD_QUAD_FILTERS_8G62_10G25;

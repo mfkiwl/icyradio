@@ -15,7 +15,7 @@ static uint16_t admv1014_read_register(uint8_t ubRegister)
     {
         RX_SELECT();
 
-        sercom0_spi_transfer(ubData, 3, ubData);
+        usart0_spi_transfer(ubData, 3, ubData);
 
         RX_UNSELECT();
     }
@@ -34,7 +34,7 @@ static void admv1014_write_register(uint8_t ubRegister, uint16_t usValue)
     {
         RX_SELECT();
 
-        sercom0_spi_write(ubData, 3, 1);
+        usart0_spi_write(ubData, 3, 1);
 
         RX_UNSELECT();
     }
@@ -65,7 +65,7 @@ uint8_t admv1014_init()
         return 0;
 
     admv1014_write_register(ADMV1014_REG_VVA_TEMP_COMP, 0x727C); // DS recommended value
-    admv1014_rmw_register(ADMV1014_REG_QUAD, ~0x03C0, ADMV1014_REG_QUAD_QUAD_SE_MODE_SE_NEG_DIS); // Single-ended positive LO
+    admv1014_rmw_register(ADMV1014_REG_QUAD, ~0x03C0, ADMV1014_REG_QUAD_QUAD_SE_MODE_DIFF); // Single-ended positive LO
     admv1014_rmw_register(ADMV1014_REG_ENABLE, ~(ADMV1014_REG_ENABLE_P1DB_COMPENSATION | ADMV1014_REG_ENABLE_IF_AMP_PD | ADMV1014_REG_ENABLE_BB_AMP_PD | ADMV1014_REG_ENABLE_DET_EN), ADMV1014_REG_ENABLE_P1DB_COMPENSATION | ADMV1014_REG_ENABLE_BB_AMP_PD | ADMV1014_REG_ENABLE_DET_EN); // Enable P1dB Comp., enable IF amp, disable BB amp, enable detector
 
     return 1;
@@ -116,18 +116,18 @@ uint8_t admv1014_get_revision()
 {
     return admv1014_read_register(ADMV1014_REG_SPI_CONTROL) & 0x0F;
 }
-void admv1014_update_lo_filters(uint64_t ullFreq)
+void admv1014_update_lo_filters(float fFreq)
 {
-    if(ullFreq < 5400000000ULL || ullFreq > 10250000000ULL)
+    if(fFreq < 5.4e9 || fFreq > 10.25e9)
         return;
 
     uint16_t usValue;
 
-    if(ullFreq >= 5400000000ULL && ullFreq <= 7000000000ULL)
+    if(fFreq >= 5.4e9 && fFreq <= 7e9)
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_5G4_7G0;
-    else if(ullFreq >= 7000000000ULL && ullFreq <= 8000000000ULL)
+    else if(fFreq >= 5.4e9 && fFreq <= 8e9)
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_5G4_8G0;
-    else if(ullFreq >= 8000000000ULL && ullFreq <= 9200000000ULL)
+    else if(fFreq >= 8e9 && fFreq <= 9.2e9)
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_6G6_9G2;
     else
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_8G625_10G25;

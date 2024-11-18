@@ -12,14 +12,14 @@
             "type": "cortex-debug",
             "preLaunchTask": "Build",
             "servertype": "jlink",
-            "device": "ATSAMD21E18A",
-            "svdFile": "${env:ARM_LIBROOT}/Microchip.SAMD21_DFP/samd21a/svd/ATSAMD21E18A.svd",
+            "device": "EFM32GG11B420F2048",
+            "svdFile": "${env:ARM_LIBROOT}/SiliconLabs.EFM32GG11B_DFP.5.8.10/SVD/EFM32GG11B/EFM32GG11B420F2048GQ64.svd",
             "interface": "swd",
             "breakAfterReset": true,
             "swoConfig": {
                 "enabled": true,
-                "swoFrequency": 2000000,
-                "cpuFrequency": 8000000,
+                "swoFrequency": 6000000,
+                "cpuFrequency": 36000000,
                 "source": "probe",
                 "decoders": [
                     {

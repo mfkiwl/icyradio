@@ -1,9 +1,9 @@
 #ifndef __ADMV1014_H__
 #define __ADMV1014_H__
 
-#include <sam.h>
-#include "port.h"
-#include "sercom.h"
+#include <em_device.h>
+#include "gpio.h"
+#include "usart.h"
 #include "atomic.h"
 #include "systick.h"
 
@@ -43,7 +43,7 @@
 // ADMV1014_REG_QUAD
 #define ADMV1014_REG_QUAD_QUAD_SE_MODE_SE_NEG_DIS  0x0180
 #define ADMV1014_REG_QUAD_QUAD_SE_MODE_SE_POS_DIS  0x0240
-#define ADMV1014_REG_QUAD_QUAD_SE_MODE_DIFF_DIS    0x0300
+#define ADMV1014_REG_QUAD_QUAD_SE_MODE_DIFF        0x0300
 #define ADMV1014_REG_QUAD_QUAD_FILTERS_8G625_10G25 0x0000
 #define ADMV1014_REG_QUAD_QUAD_FILTERS_6G6_9G2     0x0005
 #define ADMV1014_REG_QUAD_QUAD_FILTERS_5G4_8G0     0x000A
@@ -66,7 +66,7 @@ void admv1014_power_up();
 void admv1014_reset();
 uint8_t admv1014_get_chip_id();
 uint8_t admv1014_get_revision();
-void admv1014_update_lo_filters(uint64_t ullFreq);
+void admv1014_update_lo_filters(float fFreq);
 void admv1014_set_det_prog(uint8_t ubValue);
 uint8_t admv1014_get_det_prog();
 int32_t admv1014_get_det_prog_range_min(uint8_t ubValue);

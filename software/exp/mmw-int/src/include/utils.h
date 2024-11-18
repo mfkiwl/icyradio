@@ -1,23 +1,29 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
-#include <sam.h>
+#include <em_device.h>
 
 // Memory sections & aliases
 #define IRAM0_TEXT __attribute__ ((section(".iram0.text")))
-#define IRAM1_TEXT __attribute__ ((section(".iram1.text")))
 #define IROM1_TEXT __attribute__ ((section(".irom1.text")))
+#define IROM2_TEXT __attribute__ ((section(".irom2.text")))
 #define DROM0_DATA __attribute__ ((section(".drom0.data")))
+#define DROM1_DATA __attribute__ ((section(".drom1.data")))
 
 #define RAM_CODE IRAM0_TEXT
-#define RAMH_CODE IRAM1_TEXT
 #define BOOT_CODE IROM1_TEXT
+#define QSPI_CODE IROM2_TEXT
 #define USER_DATA DROM0_DATA
+#define QSPI_DATA DROM1_DATA
 
 // Macro to make a dummy read
 #define REG_DISCARD(reg) __asm__ volatile ("" : : "r" (*(volatile uint32_t *)(reg)))
 
 // Macros to access bit band/set/clear regions
+#define SRAM_BIT_ADDR(addr, bit)            (BITBAND_RAM_BASE + ((uint32_t)(addr) - SRAM_BASE) * 32 + (bit) * 4)
+#define SRAM_BIT(addr, bit)                 *(volatile uint32_t *)SRAM_BIT_ADDR(addr, bit)
+#define PERI_REG_BIT_ADDR(reg, bit)         (BITBAND_PER_BASE + ((uint32_t)(reg) - PER_MEM_BASE) * 32 + (bit) * 4)
+#define PERI_REG_BIT(reg, bit)              *(volatile uint32_t *)PERI_REG_BIT_ADDR(reg, bit)
 #define PERI_REG_BIT_SET_ADDR(reg)          (PER_BITSET_MEM_BASE + ((uint32_t)(reg) - PER_MEM_BASE))
 #define PERI_REG_BIT_SET(reg)               *(volatile uint32_t *)PERI_REG_BIT_SET_ADDR(reg)
 #define PERI_REG_BIT_CLEAR_ADDR(reg)        (PER_BITCLR_MEM_BASE + ((uint32_t)(reg) - PER_MEM_BASE))

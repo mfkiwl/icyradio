@@ -1,8 +1,8 @@
 # App Config
 ARM_LIBROOT ?= /mnt/e/Projetos/ARM/ARMdev/lib/
-DEVICEDIR = $(ARM_LIBROOT)/Microchip.SAMD21_DFP/samd21a/
+DEVICEDIR = $(ARM_LIBROOT)/SiliconLabs.EFM32GG11B_DFP/Device/SiliconLabs/EFM32GG11B
 COREDIR = $(ARM_LIBROOT)/ARM.CMSIS/CMSIS
-MCU_TYPE = __ATSAMD21E18A__
+MCU_TYPE = EFM32GG11B420F2048GQ64
 APP_ADDRESS = 0x00000000
 APP_NAME = icyradio-exp-mmw-int
 
@@ -18,7 +18,7 @@ INCLUDEDIR = include
 STRUCT := $(shell find $(SOURCEDIR) -type d)
 
 SOURCEDIRSTRUCT := $(filter-out %/include, $(STRUCT))
-INCLUDEDIRSTRUCT := $(filter %/include, $(STRUCT)) $(DEVICEDIR)/include $(COREDIR)/Core/Include $(COREDIR)/DSP/Include
+INCLUDEDIRSTRUCT := $(filter %/include, $(STRUCT)) $(DEVICEDIR)/Include $(COREDIR)/Core/Include $(COREDIR)/DSP/Include
 OBJECTDIRSTRUCT := $(subst $(SOURCEDIR), $(OBJECTDIR), $(SOURCEDIRSTRUCT))
 
 # Build type
@@ -54,11 +54,11 @@ OBJDUMP = arm-none-eabi-objdump
 GDB = arm-none-eabi-gdb
 
 # Compillers & Linker flags
-ASFLAGS = -mthumb -mcpu=cortex-m0plus -mfloat-abi=soft
-CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m0plus -mfloat-abi=soft -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
-CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m0plus -mfloat-abi=soft -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -O3 -std=c++17 -Wpointer-arith -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
-LDFLAGS = -mthumb -mcpu=cortex-m0plus -mfloat-abi=soft --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
-LDLIBS = -lm -lc -lgcc -lnosys -larm_cortexM0l_math
+ASFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -O3 -std=gnu99 -Wpointer-arith -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
+CXXFLAGS = $(addprefix -I,$(INCLUDEDIRSTRUCT)) -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -fno-rtti -fno-exceptions -O3 -std=c++17 -Wpointer-arith -Werror -D$(MCU_TYPE) -DBUILD_VERSION=$(BUILD_VERSION)
+LDFLAGS = -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16 --specs=nano.specs --specs=nosys.specs -nostdlib -nostartfiles -ffunction-sections -fdata-sections -ffreestanding -Wl,--gc-sections
+LDLIBS = -lm -lc -lgcc -lnosys -larm_cortexM4lf_math
 LDLIBSPATH = -L$(COREDIR)/DSP/Lib/GCC
 
 ifeq ($(BUILD_TYPE), debug)
@@ -67,7 +67,7 @@ CXXFLAGS += -g
 endif
 
 ## Linker scripts
-LDSCRIPT = ld/atsamd21e18_app.ld
+LDSCRIPT = ld/efm32gg11bx20f2048_app.ld
 
 # Target
 TARGET = $(TARGETDIR)/v$(BUILD_VERSION).$(APP_NAME)
@@ -102,14 +102,17 @@ $(TARGET).bin: $(TARGET).elf
 	@echo Creating BIN file \'$@\'...
 	@$(OBJCOPY) -O binary --only-section=.isr_vector --only-section=.text --only-section=.ARM --only-section=.iram0.text --only-section=.data $< $(TARGET).irom0.bin
 	@$(OBJCOPY) -O binary --only-section=.irom1.text $< $(TARGET).irom1.bin
+	@$(OBJCOPY) -O binary --only-section=.irom2.text $< $(TARGET).irom2.bin
 	@$(OBJCOPY) -O binary --only-section=.drom0.data $< $(TARGET).drom0.bin
+	@$(OBJCOPY) -O binary --only-section=.drom1.data $< $(TARGET).drom1.bin
 
 $(TARGET).hex: $(TARGET).elf
 	@echo Creating HEX file \'$@\'...
-	@$(OBJCOPY) -O ihex $< $@
+	@$(OBJCOPY) -O ihex --remove-section=.irom2.text --remove-section=.drom1.data $< $@
 	@$(OBJCOPY) -O ihex --only-section=.isr_vector --only-section=.text --only-section=.ARM --only-section=.iram0.text --only-section=.data $< $(TARGET).flash.hex
 	@$(OBJCOPY) -O ihex --only-section=.irom1.text $< $(TARGET).boot.hex
 	@$(OBJCOPY) -O ihex --only-section=.drom0.data $< $(TARGET).userdata.hex
+	@$(OBJCOPY) -O ihex --only-section=.irom2.text --only-section=.drom1.data $< $(TARGET).qspi.hex
 
 $(TARGET).elf: $(OBJECTS)
 	@echo ---------------------------------------------------------------------------

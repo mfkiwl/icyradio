@@ -2,9 +2,7 @@
 
 uint8_t mcp4728_init()
 {
-    delay_ms(2);
-
-    if(!sercom2_i2c_master_write(MCP4728_I2C_ADDR, 0, 0, SERCOM_I2C_STOP))
+    if(!i2c0_write(MCP4728_I2C_ADDR, NULL, 0, I2C_STOP))
         return 0;
 
     return 1;
@@ -18,7 +16,7 @@ void mcp4728_busy_wait()
     {
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
-            ubStatus = sercom2_i2c_master_read_byte(MCP4728_I2C_ADDR, SERCOM_I2C_STOP);
+            ubStatus = i2c0_read_byte(MCP4728_I2C_ADDR, I2C_STOP);
         }
     } while(!(ubStatus & 0x80));
 }
@@ -37,7 +35,7 @@ void mcp4728_fast_write(uint16_t *pusData)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        sercom2_i2c_master_write(MCP4728_I2C_ADDR, pubData, sizeof(pubData), SERCOM_I2C_STOP);
+        i2c0_write(MCP4728_I2C_ADDR, pubData, sizeof(pubData), I2C_STOP);
     }
 }
 
@@ -54,7 +52,7 @@ void mcp4728_channel_write(uint8_t ubChannel, uint16_t usData)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        sercom2_i2c_master_write(MCP4728_I2C_ADDR, pubData, sizeof(pubData), SERCOM_I2C_STOP);
+        i2c0_write(MCP4728_I2C_ADDR, pubData, sizeof(pubData), I2C_STOP);
     }
 }
 void mcp4728_channel_nvm_write(uint8_t ubChannel, uint16_t usData)
@@ -70,7 +68,7 @@ void mcp4728_channel_nvm_write(uint8_t ubChannel, uint16_t usData)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        sercom2_i2c_master_write(MCP4728_I2C_ADDR, pubData, sizeof(pubData), SERCOM_I2C_STOP);
+        i2c0_write(MCP4728_I2C_ADDR, pubData, sizeof(pubData), I2C_STOP);
     }
 
     mcp4728_busy_wait();
@@ -84,7 +82,7 @@ uint16_t mcp4728_channel_read(uint8_t ubChannel)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        sercom2_i2c_master_read(MCP4728_I2C_ADDR, pubData, sizeof(pubData), SERCOM_I2C_STOP);
+        i2c0_read(MCP4728_I2C_ADDR, pubData, sizeof(pubData), I2C_STOP);
     }
 
     return ((uint16_t)pubData[ubChannel * 6 + 1] << 8) | (uint16_t)pubData[ubChannel * 6 + 2];
@@ -98,7 +96,7 @@ uint16_t mcp4728_channel_nvm_read(uint8_t ubChannel)
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
     {
-        sercom2_i2c_master_read(MCP4728_I2C_ADDR, pubData, sizeof(pubData), SERCOM_I2C_STOP);
+        i2c0_read(MCP4728_I2C_ADDR, pubData, sizeof(pubData), I2C_STOP);
     }
 
     return ((uint16_t)pubData[ubChannel * 6 + 4] << 8) | (uint16_t)pubData[ubChannel * 6 + 5];

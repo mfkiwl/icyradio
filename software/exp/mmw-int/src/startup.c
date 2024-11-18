@@ -1,4 +1,4 @@
-#include <sam.h>
+#include <em_device.h>
 
 extern void _estack(); // Not really a function, just to be compatible with array later
 
@@ -62,7 +62,10 @@ void _reset_isr()
     __libc_init_array();
 
     SCB->VTOR = (uint32_t)&_svect; // ISR Vectors offset
-    SCB->AIRCR = 0x05FA0000 | (5 << 8); // Interrupt priority - 2 bits Group, 0 bits Sub-group
+    SCB->AIRCR = 0x05FA0000 | (5 << 8); // Interrupt priority - 2 bits Group, 1 bit Sub-group
+    SCB->SHCSR = SCB_SHCSR_USGFAULTENA_Msk | SCB_SHCSR_BUSFAULTENA_Msk | SCB_SHCSR_MEMFAULTENA_Msk; // Enable separate fault handlers
+    SCB->CCR |= SCB_CCR_DIV_0_TRP_Msk; // Enable division by zero faults
+    SCB->CPACR |= 0xF << 20; // Enable CP10 & CP11 (FPU) in priv. and non priv. mode
 
     init();
     main();
@@ -73,85 +76,165 @@ void _reset_isr()
 
 void _nmi_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
 void _hardfault_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _memmanage_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _busfault_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usagefault_isr()                    __attribute__ ((weak,  alias (DEFAULT_ISR)));
 void _svc_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _debugmon_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
 void _pendsv_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
 void _systick_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _pm_isr()                            __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _sysctrl_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _wdt_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _rtc_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _eic_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _nvmctrl_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _dmac_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _emu_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _wdog0_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _ldma_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _gpio_even_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _smu_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _timer0_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart0_rx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart0_tx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _acmp0_1_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _adc0_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _idac0_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _i2c0_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _i2c1_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _gpio_odd_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _timer1_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _timer2_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _timer3_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart1_rx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart1_tx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart2_rx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart2_tx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _uart0_rx_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _uart0_tx_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _uart1_rx_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _uart1_tx_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _leuart0_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _leuart1_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _letimer0_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _pcnt0_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _pcnt1_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _pcnt2_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _rtcc_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _cmu_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _msc_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _crypto0_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _cryotimer_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _fpueh_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart3_rx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart3_tx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart4_rx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart4_tx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _wtimer0_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _wtimer1_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _wtimer2_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _wtimer3_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _i2c2_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _vdac0_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _timer4_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _timer5_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _timer6_isr()                        __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart5_rx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _usart5_tx_isr()                     __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _csen_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _lesense_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _ebi_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _acmp2_3_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _adc1_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _lcd_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _sdio_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _eth_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _can0_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _can1_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
 void _usb_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _evsys_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _sercom0_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _sercom1_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _sercom2_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _sercom3_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _sercom4_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _sercom5_isr()                       __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tcc0_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tcc1_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tcc2_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tc3_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tc4_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tc5_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tc6_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tc7_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _adc_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _ac_isr()                            __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _dac_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _ptc_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _i2s_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _ac1_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
-void _tcc3_isr()                          __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _rtc_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _wdog1_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _letimer1_isr()                      __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _trng0_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
+void _qspi0_isr()                         __attribute__ ((weak,  alias (DEFAULT_ISR)));
 
 __attribute__ ((section(".isr_vector"))) void (* const g_pfnVectors[])() = {
     _estack,
     _reset_isr,
     _nmi_isr,
     _hardfault_isr,
-    0,
-    0,
-    0,
+    _memmanage_isr,
+    _busfault_isr,
+    _usagefault_isr,
     0,
     0,
     0,
     0,
     _svc_isr,
-    0,
+    _debugmon_isr,
     0,
     _pendsv_isr,
     _systick_isr,
-    _pm_isr,
-    _sysctrl_isr,
-    _wdt_isr,
-    _rtc_isr,
-    _eic_isr,
-    _nvmctrl_isr,
-    _dmac_isr,
+    _emu_isr,
+    _wdog0_isr,
+    _ldma_isr,
+    _gpio_even_isr,
+    _smu_isr,
+    _timer0_isr,
+    _usart0_rx_isr,
+    _usart0_tx_isr,
+    _acmp0_1_isr,
+    _adc0_isr,
+    _idac0_isr,
+    _i2c0_isr,
+    _i2c1_isr,
+    _gpio_odd_isr,
+    _timer1_isr,
+    _timer2_isr,
+    _timer3_isr,
+    _usart1_rx_isr,
+    _usart1_tx_isr,
+    _usart2_rx_isr,
+    _usart2_tx_isr,
+    _uart0_rx_isr,
+    _uart0_tx_isr,
+    _uart1_rx_isr,
+    _uart1_tx_isr,
+    _leuart0_isr,
+    _leuart1_isr,
+    _letimer0_isr,
+    _pcnt0_isr,
+    _pcnt1_isr,
+    _pcnt2_isr,
+    _rtcc_isr,
+    _cmu_isr,
+    _msc_isr,
+    _crypto0_isr,
+    _cryotimer_isr,
+    _fpueh_isr,
+    _usart3_rx_isr,
+    _usart3_tx_isr,
+    _usart4_rx_isr,
+    _usart4_tx_isr,
+    _wtimer0_isr,
+    _wtimer1_isr,
+    _wtimer2_isr,
+    _wtimer3_isr,
+    _i2c2_isr,
+    _vdac0_isr,
+    _timer4_isr,
+    _timer5_isr,
+    _timer6_isr,
+    _usart5_rx_isr,
+    _usart5_tx_isr,
+    _csen_isr,
+    _lesense_isr,
+    _ebi_isr,
+    _acmp2_3_isr,
+    _adc1_isr,
+    _lcd_isr,
+    _sdio_isr,
+    _eth_isr,
+    _can0_isr,
+    _can1_isr,
     _usb_isr,
-    _evsys_isr,
-    _sercom0_isr,
-    _sercom1_isr,
-    _sercom2_isr,
-    _sercom3_isr,
-    _sercom4_isr,
-    _sercom5_isr,
-    _tcc0_isr,
-    _tcc1_isr,
-    _tcc2_isr,
-    _tc3_isr,
-    _tc4_isr,
-    _tc5_isr,
-    _tc6_isr,
-    _tc7_isr,
-    _adc_isr,
-    _ac_isr,
-    _dac_isr,
-    _ptc_isr,
-    _i2s_isr,
-    _ac1_isr,
-    _tcc3_isr
+    _rtc_isr,
+    _wdog1_isr,
+    _letimer1_isr,
+    _trng0_isr,
+    _qspi0_isr
 };

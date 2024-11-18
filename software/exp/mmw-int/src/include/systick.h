@@ -1,9 +1,9 @@
 #ifndef __SYSTICK_H__
 #define __SYSTICK_H__
 
-#include <sam.h>
-#include "pm.h"
+#include <em_device.h>
 #include "atomic.h"
+#include "cmu.h"
 
 extern volatile uint64_t g_ullSystemTick;
 
