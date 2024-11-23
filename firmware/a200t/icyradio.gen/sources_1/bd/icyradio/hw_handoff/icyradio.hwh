@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sun May 26 20:11:55 2024" VIVADOVERSION="2023.2">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Sat Nov 23 13:19:21 2024" VIVADOVERSION="2023.2">
 
   <SYSTEMINFO ARCH="artix7" DEVICE="7a200t" NAME="icyradio" PACKAGE="fbg484" SPEEDGRADE="-2"/>
 
@@ -39398,13 +39398,13 @@
             <CONNECTION INSTANCE="axi_gpio_0" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_gpio_1" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_gpio_2" PORT="aclk"/>
-            <CONNECTION INSTANCE="axi_i2s" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_irq_controller_0" PORT="aclk"/>
-            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_rf_timestamping" PORT="aclk"/>
+            <CONNECTION INSTANCE="rst_pulse_gen_0" PORT="clk"/>
+            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_spi_0" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_spi_1" PORT="aclk"/>
-            <CONNECTION INSTANCE="rst_pulse_gen_0" PORT="clk"/>
+            <CONNECTION INSTANCE="axi_i2s" PORT="aclk"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="axi_aresetn" POLARITY="ACTIVE_LOW" SIGIS="rst" SIGNAME="rst_axi_pcie_0_125M_pcie_core_peripheral_aresetn">
@@ -39937,7 +39937,7 @@
           <PARAMETER NAME="HAS_WSTRB" VALUE="1"/>
           <PARAMETER NAME="ID_WIDTH" VALUE="3"/>
           <PARAMETER NAME="INSERT_VIP" VALUE="0"/>
-          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="256"/>
+          <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="128"/>
           <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="8"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
           <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="2"/>
@@ -39947,7 +39947,7 @@
           <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
           <PARAMETER NAME="RUSER_BITS_PER_BYTE" VALUE="0"/>
           <PARAMETER NAME="RUSER_WIDTH" VALUE="0"/>
-          <PARAMETER NAME="SUPPORTS_NARROW_BURST" VALUE="1"/>
+          <PARAMETER NAME="SUPPORTS_NARROW_BURST" VALUE="0"/>
           <PARAMETER NAME="WUSER_BITS_PER_BYTE" VALUE="0"/>
           <PARAMETER NAME="WUSER_WIDTH" VALUE="0"/>
           <PORTMAPS>
@@ -40004,9 +40004,9 @@
           <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
           <PARAMETER NAME="INSERT_VIP" VALUE="0"/>
           <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="1"/>
-          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="1"/>
+          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="2"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
-          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="1"/>
+          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="2"/>
           <PARAMETER NAME="NUM_WRITE_THREADS" VALUE="1"/>
           <PARAMETER NAME="PHASE" VALUE="0.0"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4LITE"/>
@@ -40457,6 +40457,11 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_arcache"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="3" NAME="M00_AXI_arid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_arid"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="O" LEFT="7" NAME="M00_AXI_arlen" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arlen">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_arlen"/>
@@ -40477,7 +40482,7 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_arqos"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="M00_AXI_arready" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arready">
+        <PORT DIR="I" LEFT="0" NAME="M00_AXI_arready" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_arready"/>
           </CONNECTIONS>
@@ -40492,7 +40497,7 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_arsize"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="M00_AXI_arvalid" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arvalid">
+        <PORT DIR="O" LEFT="0" NAME="M00_AXI_arvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_arvalid"/>
           </CONNECTIONS>
@@ -40510,6 +40515,11 @@
         <PORT DIR="O" LEFT="3" NAME="M00_AXI_awcache" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awcache">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_awcache"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="M00_AXI_awid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_awid"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="7" NAME="M00_AXI_awlen" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awlen">
@@ -40532,7 +40542,7 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_awqos"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="M00_AXI_awready" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awready">
+        <PORT DIR="I" LEFT="0" NAME="M00_AXI_awready" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_awready"/>
           </CONNECTIONS>
@@ -40547,12 +40557,17 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_awsize"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="M00_AXI_awvalid" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awvalid">
+        <PORT DIR="O" LEFT="0" NAME="M00_AXI_awvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_awvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="M00_AXI_bready" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_bready">
+        <PORT DIR="I" LEFT="3" NAME="M00_AXI_bid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_bid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_bid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="0" NAME="M00_AXI_bready" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_bready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_bready"/>
           </CONNECTIONS>
@@ -40562,22 +40577,27 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_bresp"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="M00_AXI_bvalid" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_bvalid">
+        <PORT DIR="I" LEFT="0" NAME="M00_AXI_bvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_bvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_bvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="M00_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rdata">
+        <PORT DIR="I" LEFT="63" NAME="M00_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_rdata"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="M00_AXI_rlast" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rlast">
+        <PORT DIR="I" LEFT="3" NAME="M00_AXI_rid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_rid"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="0" NAME="M00_AXI_rlast" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rlast">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_rlast"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="M00_AXI_rready" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rready">
+        <PORT DIR="O" LEFT="0" NAME="M00_AXI_rready" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_rready"/>
           </CONNECTIONS>
@@ -40587,32 +40607,32 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_rresp"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="M00_AXI_rvalid" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rvalid">
+        <PORT DIR="I" LEFT="0" NAME="M00_AXI_rvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_rvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="M00_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wdata">
+        <PORT DIR="O" LEFT="63" NAME="M00_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_wdata"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="M00_AXI_wlast" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wlast">
+        <PORT DIR="O" LEFT="0" NAME="M00_AXI_wlast" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wlast">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_wlast"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" NAME="M00_AXI_wready" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wready">
+        <PORT DIR="I" LEFT="0" NAME="M00_AXI_wready" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_wready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="3" NAME="M00_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wstrb">
+        <PORT DIR="O" LEFT="7" NAME="M00_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_wstrb"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" NAME="M00_AXI_wvalid" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wvalid">
+        <PORT DIR="O" LEFT="0" NAME="M00_AXI_wvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="s_axi_wvalid"/>
           </CONNECTIONS>
@@ -41642,11 +41662,12 @@
             <PORTMAP LOGICAL="WVALID" PHYSICAL="S01_AXI_wvalid"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="axi_pcie_interconnect_M00_AXI" DATAWIDTH="32" NAME="M00_AXI" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
+        <BUSINTERFACE BUSNAME="axi_pcie_interconnect_M00_AXI" DATAWIDTH="64" NAME="M00_AXI" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="ARADDR" PHYSICAL="M00_AXI_araddr"/>
             <PORTMAP LOGICAL="ARBURST" PHYSICAL="M00_AXI_arburst"/>
             <PORTMAP LOGICAL="ARCACHE" PHYSICAL="M00_AXI_arcache"/>
+            <PORTMAP LOGICAL="ARID" PHYSICAL="M00_AXI_arid"/>
             <PORTMAP LOGICAL="ARLEN" PHYSICAL="M00_AXI_arlen"/>
             <PORTMAP LOGICAL="ARLOCK" PHYSICAL="M00_AXI_arlock"/>
             <PORTMAP LOGICAL="ARPROT" PHYSICAL="M00_AXI_arprot"/>
@@ -41658,6 +41679,7 @@
             <PORTMAP LOGICAL="AWADDR" PHYSICAL="M00_AXI_awaddr"/>
             <PORTMAP LOGICAL="AWBURST" PHYSICAL="M00_AXI_awburst"/>
             <PORTMAP LOGICAL="AWCACHE" PHYSICAL="M00_AXI_awcache"/>
+            <PORTMAP LOGICAL="AWID" PHYSICAL="M00_AXI_awid"/>
             <PORTMAP LOGICAL="AWLEN" PHYSICAL="M00_AXI_awlen"/>
             <PORTMAP LOGICAL="AWLOCK" PHYSICAL="M00_AXI_awlock"/>
             <PORTMAP LOGICAL="AWPROT" PHYSICAL="M00_AXI_awprot"/>
@@ -41666,10 +41688,12 @@
             <PORTMAP LOGICAL="AWREGION" PHYSICAL="M00_AXI_awregion"/>
             <PORTMAP LOGICAL="AWSIZE" PHYSICAL="M00_AXI_awsize"/>
             <PORTMAP LOGICAL="AWVALID" PHYSICAL="M00_AXI_awvalid"/>
+            <PORTMAP LOGICAL="BID" PHYSICAL="M00_AXI_bid"/>
             <PORTMAP LOGICAL="BREADY" PHYSICAL="M00_AXI_bready"/>
             <PORTMAP LOGICAL="BRESP" PHYSICAL="M00_AXI_bresp"/>
             <PORTMAP LOGICAL="BVALID" PHYSICAL="M00_AXI_bvalid"/>
             <PORTMAP LOGICAL="RDATA" PHYSICAL="M00_AXI_rdata"/>
+            <PORTMAP LOGICAL="RID" PHYSICAL="M00_AXI_rid"/>
             <PORTMAP LOGICAL="RLAST" PHYSICAL="M00_AXI_rlast"/>
             <PORTMAP LOGICAL="RREADY" PHYSICAL="M00_AXI_rready"/>
             <PORTMAP LOGICAL="RRESP" PHYSICAL="M00_AXI_rresp"/>
@@ -44417,12 +44441,12 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_arprot"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="S00_AXI_arready" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_arready">
+        <PORT DIR="O" NAME="S00_AXI_arready" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_arready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_arready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="S00_AXI_arvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_arvalid">
+        <PORT DIR="I" NAME="S00_AXI_arvalid" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_arvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_arvalid"/>
           </CONNECTIONS>
@@ -44437,17 +44461,17 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_awprot"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="S00_AXI_awready" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_awready">
+        <PORT DIR="O" NAME="S00_AXI_awready" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_awready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_awready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="S00_AXI_awvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_awvalid">
+        <PORT DIR="I" NAME="S00_AXI_awvalid" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_awvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_awvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="S00_AXI_bready" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_bready">
+        <PORT DIR="I" NAME="S00_AXI_bready" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_bready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_bready"/>
           </CONNECTIONS>
@@ -44457,17 +44481,17 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_bresp"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="S00_AXI_bvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_bvalid">
+        <PORT DIR="O" NAME="S00_AXI_bvalid" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_bvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_bvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="S00_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rdata">
+        <PORT DIR="O" LEFT="63" NAME="S00_AXI_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_rdata"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="S00_AXI_rready" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rready">
+        <PORT DIR="I" NAME="S00_AXI_rready" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_rready"/>
           </CONNECTIONS>
@@ -44477,34 +44501,34 @@
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_rresp"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="S00_AXI_rvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rvalid">
+        <PORT DIR="O" NAME="S00_AXI_rvalid" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_rvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="S00_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wdata">
+        <PORT DIR="I" LEFT="63" NAME="S00_AXI_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_wdata"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="0" NAME="S00_AXI_wready" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wready">
+        <PORT DIR="O" NAME="S00_AXI_wready" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_wready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="3" NAME="S00_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wstrb">
+        <PORT DIR="I" LEFT="7" NAME="S00_AXI_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_wstrb"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="0" NAME="S00_AXI_wvalid" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wvalid">
+        <PORT DIR="I" NAME="S00_AXI_wvalid" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wvalid">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_protocol_convert_0" PORT="m_axi_wvalid"/>
           </CONNECTIONS>
         </PORT>
       </PORTS>
       <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="axi_protocol_convert_0_M_AXI" DATAWIDTH="32" NAME="S00_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
+        <BUSINTERFACE BUSNAME="axi_protocol_convert_0_M_AXI" DATAWIDTH="64" NAME="S00_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
           <PORTMAPS>
             <PORTMAP LOGICAL="ARADDR" PHYSICAL="S00_AXI_araddr"/>
             <PORTMAP LOGICAL="ARPROT" PHYSICAL="S00_AXI_arprot"/>
@@ -45034,15 +45058,15 @@
         <PARAMETER NAME="C_AXI_ARUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_AXI_AWUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_AXI_BUSER_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_AXI_DATA_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="1"/>
+        <PARAMETER NAME="C_AXI_DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="C_AXI_ID_WIDTH" VALUE="4"/>
         <PARAMETER NAME="C_AXI_RUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_AXI_SUPPORTS_READ" VALUE="1"/>
         <PARAMETER NAME="C_AXI_SUPPORTS_USER_SIGNALS" VALUE="0"/>
         <PARAMETER NAME="C_AXI_SUPPORTS_WRITE" VALUE="1"/>
         <PARAMETER NAME="C_AXI_WUSER_WIDTH" VALUE="1"/>
         <PARAMETER NAME="C_FAMILY" VALUE="artix7"/>
-        <PARAMETER NAME="C_IGNORE_ID" VALUE="1"/>
+        <PARAMETER NAME="C_IGNORE_ID" VALUE="0"/>
         <PARAMETER NAME="C_M_AXI_PROTOCOL" VALUE="2"/>
         <PARAMETER NAME="C_S_AXI_PROTOCOL" VALUE="0"/>
         <PARAMETER NAME="C_TRANSLATION_MODE" VALUE="2"/>
@@ -45051,8 +45075,8 @@
         <PARAMETER NAME="AWUSER_WIDTH" VALUE="0"/>
         <PARAMETER NAME="BUSER_WIDTH" VALUE="0"/>
         <PARAMETER NAME="Component_Name" VALUE="icyradio_axi_protocol_convert_0_0"/>
-        <PARAMETER NAME="DATA_WIDTH" VALUE="32"/>
-        <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+        <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
+        <PARAMETER NAME="ID_WIDTH" VALUE="4"/>
         <PARAMETER NAME="MI_PROTOCOL" VALUE="AXI4LITE"/>
         <PARAMETER NAME="READ_WRITE_MODE" VALUE="READ_WRITE"/>
         <PARAMETER NAME="RUSER_WIDTH" VALUE="0"/>
@@ -45127,7 +45151,7 @@
             <CONNECTION INSTANCE="axi_peripheral_interconnect" PORT="S00_AXI_bvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="m_axi_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rdata">
+        <PORT DIR="I" LEFT="63" NAME="m_axi_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_peripheral_interconnect" PORT="S00_AXI_rdata"/>
           </CONNECTIONS>
@@ -45147,7 +45171,7 @@
             <CONNECTION INSTANCE="axi_peripheral_interconnect" PORT="S00_AXI_rvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="m_axi_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wdata">
+        <PORT DIR="O" LEFT="63" NAME="m_axi_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_peripheral_interconnect" PORT="S00_AXI_wdata"/>
           </CONNECTIONS>
@@ -45157,7 +45181,7 @@
             <CONNECTION INSTANCE="axi_peripheral_interconnect" PORT="S00_AXI_wready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="3" NAME="m_axi_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wstrb">
+        <PORT DIR="O" LEFT="7" NAME="m_axi_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_peripheral_interconnect_S00_AXI_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_peripheral_interconnect" PORT="S00_AXI_wstrb"/>
           </CONNECTIONS>
@@ -45180,6 +45204,11 @@
         <PORT DIR="I" LEFT="3" NAME="s_axi_arcache" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arcache">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_arcache"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="I" LEFT="3" NAME="s_axi_arid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_arid"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" LEFT="7" NAME="s_axi_arlen" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_arlen">
@@ -45237,6 +45266,11 @@
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_awcache"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="I" LEFT="3" NAME="s_axi_awid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_awid"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" LEFT="7" NAME="s_axi_awlen" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_awlen">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_awlen"/>
@@ -45277,6 +45311,11 @@
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_awvalid"/>
           </CONNECTIONS>
         </PORT>
+        <PORT DIR="O" LEFT="3" NAME="s_axi_bid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_bid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_bid"/>
+          </CONNECTIONS>
+        </PORT>
         <PORT DIR="I" NAME="s_axi_bready" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_bready">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_bready"/>
@@ -45292,9 +45331,14 @@
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_bvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="O" LEFT="31" NAME="s_axi_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rdata">
+        <PORT DIR="O" LEFT="63" NAME="s_axi_rdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_rdata"/>
+          </CONNECTIONS>
+        </PORT>
+        <PORT DIR="O" LEFT="3" NAME="s_axi_rid" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rid">
+          <CONNECTIONS>
+            <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_rid"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" NAME="s_axi_rlast" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_rlast">
@@ -45317,7 +45361,7 @@
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_rvalid"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="31" NAME="s_axi_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wdata">
+        <PORT DIR="I" LEFT="63" NAME="s_axi_wdata" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wdata">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_wdata"/>
           </CONNECTIONS>
@@ -45332,7 +45376,7 @@
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_wready"/>
           </CONNECTIONS>
         </PORT>
-        <PORT DIR="I" LEFT="3" NAME="s_axi_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wstrb">
+        <PORT DIR="I" LEFT="7" NAME="s_axi_wstrb" RIGHT="0" SIGIS="undef" SIGNAME="axi_pcie_interconnect_M00_AXI_wstrb">
           <CONNECTIONS>
             <CONNECTION INSTANCE="axi_pcie_interconnect" PORT="M00_AXI_wstrb"/>
           </CONNECTIONS>
@@ -45344,13 +45388,13 @@
         </PORT>
       </PORTS>
       <BUSINTERFACES>
-        <BUSINTERFACE BUSNAME="axi_pcie_interconnect_M00_AXI" DATAWIDTH="32" NAME="S_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
+        <BUSINTERFACE BUSNAME="axi_pcie_interconnect_M00_AXI" DATAWIDTH="64" NAME="S_AXI" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
           <PARAMETER NAME="ADDR_WIDTH" VALUE="32"/>
           <PARAMETER NAME="ARUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="AWUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="BUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="CLK_DOMAIN" VALUE="icyradio_axi_pcie_0_0_axi_aclk_out"/>
-          <PARAMETER NAME="DATA_WIDTH" VALUE="32"/>
+          <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
           <PARAMETER NAME="FREQ_HZ" VALUE="125000000"/>
           <PARAMETER NAME="HAS_BRESP" VALUE="1"/>
           <PARAMETER NAME="HAS_BURST" VALUE="1"/>
@@ -45361,7 +45405,7 @@
           <PARAMETER NAME="HAS_REGION" VALUE="1"/>
           <PARAMETER NAME="HAS_RRESP" VALUE="1"/>
           <PARAMETER NAME="HAS_WSTRB" VALUE="1"/>
-          <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
+          <PARAMETER NAME="ID_WIDTH" VALUE="4"/>
           <PARAMETER NAME="INSERT_VIP" VALUE="0"/>
           <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="256"/>
           <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="2"/>
@@ -45380,6 +45424,7 @@
             <PORTMAP LOGICAL="ARADDR" PHYSICAL="s_axi_araddr"/>
             <PORTMAP LOGICAL="ARBURST" PHYSICAL="s_axi_arburst"/>
             <PORTMAP LOGICAL="ARCACHE" PHYSICAL="s_axi_arcache"/>
+            <PORTMAP LOGICAL="ARID" PHYSICAL="s_axi_arid"/>
             <PORTMAP LOGICAL="ARLEN" PHYSICAL="s_axi_arlen"/>
             <PORTMAP LOGICAL="ARLOCK" PHYSICAL="s_axi_arlock"/>
             <PORTMAP LOGICAL="ARPROT" PHYSICAL="s_axi_arprot"/>
@@ -45391,6 +45436,7 @@
             <PORTMAP LOGICAL="AWADDR" PHYSICAL="s_axi_awaddr"/>
             <PORTMAP LOGICAL="AWBURST" PHYSICAL="s_axi_awburst"/>
             <PORTMAP LOGICAL="AWCACHE" PHYSICAL="s_axi_awcache"/>
+            <PORTMAP LOGICAL="AWID" PHYSICAL="s_axi_awid"/>
             <PORTMAP LOGICAL="AWLEN" PHYSICAL="s_axi_awlen"/>
             <PORTMAP LOGICAL="AWLOCK" PHYSICAL="s_axi_awlock"/>
             <PORTMAP LOGICAL="AWPROT" PHYSICAL="s_axi_awprot"/>
@@ -45399,10 +45445,12 @@
             <PORTMAP LOGICAL="AWREGION" PHYSICAL="s_axi_awregion"/>
             <PORTMAP LOGICAL="AWSIZE" PHYSICAL="s_axi_awsize"/>
             <PORTMAP LOGICAL="AWVALID" PHYSICAL="s_axi_awvalid"/>
+            <PORTMAP LOGICAL="BID" PHYSICAL="s_axi_bid"/>
             <PORTMAP LOGICAL="BREADY" PHYSICAL="s_axi_bready"/>
             <PORTMAP LOGICAL="BRESP" PHYSICAL="s_axi_bresp"/>
             <PORTMAP LOGICAL="BVALID" PHYSICAL="s_axi_bvalid"/>
             <PORTMAP LOGICAL="RDATA" PHYSICAL="s_axi_rdata"/>
+            <PORTMAP LOGICAL="RID" PHYSICAL="s_axi_rid"/>
             <PORTMAP LOGICAL="RLAST" PHYSICAL="s_axi_rlast"/>
             <PORTMAP LOGICAL="RREADY" PHYSICAL="s_axi_rready"/>
             <PORTMAP LOGICAL="RRESP" PHYSICAL="s_axi_rresp"/>
@@ -45414,13 +45462,13 @@
             <PORTMAP LOGICAL="WVALID" PHYSICAL="s_axi_wvalid"/>
           </PORTMAPS>
         </BUSINTERFACE>
-        <BUSINTERFACE BUSNAME="axi_protocol_convert_0_M_AXI" DATAWIDTH="32" NAME="M_AXI" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
+        <BUSINTERFACE BUSNAME="axi_protocol_convert_0_M_AXI" DATAWIDTH="64" NAME="M_AXI" TYPE="MASTER" VLNV="xilinx.com:interface:aximm:1.0">
           <PARAMETER NAME="ADDR_WIDTH" VALUE="32"/>
           <PARAMETER NAME="ARUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="AWUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="BUSER_WIDTH" VALUE="0"/>
           <PARAMETER NAME="CLK_DOMAIN" VALUE="icyradio_axi_pcie_0_0_axi_aclk_out"/>
-          <PARAMETER NAME="DATA_WIDTH" VALUE="32"/>
+          <PARAMETER NAME="DATA_WIDTH" VALUE="64"/>
           <PARAMETER NAME="FREQ_HZ" VALUE="125000000"/>
           <PARAMETER NAME="HAS_BRESP" VALUE="1"/>
           <PARAMETER NAME="HAS_BURST" VALUE="0"/>
@@ -51429,12 +51477,12 @@
             <CONNECTION INSTANCE="axi_gpio_0" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_gpio_1" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_gpio_2" PORT="aresetn"/>
-            <CONNECTION INSTANCE="axi_i2s" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_irq_controller_0" PORT="aresetn"/>
-            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_rf_timestamping" PORT="aresetn"/>
+            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_spi_0" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_spi_1" PORT="aresetn"/>
+            <CONNECTION INSTANCE="axi_i2s" PORT="aresetn"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="0" NAME="peripheral_reset" POLARITY="ACTIVE_HIGH" RIGHT="0" SIGIS="rst"/>

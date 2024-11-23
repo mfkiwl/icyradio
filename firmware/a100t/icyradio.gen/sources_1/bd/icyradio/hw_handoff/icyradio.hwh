@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Apr  3 17:15:40 2024" VIVADOVERSION="2023.2">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Nov 22 16:59:15 2024" VIVADOVERSION="2023.2">
 
   <SYSTEMINFO ARCH="artix7" DEVICE="7a100t" NAME="icyradio" PACKAGE="fgg484" SPEEDGRADE="-2"/>
 
@@ -37866,24 +37866,6 @@
         </ADDRESSBLOCK>
       </ADDRESSBLOCKS>
       <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR4" RANGE="4G" USAGE="memory"/>
-      </ADDRESSBLOCKS>
-      <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR5" RANGE="4G" USAGE="memory"/>
-      </ADDRESSBLOCKS>
-      <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR0" RANGE="4G" USAGE="memory"/>
-      </ADDRESSBLOCKS>
-      <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR1" RANGE="4G" USAGE="memory"/>
-      </ADDRESSBLOCKS>
-      <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR2" RANGE="4G" USAGE="memory"/>
-      </ADDRESSBLOCKS>
-      <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR3" RANGE="4G" USAGE="memory"/>
-      </ADDRESSBLOCKS>
-      <ADDRESSBLOCKS>
         <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI_CTL" NAME="CTL0" RANGE="256M" USAGE="memory">
           <REGISTERS>
             <REGISTER NAME="PCIe_cfg_space_header">
@@ -39130,6 +39112,24 @@
           </REGISTERS>
         </ADDRESSBLOCK>
       </ADDRESSBLOCKS>
+      <ADDRESSBLOCKS>
+        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR0" RANGE="4G" USAGE="memory"/>
+      </ADDRESSBLOCKS>
+      <ADDRESSBLOCKS>
+        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR1" RANGE="4G" USAGE="memory"/>
+      </ADDRESSBLOCKS>
+      <ADDRESSBLOCKS>
+        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR2" RANGE="4G" USAGE="memory"/>
+      </ADDRESSBLOCKS>
+      <ADDRESSBLOCKS>
+        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR3" RANGE="4G" USAGE="memory"/>
+      </ADDRESSBLOCKS>
+      <ADDRESSBLOCKS>
+        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR4" RANGE="4G" USAGE="memory"/>
+      </ADDRESSBLOCKS>
+      <ADDRESSBLOCKS>
+        <ADDRESSBLOCK ACCESS="read-write" INTERFACE="S_AXI" NAME="BAR5" RANGE="4G" USAGE="memory"/>
+      </ADDRESSBLOCKS>
       <PARAMETERS>
         <PARAMETER NAME="AXI_ACLK_LOOPBACK" VALUE="FALSE"/>
         <PARAMETER NAME="C_AXIBAR2PCIEBAR_0" VALUE="0x00000000"/>
@@ -39400,11 +39400,11 @@
             <CONNECTION INSTANCE="axi_gpio_1" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_gpio_2" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_dna_0" PORT="aclk"/>
-            <CONNECTION INSTANCE="axi_i2s" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_rf_timestamping" PORT="aclk"/>
-            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_spi_0" PORT="aclk"/>
             <CONNECTION INSTANCE="axi_spi_1" PORT="aclk"/>
+            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aclk"/>
+            <CONNECTION INSTANCE="axi_i2s" PORT="aclk"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="I" NAME="axi_aresetn" POLARITY="ACTIVE_LOW" SIGIS="rst" SIGNAME="rst_axi_pcie_0_125M_pcie_core_peripheral_aresetn">
@@ -40004,9 +40004,9 @@
           <PARAMETER NAME="ID_WIDTH" VALUE="0"/>
           <PARAMETER NAME="INSERT_VIP" VALUE="0"/>
           <PARAMETER NAME="MAX_BURST_LENGTH" VALUE="1"/>
-          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="1"/>
+          <PARAMETER NAME="NUM_READ_OUTSTANDING" VALUE="2"/>
           <PARAMETER NAME="NUM_READ_THREADS" VALUE="1"/>
-          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="1"/>
+          <PARAMETER NAME="NUM_WRITE_OUTSTANDING" VALUE="2"/>
           <PARAMETER NAME="NUM_WRITE_THREADS" VALUE="1"/>
           <PARAMETER NAME="PHASE" VALUE="0.0"/>
           <PARAMETER NAME="PROTOCOL" VALUE="AXI4LITE"/>
@@ -45563,10 +45563,10 @@
         <ADDRESSBLOCK ACCESS="" INTERFACE="s_axi_full" NAME="reg0" RANGE="0x1000000" USAGE="register"/>
       </ADDRESSBLOCKS>
       <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="" INTERFACE="s_axi_full" NAME="reg0" RANGE="0x1000000" USAGE="register"/>
+        <ADDRESSBLOCK ACCESS="" INTERFACE="s_axi_lite" NAME="reg0" RANGE="4096" USAGE="register"/>
       </ADDRESSBLOCKS>
       <ADDRESSBLOCKS>
-        <ADDRESSBLOCK ACCESS="" INTERFACE="s_axi_lite" NAME="reg0" RANGE="4096" USAGE="register"/>
+        <ADDRESSBLOCK ACCESS="" INTERFACE="s_axi_full" NAME="reg0" RANGE="0x1000000" USAGE="register"/>
       </ADDRESSBLOCKS>
       <PARAMETERS>
         <PARAMETER NAME="NUM_SLAVES" VALUE="1"/>
@@ -51478,11 +51478,11 @@
             <CONNECTION INSTANCE="axi_gpio_1" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_gpio_2" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_dna_0" PORT="aresetn"/>
-            <CONNECTION INSTANCE="axi_i2s" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_rf_timestamping" PORT="aresetn"/>
-            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_spi_0" PORT="aresetn"/>
             <CONNECTION INSTANCE="axi_spi_1" PORT="aresetn"/>
+            <CONNECTION INSTANCE="axi_qspi_mm_0" PORT="aresetn"/>
+            <CONNECTION INSTANCE="axi_i2s" PORT="aresetn"/>
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="0" NAME="peripheral_reset" POLARITY="ACTIVE_HIGH" RIGHT="0" SIGIS="rst"/>

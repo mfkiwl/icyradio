@@ -2,7 +2,7 @@
 -- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
--- Date        : Mon Apr  1 20:29:08 2024
+-- Date        : Fri Nov 22 16:57:02 2024
 -- Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
 -- Command     : write_vhdl -force -mode funcsim -rename_top icyradio_axi_i2s_0 -prefix
 --               icyradio_axi_i2s_0_ icyradio_axi_i2s_0_sim_netlist.vhdl
@@ -1549,7 +1549,6 @@ entity icyradio_axi_i2s_0_axi_i2s is
     i2s_src_clk : in STD_LOGIC;
     i2s_src_resetn : in STD_LOGIC;
     s_axi_wdata : in STD_LOGIC_VECTOR ( 19 downto 0 );
-    i2s_sdata_in : in STD_LOGIC;
     s_axi_wstrb : in STD_LOGIC_VECTOR ( 2 downto 0 );
     s_axi_bready : in STD_LOGIC;
     s_axi_wvalid : in STD_LOGIC;
@@ -1557,7 +1556,8 @@ entity icyradio_axi_i2s_0_axi_i2s is
     s_axi_araddr : in STD_LOGIC_VECTOR ( 2 downto 0 );
     m_axis_tready : in STD_LOGIC;
     s_axis_tdata : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    s_axis_tvalid : in STD_LOGIC
+    s_axis_tvalid : in STD_LOGIC;
+    i2s_sdata_in : in STD_LOGIC
   );
 end icyradio_axi_i2s_0_axi_i2s;
 
@@ -1690,7 +1690,6 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   signal i2s_paused_a_i_1_n_0 : STD_LOGIC;
   signal i2s_paused_i_1_n_0 : STD_LOGIC;
   signal i2s_paused_i_2_n_0 : STD_LOGIC;
-  signal i2s_sdata_in_q : STD_LOGIC;
   signal i2s_sdata_in_sr : STD_LOGIC_VECTOR ( 30 downto 0 );
   signal \i2s_sdata_in_sr[30]_i_1_n_0\ : STD_LOGIC;
   signal \i2s_sdata_in_sr[30]_i_3_n_0\ : STD_LOGIC;
@@ -1734,7 +1733,7 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   signal \i2s_sdata_in_sr_reg_n_0_[8]\ : STD_LOGIC;
   signal \i2s_sdata_in_sr_reg_n_0_[9]\ : STD_LOGIC;
   signal i2s_sdata_out_int_i_1_n_0 : STD_LOGIC;
-  signal i2s_sdata_out_int_i_3_n_0 : STD_LOGIC;
+  signal i2s_sdata_out_int_i_2_n_0 : STD_LOGIC;
   signal i2s_sdata_out_int_reg_n_0 : STD_LOGIC;
   signal i2s_sdata_out_sr : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal i2s_sdata_out_sr_bit_cnt : STD_LOGIC_VECTOR ( 5 downto 0 );
@@ -1788,6 +1787,7 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   signal i2s_src_resetn_a_i_1_n_0 : STD_LOGIC;
   signal m_axis_tdata1_in : STD_LOGIC_VECTOR ( 31 downto 0 );
   signal \m_axis_tdata[31]_i_1_n_0\ : STD_LOGIC;
+  signal \m_axis_tdata[31]_i_2_n_0\ : STD_LOGIC;
   signal \m_axis_tvalid0__3\ : STD_LOGIC;
   signal \m_axis_tvalid1__6\ : STD_LOGIC;
   signal m_axis_tvalid_i_1_n_0 : STD_LOGIC;
@@ -1795,7 +1795,7 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   signal m_axis_tvalid_i_3_n_0 : STD_LOGIC;
   signal m_axis_tvalid_i_4_n_0 : STD_LOGIC;
   signal m_axis_tvalid_i_5_n_0 : STD_LOGIC;
-  signal m_axis_tvalid_i_7_n_0 : STD_LOGIC;
+  signal m_axis_tvalid_i_6_n_0 : STD_LOGIC;
   signal \^m_axis_tvalid_reg_0\ : STD_LOGIC;
   signal p_0_in : STD_LOGIC;
   signal p_0_in_0 : STD_LOGIC;
@@ -1819,10 +1819,10 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   signal \^s_axi_wready\ : STD_LOGIC;
   signal s_axis_tready023_out : STD_LOGIC;
   signal s_axis_tready_i_1_n_0 : STD_LOGIC;
+  signal s_axis_tready_i_2_n_0 : STD_LOGIC;
   signal s_axis_tready_i_3_n_0 : STD_LOGIC;
   signal s_axis_tready_i_4_n_0 : STD_LOGIC;
   signal s_axis_tready_i_5_n_0 : STD_LOGIC;
-  signal s_axis_tready_i_6_n_0 : STD_LOGIC;
   signal \^s_axis_tready_reg_0\ : STD_LOGIC;
   signal sync_aclk_to_i2s_src_clk_dst_req : STD_LOGIC;
   signal sync_aclk_to_i2s_src_clk_in : STD_LOGIC_VECTOR ( 47 downto 0 );
@@ -1844,7 +1844,7 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   attribute SOFT_HLUTNM of \FSM_sequential_i2s_fsm_state[2]_i_12\ : label is "soft_lutpair12";
   attribute SOFT_HLUTNM of \FSM_sequential_i2s_fsm_state[2]_i_4\ : label is "soft_lutpair7";
   attribute SOFT_HLUTNM of \FSM_sequential_i2s_fsm_state[2]_i_5\ : label is "soft_lutpair14";
-  attribute SOFT_HLUTNM of \FSM_sequential_i2s_fsm_state[2]_i_7\ : label is "soft_lutpair17";
+  attribute SOFT_HLUTNM of \FSM_sequential_i2s_fsm_state[2]_i_7\ : label is "soft_lutpair14";
   attribute SOFT_HLUTNM of \FSM_sequential_i2s_fsm_state[2]_i_8\ : label is "soft_lutpair25";
   attribute FSM_ENCODED_STATES : string;
   attribute FSM_ENCODED_STATES of \FSM_sequential_i2s_fsm_state_reg[0]\ : label is "I2S_FSM_STATE_RD_FIRST:000,I2S_FSM_STATE_WAIT_BCLK_SYNC:010,I2S_FSM_STATE_ACTIVE:011,I2S_FSM_STATE_RESET:100,I2S_FSM_STATE_WAIT_LRCLK_SYNC:001";
@@ -1952,41 +1952,40 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   attribute XPM_MODULE of i2s_src_clk_to_aclk_sync : label is "TRUE";
   attribute SOFT_HLUTNM of i2s_src_resetn_a_i_1 : label is "soft_lutpair29";
   attribute SOFT_HLUTNM of \m_axis_tdata[0]_i_1\ : label is "soft_lutpair21";
-  attribute SOFT_HLUTNM of \m_axis_tdata[10]_i_1\ : label is "soft_lutpair56";
+  attribute SOFT_HLUTNM of \m_axis_tdata[10]_i_1\ : label is "soft_lutpair55";
   attribute SOFT_HLUTNM of \m_axis_tdata[11]_i_1\ : label is "soft_lutpair55";
-  attribute SOFT_HLUTNM of \m_axis_tdata[12]_i_1\ : label is "soft_lutpair55";
+  attribute SOFT_HLUTNM of \m_axis_tdata[12]_i_1\ : label is "soft_lutpair54";
   attribute SOFT_HLUTNM of \m_axis_tdata[13]_i_1\ : label is "soft_lutpair54";
-  attribute SOFT_HLUTNM of \m_axis_tdata[14]_i_1\ : label is "soft_lutpair54";
+  attribute SOFT_HLUTNM of \m_axis_tdata[14]_i_1\ : label is "soft_lutpair53";
   attribute SOFT_HLUTNM of \m_axis_tdata[15]_i_1\ : label is "soft_lutpair53";
-  attribute SOFT_HLUTNM of \m_axis_tdata[16]_i_1\ : label is "soft_lutpair53";
+  attribute SOFT_HLUTNM of \m_axis_tdata[16]_i_1\ : label is "soft_lutpair52";
   attribute SOFT_HLUTNM of \m_axis_tdata[17]_i_1\ : label is "soft_lutpair52";
-  attribute SOFT_HLUTNM of \m_axis_tdata[18]_i_1\ : label is "soft_lutpair52";
+  attribute SOFT_HLUTNM of \m_axis_tdata[18]_i_1\ : label is "soft_lutpair51";
   attribute SOFT_HLUTNM of \m_axis_tdata[19]_i_1\ : label is "soft_lutpair51";
-  attribute SOFT_HLUTNM of \m_axis_tdata[1]_i_1\ : label is "soft_lutpair60";
-  attribute SOFT_HLUTNM of \m_axis_tdata[20]_i_1\ : label is "soft_lutpair51";
+  attribute SOFT_HLUTNM of \m_axis_tdata[20]_i_1\ : label is "soft_lutpair50";
   attribute SOFT_HLUTNM of \m_axis_tdata[21]_i_1\ : label is "soft_lutpair50";
-  attribute SOFT_HLUTNM of \m_axis_tdata[22]_i_1\ : label is "soft_lutpair50";
+  attribute SOFT_HLUTNM of \m_axis_tdata[22]_i_1\ : label is "soft_lutpair49";
   attribute SOFT_HLUTNM of \m_axis_tdata[23]_i_1\ : label is "soft_lutpair49";
-  attribute SOFT_HLUTNM of \m_axis_tdata[24]_i_1\ : label is "soft_lutpair49";
+  attribute SOFT_HLUTNM of \m_axis_tdata[24]_i_1\ : label is "soft_lutpair48";
   attribute SOFT_HLUTNM of \m_axis_tdata[25]_i_1\ : label is "soft_lutpair48";
-  attribute SOFT_HLUTNM of \m_axis_tdata[26]_i_1\ : label is "soft_lutpair48";
+  attribute SOFT_HLUTNM of \m_axis_tdata[26]_i_1\ : label is "soft_lutpair47";
   attribute SOFT_HLUTNM of \m_axis_tdata[27]_i_1\ : label is "soft_lutpair47";
-  attribute SOFT_HLUTNM of \m_axis_tdata[28]_i_1\ : label is "soft_lutpair47";
+  attribute SOFT_HLUTNM of \m_axis_tdata[28]_i_1\ : label is "soft_lutpair46";
   attribute SOFT_HLUTNM of \m_axis_tdata[29]_i_1\ : label is "soft_lutpair46";
-  attribute SOFT_HLUTNM of \m_axis_tdata[2]_i_1\ : label is "soft_lutpair60";
-  attribute SOFT_HLUTNM of \m_axis_tdata[30]_i_1\ : label is "soft_lutpair46";
-  attribute SOFT_HLUTNM of \m_axis_tdata[31]_i_2\ : label is "soft_lutpair21";
+  attribute SOFT_HLUTNM of \m_axis_tdata[2]_i_1\ : label is "soft_lutpair59";
+  attribute SOFT_HLUTNM of \m_axis_tdata[30]_i_1\ : label is "soft_lutpair21";
+  attribute SOFT_HLUTNM of \m_axis_tdata[31]_i_3\ : label is "soft_lutpair17";
   attribute SOFT_HLUTNM of \m_axis_tdata[3]_i_1\ : label is "soft_lutpair59";
-  attribute SOFT_HLUTNM of \m_axis_tdata[4]_i_1\ : label is "soft_lutpair59";
+  attribute SOFT_HLUTNM of \m_axis_tdata[4]_i_1\ : label is "soft_lutpair58";
   attribute SOFT_HLUTNM of \m_axis_tdata[5]_i_1\ : label is "soft_lutpair58";
-  attribute SOFT_HLUTNM of \m_axis_tdata[6]_i_1\ : label is "soft_lutpair58";
+  attribute SOFT_HLUTNM of \m_axis_tdata[6]_i_1\ : label is "soft_lutpair57";
   attribute SOFT_HLUTNM of \m_axis_tdata[7]_i_1\ : label is "soft_lutpair57";
-  attribute SOFT_HLUTNM of \m_axis_tdata[8]_i_1\ : label is "soft_lutpair57";
+  attribute SOFT_HLUTNM of \m_axis_tdata[8]_i_1\ : label is "soft_lutpair56";
   attribute SOFT_HLUTNM of \m_axis_tdata[9]_i_1\ : label is "soft_lutpair56";
+  attribute SOFT_HLUTNM of m_axis_tvalid_i_2 : label is "soft_lutpair12";
   attribute SOFT_HLUTNM of m_axis_tvalid_i_4 : label is "soft_lutpair17";
-  attribute SOFT_HLUTNM of m_axis_tvalid_i_5 : label is "soft_lutpair3";
-  attribute SOFT_HLUTNM of m_axis_tvalid_i_6 : label is "soft_lutpair13";
-  attribute SOFT_HLUTNM of m_axis_tvalid_i_7 : label is "soft_lutpair12";
+  attribute SOFT_HLUTNM of m_axis_tvalid_i_6 : label is "soft_lutpair3";
+  attribute SOFT_HLUTNM of m_axis_tvalid_i_7 : label is "soft_lutpair13";
   attribute SOFT_HLUTNM of s_axi_arready_INST_0 : label is "soft_lutpair27";
   attribute SOFT_HLUTNM of s_axi_awready_i_2 : label is "soft_lutpair2";
   attribute X_INTERFACE_INFO : string;
@@ -2020,8 +2019,7 @@ architecture STRUCTURE of icyradio_axi_i2s_0_axi_i2s is
   attribute X_INTERFACE_INFO of \s_axi_rdata_reg[9]\ : label is "xilinx.com:interface:aximm:1.0 s_axi RDATA";
   attribute SOFT_HLUTNM of s_axi_rvalid_i_1 : label is "soft_lutpair27";
   attribute X_INTERFACE_INFO of s_axi_rvalid_reg : label is "xilinx.com:interface:aximm:1.0 s_axi RVALID";
-  attribute SOFT_HLUTNM of s_axis_tready_i_3 : label is "soft_lutpair14";
-  attribute SOFT_HLUTNM of s_axis_tready_i_7 : label is "soft_lutpair6";
+  attribute SOFT_HLUTNM of s_axis_tready_i_6 : label is "soft_lutpair6";
 begin
   i2s_bclk_reg_0 <= \^i2s_bclk_reg_0\;
   i2s_lrclk <= \^i2s_lrclk\;
@@ -2133,7 +2131,7 @@ begin
     )
         port map (
       I0 => \FSM_sequential_i2s_fsm_state[2]_i_7_n_0\,
-      I1 => m_axis_tvalid_i_5_n_0,
+      I1 => m_axis_tvalid_i_6_n_0,
       I2 => \FSM_sequential_i2s_fsm_state[2]_i_8_n_0\,
       I3 => p_0_in_0,
       I4 => \m_axis_tvalid1__6\,
@@ -2225,7 +2223,7 @@ begin
       CE => '1',
       D => \FSM_sequential_i2s_fsm_state[0]_i_1_n_0\,
       Q => \i2s_fsm_state__0\(0),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \FSM_sequential_i2s_fsm_state_reg[1]\: unisim.vcomponents.FDRE
      port map (
@@ -2233,7 +2231,7 @@ begin
       CE => '1',
       D => \FSM_sequential_i2s_fsm_state[1]_i_1_n_0\,
       Q => \i2s_fsm_state__0\(1),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \FSM_sequential_i2s_fsm_state_reg[2]\: unisim.vcomponents.FDRE
      port map (
@@ -2241,7 +2239,7 @@ begin
       CE => '1',
       D => \FSM_sequential_i2s_fsm_state[2]_i_1_n_0\,
       Q => \i2s_fsm_state__0\(2),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 aclk_to_i2s_src_clk_sync: entity work.icyradio_axi_i2s_0_xpm_cdc_handshake
      port map (
@@ -2743,7 +2741,7 @@ i2s_bclk_reg: unisim.vcomponents.FDRE
       CE => \i2s_bit_cnt[4]_i_1_n_0\,
       D => i2s_bit_cnt(0),
       Q => \i2s_bit_cnt_reg_n_0_[0]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_bit_cnt_reg[1]\: unisim.vcomponents.FDRE
      port map (
@@ -2751,7 +2749,7 @@ i2s_bclk_reg: unisim.vcomponents.FDRE
       CE => \i2s_bit_cnt[4]_i_1_n_0\,
       D => i2s_bit_cnt(1),
       Q => \i2s_bit_cnt_reg_n_0_[1]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_bit_cnt_reg[2]\: unisim.vcomponents.FDRE
      port map (
@@ -2759,7 +2757,7 @@ i2s_bclk_reg: unisim.vcomponents.FDRE
       CE => \i2s_bit_cnt[4]_i_1_n_0\,
       D => i2s_bit_cnt(2),
       Q => \i2s_bit_cnt_reg_n_0_[2]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_bit_cnt_reg[3]\: unisim.vcomponents.FDRE
      port map (
@@ -2767,7 +2765,7 @@ i2s_bclk_reg: unisim.vcomponents.FDRE
       CE => \i2s_bit_cnt[4]_i_1_n_0\,
       D => i2s_bit_cnt(3),
       Q => \i2s_bit_cnt_reg_n_0_[3]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_bit_cnt_reg[4]\: unisim.vcomponents.FDRE
      port map (
@@ -2775,7 +2773,7 @@ i2s_bclk_reg: unisim.vcomponents.FDRE
       CE => \i2s_bit_cnt[4]_i_1_n_0\,
       D => i2s_bit_cnt(4),
       Q => \i2s_bit_cnt_reg_n_0_[4]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 i2s_chan_bit_sz_a_reg: unisim.vcomponents.FDRE
      port map (
@@ -2873,7 +2871,7 @@ i2s_chan_bit_sz_reg: unisim.vcomponents.FDRE
       CE => '1',
       D => \i2s_chan_cnt[0]_i_1_n_0\,
       Q => \i2s_chan_cnt_reg_n_0_[0]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_chan_cnt_reg[1]\: unisim.vcomponents.FDRE
      port map (
@@ -2881,7 +2879,7 @@ i2s_chan_bit_sz_reg: unisim.vcomponents.FDRE
       CE => '1',
       D => \i2s_chan_cnt[1]_i_1_n_0\,
       Q => \i2s_chan_cnt_reg_n_0_[1]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_chan_cnt_reg[2]\: unisim.vcomponents.FDRE
      port map (
@@ -2889,7 +2887,7 @@ i2s_chan_bit_sz_reg: unisim.vcomponents.FDRE
       CE => '1',
       D => \i2s_chan_cnt[2]_i_1_n_0\,
       Q => \i2s_chan_cnt_reg_n_0_[2]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_chan_en_a[7]_i_1\: unisim.vcomponents.LUT6
     generic map(
@@ -4272,21 +4270,13 @@ i2s_paused_reg: unisim.vcomponents.FDRE
       Q => sync_i2s_src_clk_to_aclk_in(1),
       R => '0'
     );
-i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
-     port map (
-      C => i2s_src_clk,
-      CE => '1',
-      D => i2s_sdata_in,
-      Q => i2s_sdata_in_q,
-      R => m_axis_tvalid_i_1_n_0
-    );
 \i2s_sdata_in_sr[0]_i_1\: unisim.vcomponents.LUT4
     generic map(
       INIT => X"A808"
     )
         port map (
       I0 => \i2s_sdata_in_sr[30]_i_3_n_0\,
-      I1 => i2s_sdata_in_q,
+      I1 => i2s_sdata_in,
       I2 => i2s_lb_en,
       I3 => i2s_sdata_out_int_reg_n_0,
       O => i2s_sdata_in_sr(0)
@@ -4688,7 +4678,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_in_sr_bit_cnt(0),
       Q => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[0]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_bit_cnt_reg[1]\: unisim.vcomponents.FDRE
      port map (
@@ -4696,7 +4686,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_in_sr_bit_cnt(1),
       Q => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[1]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_bit_cnt_reg[2]\: unisim.vcomponents.FDRE
      port map (
@@ -4704,7 +4694,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_in_sr_bit_cnt(2),
       Q => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[2]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_bit_cnt_reg[3]\: unisim.vcomponents.FDRE
      port map (
@@ -4712,7 +4702,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_in_sr_bit_cnt(3),
       Q => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[3]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_bit_cnt_reg[4]\: unisim.vcomponents.FDRE
      port map (
@@ -4720,7 +4710,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_in_sr_bit_cnt(4),
       Q => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[4]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_bit_cnt_reg[5]\: unisim.vcomponents.FDRE
      port map (
@@ -4728,7 +4718,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_in_sr_bit_cnt(5),
       Q => p_0_in_0,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[0]\: unisim.vcomponents.FDRE
      port map (
@@ -4736,7 +4726,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(0),
       Q => \i2s_sdata_in_sr_reg_n_0_[0]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[10]\: unisim.vcomponents.FDRE
      port map (
@@ -4744,7 +4734,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(10),
       Q => \i2s_sdata_in_sr_reg_n_0_[10]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[11]\: unisim.vcomponents.FDRE
      port map (
@@ -4752,7 +4742,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(11),
       Q => \i2s_sdata_in_sr_reg_n_0_[11]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[12]\: unisim.vcomponents.FDRE
      port map (
@@ -4760,7 +4750,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(12),
       Q => \i2s_sdata_in_sr_reg_n_0_[12]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[13]\: unisim.vcomponents.FDRE
      port map (
@@ -4768,7 +4758,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(13),
       Q => \i2s_sdata_in_sr_reg_n_0_[13]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[14]\: unisim.vcomponents.FDRE
      port map (
@@ -4776,7 +4766,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(14),
       Q => \i2s_sdata_in_sr_reg_n_0_[14]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[15]\: unisim.vcomponents.FDRE
      port map (
@@ -4784,7 +4774,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(15),
       Q => \i2s_sdata_in_sr_reg_n_0_[15]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[16]\: unisim.vcomponents.FDRE
      port map (
@@ -4792,7 +4782,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(16),
       Q => \i2s_sdata_in_sr_reg_n_0_[16]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[17]\: unisim.vcomponents.FDRE
      port map (
@@ -4800,7 +4790,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(17),
       Q => \i2s_sdata_in_sr_reg_n_0_[17]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[18]\: unisim.vcomponents.FDRE
      port map (
@@ -4808,7 +4798,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(18),
       Q => \i2s_sdata_in_sr_reg_n_0_[18]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[19]\: unisim.vcomponents.FDRE
      port map (
@@ -4816,7 +4806,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(19),
       Q => \i2s_sdata_in_sr_reg_n_0_[19]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[1]\: unisim.vcomponents.FDRE
      port map (
@@ -4824,7 +4814,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(1),
       Q => \i2s_sdata_in_sr_reg_n_0_[1]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[20]\: unisim.vcomponents.FDRE
      port map (
@@ -4832,7 +4822,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(20),
       Q => \i2s_sdata_in_sr_reg_n_0_[20]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[21]\: unisim.vcomponents.FDRE
      port map (
@@ -4840,7 +4830,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(21),
       Q => \i2s_sdata_in_sr_reg_n_0_[21]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[22]\: unisim.vcomponents.FDRE
      port map (
@@ -4848,7 +4838,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(22),
       Q => \i2s_sdata_in_sr_reg_n_0_[22]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[23]\: unisim.vcomponents.FDRE
      port map (
@@ -4856,7 +4846,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(23),
       Q => \i2s_sdata_in_sr_reg_n_0_[23]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[24]\: unisim.vcomponents.FDRE
      port map (
@@ -4864,7 +4854,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(24),
       Q => \i2s_sdata_in_sr_reg_n_0_[24]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[25]\: unisim.vcomponents.FDRE
      port map (
@@ -4872,7 +4862,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(25),
       Q => \i2s_sdata_in_sr_reg_n_0_[25]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[26]\: unisim.vcomponents.FDRE
      port map (
@@ -4880,7 +4870,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(26),
       Q => \i2s_sdata_in_sr_reg_n_0_[26]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[27]\: unisim.vcomponents.FDRE
      port map (
@@ -4888,7 +4878,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(27),
       Q => \i2s_sdata_in_sr_reg_n_0_[27]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[28]\: unisim.vcomponents.FDRE
      port map (
@@ -4896,7 +4886,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(28),
       Q => \i2s_sdata_in_sr_reg_n_0_[28]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[29]\: unisim.vcomponents.FDRE
      port map (
@@ -4904,7 +4894,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(29),
       Q => \i2s_sdata_in_sr_reg_n_0_[29]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[2]\: unisim.vcomponents.FDRE
      port map (
@@ -4912,7 +4902,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(2),
       Q => \i2s_sdata_in_sr_reg_n_0_[2]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[30]\: unisim.vcomponents.FDRE
      port map (
@@ -4920,7 +4910,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(30),
       Q => \i2s_sdata_in_sr_reg_n_0_[30]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[3]\: unisim.vcomponents.FDRE
      port map (
@@ -4928,7 +4918,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(3),
       Q => \i2s_sdata_in_sr_reg_n_0_[3]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[4]\: unisim.vcomponents.FDRE
      port map (
@@ -4936,7 +4926,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(4),
       Q => \i2s_sdata_in_sr_reg_n_0_[4]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[5]\: unisim.vcomponents.FDRE
      port map (
@@ -4944,7 +4934,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(5),
       Q => \i2s_sdata_in_sr_reg_n_0_[5]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[6]\: unisim.vcomponents.FDRE
      port map (
@@ -4952,7 +4942,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(6),
       Q => \i2s_sdata_in_sr_reg_n_0_[6]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[7]\: unisim.vcomponents.FDRE
      port map (
@@ -4960,7 +4950,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(7),
       Q => \i2s_sdata_in_sr_reg_n_0_[7]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[8]\: unisim.vcomponents.FDRE
      port map (
@@ -4968,7 +4958,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(8),
       Q => \i2s_sdata_in_sr_reg_n_0_[8]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_in_sr_reg[9]\: unisim.vcomponents.FDRE
      port map (
@@ -4976,7 +4966,7 @@ i2s_sdata_in_q_reg: unisim.vcomponents.FDRE
       CE => \i2s_sdata_in_sr[30]_i_1_n_0\,
       D => i2s_sdata_in_sr(9),
       Q => \i2s_sdata_in_sr_reg_n_0_[9]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 i2s_sdata_out_INST_0: unisim.vcomponents.LUT3
     generic map(
@@ -4988,19 +4978,20 @@ i2s_sdata_out_INST_0: unisim.vcomponents.LUT3
       I2 => i2s_sdata_out_int_reg_n_0,
       O => i2s_sdata_out
     );
-i2s_sdata_out_int_i_1: unisim.vcomponents.LUT5
+i2s_sdata_out_int_i_1: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"40FF4000"
+      INIT => X"2222E22200000000"
     )
         port map (
-      I0 => \i2s_fsm_state__0\(2),
-      I1 => \i2s_sdata_out_sr_reg_n_0_[31]\,
+      I0 => i2s_sdata_out_int_reg_n_0,
+      I1 => i2s_sdata_out_int_i_2_n_0,
       I2 => \m_axis_tvalid1__6\,
-      I3 => i2s_sdata_out_int_i_3_n_0,
-      I4 => i2s_sdata_out_int_reg_n_0,
+      I3 => \i2s_sdata_out_sr_reg_n_0_[31]\,
+      I4 => \i2s_fsm_state__0\(2),
+      I5 => i2s_en,
       O => i2s_sdata_out_int_i_1_n_0
     );
-i2s_sdata_out_int_i_3: unisim.vcomponents.LUT6
+i2s_sdata_out_int_i_2: unisim.vcomponents.LUT6
     generic map(
       INIT => X"00008A0000FF0000"
     )
@@ -5011,7 +5002,7 @@ i2s_sdata_out_int_i_3: unisim.vcomponents.LUT6
       I3 => \i2s_fsm_state__0\(0),
       I4 => \i2s_fsm_state__0\(2),
       I5 => \i2s_fsm_state__0\(1),
-      O => i2s_sdata_out_int_i_3_n_0
+      O => i2s_sdata_out_int_i_2_n_0
     );
 i2s_sdata_out_int_reg: unisim.vcomponents.FDRE
      port map (
@@ -5019,9 +5010,9 @@ i2s_sdata_out_int_reg: unisim.vcomponents.FDRE
       CE => '1',
       D => i2s_sdata_out_int_i_1_n_0,
       Q => i2s_sdata_out_int_reg_n_0,
-      R => m_axis_tvalid_i_1_n_0
+      R => '0'
     );
-i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
+i2s_sdata_out_int_reg_i_3: unisim.vcomponents.MUXF7
      port map (
       I0 => \i2s_sdata_out_sr_bit_cnt[0]_i_4_n_0\,
       I1 => \i2s_sdata_out_sr_bit_cnt[0]_i_5_n_0\,
@@ -5592,7 +5583,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr_bit_cnt(0),
       Q => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[0]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_bit_cnt_reg[1]\: unisim.vcomponents.FDRE
      port map (
@@ -5600,7 +5591,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr_bit_cnt(1),
       Q => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[1]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_bit_cnt_reg[2]\: unisim.vcomponents.FDRE
      port map (
@@ -5608,7 +5599,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr_bit_cnt(2),
       Q => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[2]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_bit_cnt_reg[3]\: unisim.vcomponents.FDRE
      port map (
@@ -5616,7 +5607,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr_bit_cnt(3),
       Q => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[3]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_bit_cnt_reg[4]\: unisim.vcomponents.FDRE
      port map (
@@ -5624,7 +5615,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr_bit_cnt(4),
       Q => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[4]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_bit_cnt_reg[5]\: unisim.vcomponents.FDRE
      port map (
@@ -5632,7 +5623,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr_bit_cnt(5),
       Q => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[5]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[0]\: unisim.vcomponents.FDRE
      port map (
@@ -5640,7 +5631,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(0),
       Q => \i2s_sdata_out_sr_reg_n_0_[0]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[10]\: unisim.vcomponents.FDRE
      port map (
@@ -5648,7 +5639,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(10),
       Q => \i2s_sdata_out_sr_reg_n_0_[10]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[11]\: unisim.vcomponents.FDRE
      port map (
@@ -5656,7 +5647,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(11),
       Q => \i2s_sdata_out_sr_reg_n_0_[11]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[12]\: unisim.vcomponents.FDRE
      port map (
@@ -5664,7 +5655,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(12),
       Q => \i2s_sdata_out_sr_reg_n_0_[12]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[13]\: unisim.vcomponents.FDRE
      port map (
@@ -5672,7 +5663,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(13),
       Q => \i2s_sdata_out_sr_reg_n_0_[13]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[14]\: unisim.vcomponents.FDRE
      port map (
@@ -5680,7 +5671,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(14),
       Q => \i2s_sdata_out_sr_reg_n_0_[14]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[15]\: unisim.vcomponents.FDRE
      port map (
@@ -5688,7 +5679,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(15),
       Q => \i2s_sdata_out_sr_reg_n_0_[15]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[16]\: unisim.vcomponents.FDRE
      port map (
@@ -5696,7 +5687,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(16),
       Q => \i2s_sdata_out_sr_reg_n_0_[16]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[17]\: unisim.vcomponents.FDRE
      port map (
@@ -5704,7 +5695,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(17),
       Q => \i2s_sdata_out_sr_reg_n_0_[17]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[18]\: unisim.vcomponents.FDRE
      port map (
@@ -5712,7 +5703,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(18),
       Q => \i2s_sdata_out_sr_reg_n_0_[18]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[19]\: unisim.vcomponents.FDRE
      port map (
@@ -5720,7 +5711,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(19),
       Q => \i2s_sdata_out_sr_reg_n_0_[19]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[1]\: unisim.vcomponents.FDRE
      port map (
@@ -5728,7 +5719,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(1),
       Q => \i2s_sdata_out_sr_reg_n_0_[1]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[20]\: unisim.vcomponents.FDRE
      port map (
@@ -5736,7 +5727,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(20),
       Q => \i2s_sdata_out_sr_reg_n_0_[20]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[21]\: unisim.vcomponents.FDRE
      port map (
@@ -5744,7 +5735,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(21),
       Q => \i2s_sdata_out_sr_reg_n_0_[21]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[22]\: unisim.vcomponents.FDRE
      port map (
@@ -5752,7 +5743,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(22),
       Q => \i2s_sdata_out_sr_reg_n_0_[22]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[23]\: unisim.vcomponents.FDRE
      port map (
@@ -5760,7 +5751,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(23),
       Q => \i2s_sdata_out_sr_reg_n_0_[23]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[24]\: unisim.vcomponents.FDRE
      port map (
@@ -5768,7 +5759,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(24),
       Q => \i2s_sdata_out_sr_reg_n_0_[24]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[25]\: unisim.vcomponents.FDRE
      port map (
@@ -5776,7 +5767,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(25),
       Q => \i2s_sdata_out_sr_reg_n_0_[25]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[26]\: unisim.vcomponents.FDRE
      port map (
@@ -5784,7 +5775,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(26),
       Q => \i2s_sdata_out_sr_reg_n_0_[26]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[27]\: unisim.vcomponents.FDRE
      port map (
@@ -5792,7 +5783,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(27),
       Q => \i2s_sdata_out_sr_reg_n_0_[27]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[28]\: unisim.vcomponents.FDRE
      port map (
@@ -5800,7 +5791,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(28),
       Q => \i2s_sdata_out_sr_reg_n_0_[28]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[29]\: unisim.vcomponents.FDRE
      port map (
@@ -5808,7 +5799,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(29),
       Q => \i2s_sdata_out_sr_reg_n_0_[29]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[2]\: unisim.vcomponents.FDRE
      port map (
@@ -5816,7 +5807,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(2),
       Q => \i2s_sdata_out_sr_reg_n_0_[2]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[30]\: unisim.vcomponents.FDRE
      port map (
@@ -5824,7 +5815,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(30),
       Q => \i2s_sdata_out_sr_reg_n_0_[30]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[31]\: unisim.vcomponents.FDRE
      port map (
@@ -5832,7 +5823,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(31),
       Q => \i2s_sdata_out_sr_reg_n_0_[31]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[3]\: unisim.vcomponents.FDRE
      port map (
@@ -5840,7 +5831,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(3),
       Q => \i2s_sdata_out_sr_reg_n_0_[3]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[4]\: unisim.vcomponents.FDRE
      port map (
@@ -5848,7 +5839,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(4),
       Q => \i2s_sdata_out_sr_reg_n_0_[4]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[5]\: unisim.vcomponents.FDRE
      port map (
@@ -5856,7 +5847,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(5),
       Q => \i2s_sdata_out_sr_reg_n_0_[5]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[6]\: unisim.vcomponents.FDRE
      port map (
@@ -5864,7 +5855,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(6),
       Q => \i2s_sdata_out_sr_reg_n_0_[6]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[7]\: unisim.vcomponents.FDRE
      port map (
@@ -5872,7 +5863,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(7),
       Q => \i2s_sdata_out_sr_reg_n_0_[7]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[8]\: unisim.vcomponents.FDRE
      port map (
@@ -5880,7 +5871,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(8),
       Q => \i2s_sdata_out_sr_reg_n_0_[8]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \i2s_sdata_out_sr_reg[9]\: unisim.vcomponents.FDRE
      port map (
@@ -5888,7 +5879,7 @@ i2s_sdata_out_int_reg_i_2: unisim.vcomponents.MUXF7
       CE => \i2s_sdata_out_sr_bit_cnt[5]_i_1_n_0\,
       D => i2s_sdata_out_sr(9),
       Q => \i2s_sdata_out_sr_reg_n_0_[9]\,
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 i2s_src_clk_to_aclk_sync: entity work.\icyradio_axi_i2s_0_xpm_cdc_handshake__parameterized0\
      port map (
@@ -5925,7 +5916,7 @@ i2s_src_resetn_a_reg: unisim.vcomponents.FDRE
       INIT => X"00E2"
     )
         port map (
-      I0 => i2s_sdata_in_q,
+      I0 => i2s_sdata_in,
       I1 => i2s_lb_en,
       I2 => i2s_sdata_out_int_reg_n_0,
       I3 => \i2s_fsm_state__0\(2),
@@ -6138,18 +6129,26 @@ i2s_src_resetn_a_reg: unisim.vcomponents.FDRE
       I1 => \i2s_fsm_state__0\(2),
       O => m_axis_tdata1_in(30)
     );
-\m_axis_tdata[31]_i_1\: unisim.vcomponents.LUT4
+\m_axis_tdata[31]_i_1\: unisim.vcomponents.LUT1
+    generic map(
+      INIT => X"1"
+    )
+        port map (
+      I0 => i2s_en,
+      O => \m_axis_tdata[31]_i_1_n_0\
+    );
+\m_axis_tdata[31]_i_2\: unisim.vcomponents.LUT4
     generic map(
       INIT => X"AABA"
     )
         port map (
-      I0 => m_axis_tvalid_i_3_n_0,
+      I0 => m_axis_tvalid_i_5_n_0,
       I1 => \i2s_fsm_state__0\(0),
       I2 => \i2s_fsm_state__0\(2),
       I3 => \i2s_fsm_state__0\(1),
-      O => \m_axis_tdata[31]_i_1_n_0\
+      O => \m_axis_tdata[31]_i_2_n_0\
     );
-\m_axis_tdata[31]_i_2\: unisim.vcomponents.LUT2
+\m_axis_tdata[31]_i_3\: unisim.vcomponents.LUT2
     generic map(
       INIT => X"2"
     )
@@ -6224,291 +6223,295 @@ i2s_src_resetn_a_reg: unisim.vcomponents.FDRE
 \m_axis_tdata_reg[0]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(0),
       Q => m_axis_tdata(0),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[10]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(10),
       Q => m_axis_tdata(10),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[11]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(11),
       Q => m_axis_tdata(11),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[12]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(12),
       Q => m_axis_tdata(12),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[13]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(13),
       Q => m_axis_tdata(13),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[14]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(14),
       Q => m_axis_tdata(14),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[15]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(15),
       Q => m_axis_tdata(15),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[16]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(16),
       Q => m_axis_tdata(16),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[17]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(17),
       Q => m_axis_tdata(17),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[18]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(18),
       Q => m_axis_tdata(18),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[19]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(19),
       Q => m_axis_tdata(19),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[1]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(1),
       Q => m_axis_tdata(1),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[20]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(20),
       Q => m_axis_tdata(20),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[21]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(21),
       Q => m_axis_tdata(21),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[22]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(22),
       Q => m_axis_tdata(22),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[23]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(23),
       Q => m_axis_tdata(23),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[24]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(24),
       Q => m_axis_tdata(24),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[25]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(25),
       Q => m_axis_tdata(25),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[26]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(26),
       Q => m_axis_tdata(26),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[27]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(27),
       Q => m_axis_tdata(27),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[28]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(28),
       Q => m_axis_tdata(28),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[29]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(29),
       Q => m_axis_tdata(29),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[2]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(2),
       Q => m_axis_tdata(2),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[30]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(30),
       Q => m_axis_tdata(30),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[31]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(31),
       Q => m_axis_tdata(31),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[3]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(3),
       Q => m_axis_tdata(3),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[4]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(4),
       Q => m_axis_tdata(4),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[5]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(5),
       Q => m_axis_tdata(5),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[6]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(6),
       Q => m_axis_tdata(6),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[7]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(7),
       Q => m_axis_tdata(7),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[8]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(8),
       Q => m_axis_tdata(8),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
 \m_axis_tdata_reg[9]\: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
-      CE => \m_axis_tdata[31]_i_1_n_0\,
+      CE => \m_axis_tdata[31]_i_2_n_0\,
       D => m_axis_tdata1_in(9),
       Q => m_axis_tdata(9),
-      R => m_axis_tvalid_i_1_n_0
+      R => \m_axis_tdata[31]_i_1_n_0\
     );
-m_axis_tvalid_i_1: unisim.vcomponents.LUT1
+m_axis_tvalid_i_1: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"1"
+      INIT => X"EEFE220200000000"
     )
         port map (
-      I0 => i2s_en,
+      I0 => \^m_axis_tvalid_reg_0\,
+      I1 => m_axis_tvalid_i_2_n_0,
+      I2 => m_axis_tvalid_i_3_n_0,
+      I3 => m_axis_tvalid_i_4_n_0,
+      I4 => m_axis_tvalid_i_5_n_0,
+      I5 => i2s_en,
       O => m_axis_tvalid_i_1_n_0
     );
-m_axis_tvalid_i_2: unisim.vcomponents.LUT6
+m_axis_tvalid_i_2: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"AAAAEFFFAAAA2000"
+      INIT => X"1F101010"
     )
         port map (
-      I0 => m_axis_tvalid_i_3_n_0,
-      I1 => m_axis_tvalid_i_4_n_0,
-      I2 => m_axis_tvalid_i_5_n_0,
-      I3 => \m_axis_tvalid0__3\,
-      I4 => m_axis_tvalid_i_7_n_0,
-      I5 => \^m_axis_tvalid_reg_0\,
+      I0 => \i2s_fsm_state__0\(0),
+      I1 => \i2s_fsm_state__0\(1),
+      I2 => \i2s_fsm_state__0\(2),
+      I3 => m_axis_tready,
+      I4 => \^m_axis_tvalid_reg_0\,
       O => m_axis_tvalid_i_2_n_0
     );
 m_axis_tvalid_i_3: unisim.vcomponents.LUT6
     generic map(
-      INIT => X"0100000000000000"
+      INIT => X"8000000000000000"
     )
         port map (
-      I0 => \i2s_fsm_state__0\(2),
-      I1 => \FSM_sequential_i2s_fsm_state[2]_i_4_n_0\,
-      I2 => p_0_in_0,
-      I3 => \m_axis_tvalid1__6\,
-      I4 => \m_axis_tvalid0__3\,
-      I5 => \i2s_bclk_rising__0\,
+      I0 => m_axis_tvalid_i_6_n_0,
+      I1 => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[3]\,
+      I2 => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[4]\,
+      I3 => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[2]\,
+      I4 => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[1]\,
+      I5 => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[0]\,
       O => m_axis_tvalid_i_3_n_0
     );
 m_axis_tvalid_i_4: unisim.vcomponents.LUT4
@@ -6522,7 +6525,20 @@ m_axis_tvalid_i_4: unisim.vcomponents.LUT4
       I3 => \i2s_fsm_state__0\(2),
       O => m_axis_tvalid_i_4_n_0
     );
-m_axis_tvalid_i_5: unisim.vcomponents.LUT3
+m_axis_tvalid_i_5: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"0100000000000000"
+    )
+        port map (
+      I0 => \i2s_fsm_state__0\(2),
+      I1 => \FSM_sequential_i2s_fsm_state[2]_i_4_n_0\,
+      I2 => p_0_in_0,
+      I3 => \m_axis_tvalid1__6\,
+      I4 => \m_axis_tvalid0__3\,
+      I5 => \i2s_bclk_rising__0\,
+      O => m_axis_tvalid_i_5_n_0
+    );
+m_axis_tvalid_i_6: unisim.vcomponents.LUT3
     generic map(
       INIT => X"A8"
     )
@@ -6530,9 +6546,9 @@ m_axis_tvalid_i_5: unisim.vcomponents.LUT3
       I0 => \i2s_fsm_state__0\(0),
       I1 => \i2s_fsm_state__0\(1),
       I2 => \i2s_fsm_state__0\(2),
-      O => m_axis_tvalid_i_5_n_0
+      O => m_axis_tvalid_i_6_n_0
     );
-m_axis_tvalid_i_6: unisim.vcomponents.LUT5
+m_axis_tvalid_i_7: unisim.vcomponents.LUT5
     generic map(
       INIT => X"80000000"
     )
@@ -6544,25 +6560,13 @@ m_axis_tvalid_i_6: unisim.vcomponents.LUT5
       I4 => \i2s_sdata_in_sr_bit_cnt_reg_n_0_[3]\,
       O => \m_axis_tvalid0__3\
     );
-m_axis_tvalid_i_7: unisim.vcomponents.LUT5
-    generic map(
-      INIT => X"1F101010"
-    )
-        port map (
-      I0 => \i2s_fsm_state__0\(0),
-      I1 => \i2s_fsm_state__0\(1),
-      I2 => \i2s_fsm_state__0\(2),
-      I3 => m_axis_tready,
-      I4 => \^m_axis_tvalid_reg_0\,
-      O => m_axis_tvalid_i_7_n_0
-    );
 m_axis_tvalid_reg: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
       CE => '1',
-      D => m_axis_tvalid_i_2_n_0,
+      D => m_axis_tvalid_i_1_n_0,
       Q => \^m_axis_tvalid_reg_0\,
-      R => m_axis_tvalid_i_1_n_0
+      R => '0'
     );
 s_axi_arready_INST_0: unisim.vcomponents.LUT1
     generic map(
@@ -7139,20 +7143,81 @@ s_axi_rvalid_reg: unisim.vcomponents.FDRE
       Q => \^s_axi_rvalid_reg_0\,
       R => p_0_in
     );
-s_axis_tready_i_1: unisim.vcomponents.LUT6
+s_axis_tready_i_1: unisim.vcomponents.LUT5
     generic map(
-      INIT => X"FFFF02FFFFFF0200"
+      INIT => X"FECE0000"
     )
         port map (
-      I0 => s_axis_tready023_out,
-      I1 => s_axis_tready_i_3_n_0,
-      I2 => \i2s_fsm_state__0\(0),
+      I0 => \^s_axis_tready_reg_0\,
+      I1 => s_axis_tready_i_2_n_0,
+      I2 => s_axis_tready_i_3_n_0,
       I3 => s_axis_tready_i_4_n_0,
-      I4 => s_axis_tready_i_5_n_0,
-      I5 => \^s_axis_tready_reg_0\,
+      I4 => i2s_en,
       O => s_axis_tready_i_1_n_0
     );
 s_axis_tready_i_2: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"0000000100000000"
+    )
+        port map (
+      I0 => s_axis_tready_i_5_n_0,
+      I1 => \FSM_sequential_i2s_fsm_state[2]_i_4_n_0\,
+      I2 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[1]\,
+      I3 => \i2s_fsm_state__0\(2),
+      I4 => \i2s_sdata_out_sr_bit_cnt[0]_i_2_n_0\,
+      I5 => p_27_in,
+      O => s_axis_tready_i_2_n_0
+    );
+s_axis_tready_i_3: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"1111F1111111F000"
+    )
+        port map (
+      I0 => \i2s_fsm_state__0\(0),
+      I1 => \i2s_fsm_state__0\(1),
+      I2 => \^s_axis_tready_reg_0\,
+      I3 => s_axis_tvalid,
+      I4 => \i2s_fsm_state__0\(2),
+      I5 => s_axis_tready023_out,
+      O => s_axis_tready_i_3_n_0
+    );
+s_axis_tready_i_4: unisim.vcomponents.LUT6
+    generic map(
+      INIT => X"0000000000000001"
+    )
+        port map (
+      I0 => \i2s_fsm_state__0\(0),
+      I1 => \i2s_fsm_state__0\(2),
+      I2 => \i2s_fsm_state__0\(1),
+      I3 => s_axis_tready_i_5_n_0,
+      I4 => \i2s_sdata_out_sr_bit_cnt[4]_i_2_n_0\,
+      I5 => \^s_axis_tready_reg_0\,
+      O => s_axis_tready_i_4_n_0
+    );
+s_axis_tready_i_5: unisim.vcomponents.LUT4
+    generic map(
+      INIT => X"FFFE"
+    )
+        port map (
+      I0 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[5]\,
+      I1 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[4]\,
+      I2 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[3]\,
+      I3 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[2]\,
+      O => s_axis_tready_i_5_n_0
+    );
+s_axis_tready_i_6: unisim.vcomponents.LUT5
+    generic map(
+      INIT => X"01000000"
+    )
+        port map (
+      I0 => i2s_bclk_i_6_n_0,
+      I1 => i2s_bclk_i_5_n_0,
+      I2 => i2s_bclk_i_4_n_0,
+      I3 => i2s_bclk_i_3_n_0,
+      I4 => \^i2s_bclk_reg_0\,
+      O => p_27_in
+    );
+s_axis_tready_i_7: unisim.vcomponents.LUT6
     generic map(
       INIT => X"0000000000000001"
     )
@@ -7165,71 +7230,13 @@ s_axis_tready_i_2: unisim.vcomponents.LUT6
       I5 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[5]\,
       O => s_axis_tready023_out
     );
-s_axis_tready_i_3: unisim.vcomponents.LUT2
-    generic map(
-      INIT => X"E"
-    )
-        port map (
-      I0 => \i2s_fsm_state__0\(2),
-      I1 => \i2s_fsm_state__0\(1),
-      O => s_axis_tready_i_3_n_0
-    );
-s_axis_tready_i_4: unisim.vcomponents.LUT6
-    generic map(
-      INIT => X"1111F1111111F000"
-    )
-        port map (
-      I0 => \i2s_fsm_state__0\(0),
-      I1 => \i2s_fsm_state__0\(1),
-      I2 => \^s_axis_tready_reg_0\,
-      I3 => s_axis_tvalid,
-      I4 => \i2s_fsm_state__0\(2),
-      I5 => s_axis_tready023_out,
-      O => s_axis_tready_i_4_n_0
-    );
-s_axis_tready_i_5: unisim.vcomponents.LUT6
-    generic map(
-      INIT => X"0000000100000000"
-    )
-        port map (
-      I0 => s_axis_tready_i_6_n_0,
-      I1 => \FSM_sequential_i2s_fsm_state[2]_i_4_n_0\,
-      I2 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[1]\,
-      I3 => \i2s_fsm_state__0\(2),
-      I4 => \i2s_sdata_out_sr_bit_cnt[0]_i_2_n_0\,
-      I5 => p_27_in,
-      O => s_axis_tready_i_5_n_0
-    );
-s_axis_tready_i_6: unisim.vcomponents.LUT4
-    generic map(
-      INIT => X"FFFE"
-    )
-        port map (
-      I0 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[5]\,
-      I1 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[4]\,
-      I2 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[3]\,
-      I3 => \i2s_sdata_out_sr_bit_cnt_reg_n_0_[2]\,
-      O => s_axis_tready_i_6_n_0
-    );
-s_axis_tready_i_7: unisim.vcomponents.LUT5
-    generic map(
-      INIT => X"01000000"
-    )
-        port map (
-      I0 => i2s_bclk_i_6_n_0,
-      I1 => i2s_bclk_i_5_n_0,
-      I2 => i2s_bclk_i_4_n_0,
-      I3 => i2s_bclk_i_3_n_0,
-      I4 => \^i2s_bclk_reg_0\,
-      O => p_27_in
-    );
 s_axis_tready_reg: unisim.vcomponents.FDRE
      port map (
       C => i2s_src_clk,
       CE => '1',
       D => s_axis_tready_i_1_n_0,
       Q => \^s_axis_tready_reg_0\,
-      R => m_axis_tvalid_i_1_n_0
+      R => '0'
     );
 sync_aclk_to_i2s_src_clk_src_req_i_1: unisim.vcomponents.LUT1
     generic map(

@@ -188,7 +188,7 @@ initial
         #12;
 
         // Configure registers
-        axi_write(32'h10, 3); // (SCK divider) / 2 - 1
+        axi_write(32'h10, (0 << 16) | (1 << 0)); // SCK Divider (HIGH duration 0, LOW duration 1)
     end
 
 always
@@ -220,22 +220,22 @@ always @(posedge aclk)
 
         if(sim_periods == 100)
             begin
-                axi_write(32'h04, (0 << 8) | (1 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 0, enable clock & serdes
+                axi_write(32'h04, (0 << 8) | (0 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 0, enable clock & serdes
             end
 
         if(sim_periods == 600)
             begin
-                axi_write(32'h04, (0 << 8) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 1, enable clock & serdes
+                axi_write(32'h04, (0 << 8) | (0 << 4) | (1 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 1, enable clock & serdes
             end
 
         if(sim_periods == 1100)
             begin
-                axi_write(32'h04, (0 << 8) | (1 << 4) | (2 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 2, enable clock & serdes
+                axi_write(32'h04, (0 << 8) | (0 << 4) | (2 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 2, enable clock & serdes
             end
 
         if(sim_periods == 1600)
             begin
-                axi_write(32'h04, (0 << 8) | (1 << 4) | (3 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 3, enable clock & serdes
+                axi_write(32'h04, (0 << 8) | (0 << 4) | (3 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 3, enable clock & serdes
             end
 
         if(sim_periods == 2100)
@@ -245,14 +245,14 @@ always @(posedge aclk)
 
         if(sim_periods == 2600)
             begin
-                axi_write(32'h04, (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
+                axi_write(32'h04, (0 << 8) | (3 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
             end
 
         if(sim_periods == 5100)
             begin
                 // Multiple writes no pause
                 axi_read(32'h18, dummy);
-                axi_write(32'h04, (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
+                axi_write(32'h04, (0 << 8) | (3 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
                 axi_write(32'h14, 32'h000001A5);
                 axi_write(32'h14, 32'h0000015A);
             end
@@ -261,7 +261,7 @@ always @(posedge aclk)
             begin
                 // Multiple reads no pause
                 axi_read(32'h18, dummy);
-                axi_write(32'h04, (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
+                axi_write(32'h04, (0 << 8) | (3 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
                 axi_write(32'h14, (1 << 9));
                 axi_write(32'h14, (1 << 9));
             end

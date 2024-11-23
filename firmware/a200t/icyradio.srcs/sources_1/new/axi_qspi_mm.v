@@ -178,9 +178,10 @@ localparam S_AXI_LITE_ADDR_LSB = 2;
 localparam S_AXI_FULL_ADDR_LSB = 3;
 localparam NUM_IRQS = 7;
 
-localparam QSPI_IO_MODE_SINGLE = 3'd1;
-localparam QSPI_IO_MODE_DUAL = 3'd2;
-localparam QSPI_IO_MODE_QUAD = 3'd4;
+localparam QSPI_IO_MODE_SINGLE = 2'b00;
+localparam QSPI_IO_MODE_3W = 2'b01;
+localparam QSPI_IO_MODE_DUAL = 2'b10;
+localparam QSPI_IO_MODE_QUAD = 2'b11;
 
 localparam SPI_FSM_STATE_WAIT_XFER_REQ = 2'd0;
 localparam SPI_FSM_STATE_WAIT_SCK_SYNC = 2'd1;
@@ -216,11 +217,11 @@ wire                    spi_io0_t;
 wire                    spi_io1_t;
 wire                    spi_io2_t;
 wire                    spi_io3_t;
-reg               [3:0] spi_io_i;
+wire              [3:0] spi_io_i;
 reg               [3:0] spi_io_o;
 reg               [3:0] spi_io_t;
-reg               [2:0] spi_io_mode; // SPI IO Mode (Single, Dual, Quad)
-reg               [2:0] spi_io_mode_q; // Buffered SPI IO Mode
+reg               [1:0] spi_io_mode; // SPI IO Mode (Single, 3-Wire, Dual, Quad)
+reg               [1:0] spi_io_mode_q; // Buffered SPI IO Mode
 reg               [1:0] spi_mode; // SPI mode (0, 1, 2, 3)
 wire                    spi_cpol = spi_mode[1]; // SPI Clock Polarity
 wire                    spi_cpha = spi_mode[0]; // SPI Clock Phase
@@ -232,7 +233,8 @@ reg                     spi_idle_q; // Buffered SPI SERDES FSM idle
 reg                     spi_dir; // SPI SERDES current direction (0 = write, 1 = read)
 reg                     spi_rd_req; // Request a SPI read
 reg                     spi_rd_req_ack; // SPI read request acknowledge
-reg               [4:0] spi_sr_bit_cnt; // Number of bits left in the shift register
+reg                     spi_sr_eot; // SPI shift register end of transfer (about to be empty)
+reg               [3:0] spi_sr_bit_cnt; // Number of bits left in the shift register
 reg               [7:0] spi_sr; // SPI shift register
 reg                     spi_sr_in_buf_valid; // SPI shift register input buffer data valid
 reg                     spi_sr_in_buf_valid_q; // Buffered SPI shift register input buffer data valid
@@ -245,18 +247,18 @@ reg                     spi_mmio_en; // Enable AXI-Full control of the SPI SERDE
 reg                     spi_mmio_en_req; // Request AXI-Full control of the SPI SERDES (0 = request disable, 1 = request enable)
 reg               [3:0] spi_mmio_fsm_state; // AXI-Full FSM state
 reg               [3:0] spi_mmio_fsm_state_next; // AXI-Full FSM next state
-reg               [2:0] spi_mmio_rd_instr_io_mode; // SPI IO Mode to use during the instruction phase
+reg               [1:0] spi_mmio_rd_instr_io_mode; // SPI IO Mode to use during the instruction phase
 reg               [7:0] spi_mmio_rd_instr; // Instruction to send to the flash during a read transfer
-reg               [2:0] spi_mmio_addr_io_mode; // SPI IO Mode to use during the address phase
+reg               [1:0] spi_mmio_addr_io_mode; // SPI IO Mode to use during the address phase
 reg               [1:0] spi_mmio_addr_size; // Total address transfers (1 transfer = 1 byte)
 reg               [1:0] spi_mmio_addr_rem; // Remaining address transfers (1 transfer = 1 byte)
 reg               [7:0] spi_mmio_addr_next; // Next address byte to be transferred
 reg                     spi_mmio_mode_bits_en; // Send mode bits, otherwise skip straight to the dummy phase
 reg               [7:0] spi_mmio_mode_bits; // Data to send out during the mode transfer (usually 0xAx for SPI Flashes)
-reg               [2:0] spi_mmio_dummy_io_mode; // SPI IO Mode to use during the dummy phase
+reg               [1:0] spi_mmio_dummy_io_mode; // SPI IO Mode to use during the dummy phase
 reg               [1:0] spi_mmio_dummy_size; // Total dummy cycles (1 cycle = 1 byte)
 reg               [1:0] spi_mmio_dummy_rem; // Remaining dummy cycles (1 cycle = 1 byte)
-reg               [2:0] spi_mmio_data_io_mode; // SPI IO Mode to use during the data phase
+reg               [1:0] spi_mmio_data_io_mode; // SPI IO Mode to use during the data phase
 reg  [NUM_SLAVES - 1:0] spi_mmio_cs_mask; // CS mask (1 = CS is enabled, 0 = CS is disabled)
 reg               [7:0] spi_mmio_cs_high_wait; // Total CS high cycles before lowering again (1 cycle = 1 aclk cycle)
 reg               [7:0] spi_mmio_cs_low_wait; // Total CS low cycles before sending data (1 cycle = 1 aclk cycle)
@@ -270,11 +272,16 @@ reg              [31:0] spi_mmio_cont_rd_req_cnt_buf; // Metric counter: Number 
 reg                     spi_sck_int; // SPI SCK internal signal (always toggles)
 reg                     spi_sck_div_en; // Enable SCK divider
 reg  [SCK_DIV_SZ - 1:0] spi_sck_div_cnt; // SCK divider counter
-reg  [SCK_DIV_SZ - 1:0] spi_sck_div; // SCK divider ratio (counter top value)
-wire                    spi_sck_toggle = (spi_sck_div_cnt == spi_sck_div) & spi_sck_div_en; // SCK will toggle on next aclk cycle
-wire                    spi_sck_rising = spi_sck_toggle & ~spi_sck_int; // SCK rising edge will happen on next aclk cycle
-wire                    spi_sck_falling = spi_sck_toggle & spi_sck_int; // SCK falling edge will happen on next aclk cycle
+reg  [SCK_DIV_SZ - 1:0] spi_sck_div_h; // SCK divider ratio (counter top value when SCK is high)
+reg  [SCK_DIV_SZ - 1:0] spi_sck_div_l; // SCK divider ratio (counter top value when SCK is low)
+wire                    spi_sck_rising = (spi_sck_div_cnt == spi_sck_div_l) & spi_sck_div_en & ~spi_sck_int; // SCK rising edge will happen on next aclk cycle
+wire                    spi_sck_falling = (spi_sck_div_cnt == spi_sck_div_h) & spi_sck_div_en & spi_sck_int; // SCK falling edge will happen on next aclk cycle
+wire                    spi_sck_toggle = spi_sck_rising | spi_sck_falling; // SCK will toggle on next aclk cycle
 
+assign spi_io_i[0] = spi_io0_i;
+assign spi_io_i[1] = spi_io1_i;
+assign spi_io_i[2] = spi_io2_i;
+assign spi_io_i[3] = spi_io3_i;
 assign spi_io0_o = spi_io_o[0];
 assign spi_io1_o = spi_io_o[1];
 assign spi_io2_o = spi_io_o[2];
@@ -387,14 +394,14 @@ always @(posedge aclk)
             begin
                 spi_sck_o <= spi_cpol; // SCK idle state = CPOL
 
-                spi_io_i <= 4'b0000;
                 spi_io_o <= 4'b0000;
                 spi_io_t <= 4'b1111;
 
-                spi_io_mode_q <= 3'd0;
+                spi_io_mode_q <= 2'b00;
                 spi_fsm_state <= SPI_FSM_STATE_WAIT_XFER_REQ;
                 spi_dir <= 1'b0;
                 spi_rd_req_ack <= 1'b0;
+                spi_sr_eot <= 1'b0;
                 spi_sr_bit_cnt <= 4'd0;
                 spi_sr <= 8'h00;
                 spi_sr_in_buf_valid <= 1'b0;
@@ -403,8 +410,6 @@ always @(posedge aclk)
             end
         else
             begin
-                spi_io_i <= {spi_io3_i, spi_io2_i, spi_io1_i, spi_io0_i};
-
                 if(spi_sr_in_buf_valid && spi_sr_in_buf_ready)
                     spi_sr_in_buf_valid <= 1'b0;
 
@@ -412,6 +417,14 @@ always @(posedge aclk)
                     spi_sr_out_buf_ready <= 1'b0;
 
                 spi_rd_req_ack <= spi_rd_req_ack & spi_rd_req; // Clear the read request acknowledge when the read request is cleared
+
+                case(spi_io_mode_q)
+                    QSPI_IO_MODE_SINGLE: spi_sr_eot <= (spi_sr_bit_cnt - 4'd1) == 4'd0;
+                    QSPI_IO_MODE_3W:     spi_sr_eot <= (spi_sr_bit_cnt - 4'd1) == 4'd0;
+                    QSPI_IO_MODE_DUAL:   spi_sr_eot <= (spi_sr_bit_cnt - 4'd2) == 4'd0;
+                    QSPI_IO_MODE_QUAD:   spi_sr_eot <= (spi_sr_bit_cnt - 4'd4) == 4'd0;
+                    default:             spi_sr_eot <= 1'b0;
+                endcase
 
                 case(spi_fsm_state)
                     SPI_FSM_STATE_WAIT_XFER_REQ:
@@ -472,6 +485,7 @@ always @(posedge aclk)
                                         begin
                                             case(spi_io_mode_q)
                                                 QSPI_IO_MODE_SINGLE: spi_io_t <= 4'b1110; // MOSI is always an output
+                                                QSPI_IO_MODE_3W:     spi_io_t <= 4'b1111; // MOSI is input in 3-wire mode
                                                 QSPI_IO_MODE_DUAL:   spi_io_t <= 4'b1111;
                                                 QSPI_IO_MODE_QUAD:   spi_io_t <= 4'b1111;
                                                 default:             spi_io_t <= 4'b1111;
@@ -481,6 +495,7 @@ always @(posedge aclk)
                                         begin
                                             case(spi_io_mode_q)
                                                 QSPI_IO_MODE_SINGLE: spi_io_t <= 4'b1110;
+                                                QSPI_IO_MODE_3W:     spi_io_t <= 4'b1110;
                                                 QSPI_IO_MODE_DUAL:   spi_io_t <= 4'b1100;
                                                 QSPI_IO_MODE_QUAD:   spi_io_t <= 4'b0000;
                                                 default:             spi_io_t <= 4'b1111;
@@ -499,6 +514,7 @@ always @(posedge aclk)
                                                 begin
                                                     case(spi_io_mode_q)
                                                         QSPI_IO_MODE_SINGLE: spi_io_o[0] <= spi_sr[7];
+                                                        QSPI_IO_MODE_3W:     spi_io_o[0] <= spi_sr[7];
                                                         QSPI_IO_MODE_DUAL:   spi_io_o[1:0] <= spi_sr[7:6];
                                                         QSPI_IO_MODE_QUAD:   spi_io_o[3:0] <= spi_sr[7:4];
                                                         default:             spi_io_o[3:0] <= 4'b0000;
@@ -520,13 +536,20 @@ always @(posedge aclk)
                                 begin
                                     // Bit count is not checked because if it is zero, we never end up here
                                     // We quit the active state when the bit count reaches zero on the setup edge
-                                    spi_sr_bit_cnt <= spi_sr_bit_cnt - spi_io_mode_q;
+                                    case(spi_io_mode_q)
+                                        QSPI_IO_MODE_SINGLE: spi_sr_bit_cnt <= spi_sr_bit_cnt - 4'd1;
+                                        QSPI_IO_MODE_3W:     spi_sr_bit_cnt <= spi_sr_bit_cnt - 4'd1;
+                                        QSPI_IO_MODE_DUAL:   spi_sr_bit_cnt <= spi_sr_bit_cnt - 4'd2;
+                                        QSPI_IO_MODE_QUAD:   spi_sr_bit_cnt <= spi_sr_bit_cnt - 4'd4;
+                                        default:             spi_sr_bit_cnt <= spi_sr_bit_cnt;
+                                    endcase
 
                                     // Always shift the data in, even if we are at end of transfer
                                     if(spi_lsb_first)
                                         begin
                                             case(spi_io_mode_q)
                                                 QSPI_IO_MODE_SINGLE: spi_sr <= {spi_io_i[1], spi_sr[7:1]};
+                                                QSPI_IO_MODE_3W:     spi_sr <= {spi_io_i[0], spi_sr[7:1]};
                                                 QSPI_IO_MODE_DUAL:   spi_sr <= {spi_io_i[1:0], spi_sr[7:2]};
                                                 QSPI_IO_MODE_QUAD:   spi_sr <= {spi_io_i[3:0], spi_sr[7:4]};
                                                 default:             spi_sr <= spi_sr;
@@ -536,13 +559,14 @@ always @(posedge aclk)
                                         begin
                                             case(spi_io_mode_q)
                                                 QSPI_IO_MODE_SINGLE: spi_sr <= {spi_sr[6:0], spi_io_i[1]};
+                                                QSPI_IO_MODE_3W:     spi_sr <= {spi_sr[6:0], spi_io_i[0]};
                                                 QSPI_IO_MODE_DUAL:   spi_sr <= {spi_sr[5:0], spi_io_i[1:0]};
                                                 QSPI_IO_MODE_QUAD:   spi_sr <= {spi_sr[3:0], spi_io_i[3:0]};
                                                 default:             spi_sr <= spi_sr;
                                             endcase
                                         end
 
-                                    if(spi_sr_bit_cnt - spi_io_mode_q == 0) // If we are finishing the transfer, try to load more data
+                                    if(spi_sr_eot) // If we are finishing the transfer, try to load more data
                                         begin
                                             if((spi_dir || spi_io_mode_q == QSPI_IO_MODE_SINGLE) && !spi_sr_in_buf_valid)
                                                 begin
@@ -551,6 +575,7 @@ always @(posedge aclk)
                                                         begin
                                                             case(spi_io_mode_q)
                                                                 QSPI_IO_MODE_SINGLE: spi_sr_in_buf <= {spi_io_i[1], spi_sr[7:1]};
+                                                                QSPI_IO_MODE_3W:     spi_sr_in_buf <= {spi_io_i[0], spi_sr[7:1]};
                                                                 QSPI_IO_MODE_DUAL:   spi_sr_in_buf <= {spi_io_i[1:0], spi_sr[7:2]};
                                                                 QSPI_IO_MODE_QUAD:   spi_sr_in_buf <= {spi_io_i[3:0], spi_sr[7:4]};
                                                                 default:             spi_sr_in_buf <= spi_sr;
@@ -560,6 +585,7 @@ always @(posedge aclk)
                                                         begin
                                                             case(spi_io_mode_q)
                                                                 QSPI_IO_MODE_SINGLE: spi_sr_in_buf <= {spi_sr[6:0], spi_io_i[1]};
+                                                                QSPI_IO_MODE_3W:     spi_sr_in_buf <= {spi_sr[6:0], spi_io_i[0]};
                                                                 QSPI_IO_MODE_DUAL:   spi_sr_in_buf <= {spi_sr[5:0], spi_io_i[1:0]};
                                                                 QSPI_IO_MODE_QUAD:   spi_sr_in_buf <= {spi_sr[3:0], spi_io_i[3:0]};
                                                                 default:             spi_sr_in_buf <= spi_sr;
@@ -650,7 +676,8 @@ always @(posedge aclk)
                 spi_mmio_cont_rd_req_cnt_buf <= 32'd0;
 
                 spi_sck_div_en <= 1'b0;
-                spi_sck_div <= {SCK_DIV_SZ{1'b0}};
+                spi_sck_div_h <= {SCK_DIV_SZ{1'b0}};
+                spi_sck_div_l <= {SCK_DIV_SZ{1'b0}};
 
                 // Interrupts
                 irq_enabled <= {NUM_IRQS{1'b0}};
@@ -724,16 +751,16 @@ always @(posedge aclk)
 
                         case(s_axi_lite_araddr[S_AXI_LITE_ASZ - 1:S_AXI_LITE_ADDR_LSB])
                             4'h0:    s_axi_lite_rdata <= {16'd1, 8'd0, 8'd0}; // IP Version
-                            4'h1:    s_axi_lite_rdata <= {1'd0, spi_io_mode_q, 4'd0, spi_fsm_state, spi_dir, spi_idle, 2'd0, spi_sr_in_buf_valid, spi_sr_out_buf_valid, 2'd0, spi_mmio_en, spi_mmio_en_req, 3'd0, spi_lsb_first, 1'd0, spi_io_mode, spi_mode, spi_en, spi_sck_div_en};
+                            4'h1:    s_axi_lite_rdata <= {2'd0, spi_io_mode_q, 4'd0, spi_fsm_state, spi_dir, spi_idle, 2'd0, spi_sr_in_buf_valid, spi_sr_out_buf_valid, 2'd0, spi_mmio_en, spi_mmio_en_req, 3'd0, spi_lsb_first, 2'd0, spi_io_mode, spi_mode, spi_en, spi_sck_div_en};
                             4'h2:    s_axi_lite_rdata <= {{(S_AXI_LITE_DSZ - NUM_IRQS){1'b0}}, irq_enabled}; // IRQ Enabled
                             4'h3:    s_axi_lite_rdata <= {{(S_AXI_LITE_DSZ - NUM_IRQS){1'b0}}, irq_pend}; // IRQ Pending
-                            4'h4:    s_axi_lite_rdata <= {{(S_AXI_LITE_DSZ - SCK_DIV_SZ){1'b0}}, spi_sck_div};
+                            4'h4:    s_axi_lite_rdata <= {{(S_AXI_LITE_DSZ / 2 - SCK_DIV_SZ){1'b0}}, spi_sck_div_h, {(S_AXI_LITE_DSZ / 2 - SCK_DIV_SZ){1'b0}}, spi_sck_div_l};
                             4'h5:    s_axi_lite_rdata <= {22'd0, spi_rd_req, spi_sr_out_buf_valid, spi_sr_out_buf};
                             4'h6:    {spi_sr_in_buf_ready, s_axi_lite_rdata} <= {spi_sr_in_buf_valid & ~spi_mmio_en, spi_sr_in_buf_valid, 23'd0, spi_sr_in_buf};
                             4'h7:    s_axi_lite_rdata <= {24'd0, spi_sr};
                             4'h8:    s_axi_lite_rdata <= {{(S_AXI_LITE_DSZ - NUM_SLAVES){1'b0}}, spi_ss_o};
                             4'h9:    s_axi_lite_rdata <= {5'd0, spi_mmio_cont_read_ready, spi_mmio_cont_read_en, spi_mmio_mode_bits_en, spi_mmio_mode_bits, spi_mmio_dummy_rem, spi_mmio_dummy_size, spi_mmio_addr_rem, spi_mmio_addr_size, spi_mmio_rd_instr};
-                            4'hA:    s_axi_lite_rdata <= {spi_mmio_cs_low_wait, spi_mmio_cs_high_wait, 1'b0, spi_mmio_data_io_mode, 1'b0, spi_mmio_dummy_io_mode, 1'b0, spi_mmio_addr_io_mode, 1'b0, spi_mmio_rd_instr_io_mode};
+                            4'hA:    s_axi_lite_rdata <= {spi_mmio_cs_low_wait, spi_mmio_cs_high_wait, 8'd0, spi_mmio_data_io_mode, spi_mmio_dummy_io_mode, spi_mmio_addr_io_mode, spi_mmio_rd_instr_io_mode};
                             4'hB:    s_axi_lite_rdata <= {spi_mmio_fsm_state_next, spi_mmio_fsm_state, 16'd0, spi_mmio_cs_wait_rem};
                             4'hC:    s_axi_lite_rdata <= {{(S_AXI_LITE_DSZ - NUM_SLAVES){1'b0}}, spi_mmio_cs_mask};
                             4'hD:    {spi_mmio_cont_rd_req_cnt, spi_mmio_rd_req_cnt, spi_mmio_cont_rd_req_cnt_buf, s_axi_lite_rdata} <= {32'd0, 32'd0, spi_mmio_cont_rd_req_cnt, spi_mmio_rd_req_cnt};
@@ -792,8 +819,9 @@ always @(posedge aclk)
                                             if(!spi_mmio_en)
                                                 begin
                                                     // IO Mode is allowed to change as long as the MMIO mode is disabled because it is buffered (spi_io_mode_q)
-                                                    case(s_axi_lite_wdata[6:4])
+                                                    case(s_axi_lite_wdata[5:4])
                                                         QSPI_IO_MODE_SINGLE: spi_io_mode <= QSPI_IO_MODE_SINGLE;
+                                                        QSPI_IO_MODE_3W:     spi_io_mode <= QSPI_IO_MODE_3W;
                                                         QSPI_IO_MODE_DUAL:   spi_io_mode <= QSPI_IO_MODE_DUAL;
                                                         QSPI_IO_MODE_QUAD:   spi_io_mode <= QSPI_IO_MODE_QUAD;
                                                         default:             spi_io_mode <= spi_io_mode;
@@ -821,7 +849,7 @@ always @(posedge aclk)
 
                                     // if(s_axi_lite_wstrb[3]) // s_axi_lite_wdata[31:24]
                                     //     begin
-                                    //         // s_axi_lite_wdata[30:28] is spi_io_mode_q
+                                    //         // s_axi_lite_wdata[29:28] is spi_io_mode_q
                                     //     end
                                 end
                             4'h2: // Register 2
@@ -893,30 +921,27 @@ always @(posedge aclk)
                                             if(s_axi_lite_wstrb[0]) // s_axi_lite_wdata[7:0]
                                                 begin
                                                     if(SCK_DIV_SZ > 8)
-                                                        spi_sck_div[7:0] <= s_axi_lite_wdata[7:0];
+                                                        spi_sck_div_l[7:0] <= s_axi_lite_wdata[7:0];
                                                     else
-                                                        spi_sck_div[SCK_DIV_SZ - 1:0] <= s_axi_lite_wdata[SCK_DIV_SZ - 1:0];
+                                                        spi_sck_div_l[SCK_DIV_SZ - 1:0] <= s_axi_lite_wdata[SCK_DIV_SZ - 1:0];
                                                 end
 
                                             if(SCK_DIV_SZ > 8 && s_axi_lite_wstrb[1]) // s_axi_lite_wdata[15:8]
                                                 begin
-                                                    if(SCK_DIV_SZ > 16)
-                                                        spi_sck_div[15:8] <= s_axi_lite_wdata[15:8];
-                                                    else
-                                                        spi_sck_div[SCK_DIV_SZ - 1:8] <= s_axi_lite_wdata[SCK_DIV_SZ - 1:8];
+                                                    spi_sck_div_l[SCK_DIV_SZ - 1:8] <= s_axi_lite_wdata[SCK_DIV_SZ - 1:8];
                                                 end
 
-                                            if(SCK_DIV_SZ > 16 && s_axi_lite_wstrb[2]) // s_axi_lite_wdata[23:16]
+                                            if(s_axi_lite_wstrb[2]) // s_axi_lite_wdata[23:16]
                                                 begin
-                                                    if(SCK_DIV_SZ > 24)
-                                                        spi_sck_div[23:16] <= s_axi_lite_wdata[23:16];
+                                                    if(SCK_DIV_SZ > 8)
+                                                        spi_sck_div_h[7:0] <= s_axi_lite_wdata[23:16];
                                                     else
-                                                        spi_sck_div[SCK_DIV_SZ - 1:16] <= s_axi_lite_wdata[SCK_DIV_SZ - 1:16];
+                                                        spi_sck_div_h[SCK_DIV_SZ - 1:0] <= s_axi_lite_wdata[SCK_DIV_SZ + 15:16];
                                                 end
 
-                                            if(SCK_DIV_SZ > 24 && s_axi_lite_wstrb[3]) // s_axi_lite_wdata[31:24]
+                                            if(SCK_DIV_SZ > 8 && s_axi_lite_wstrb[3]) // s_axi_lite_wdata[31:24]
                                                 begin
-                                                    spi_sck_div[SCK_DIV_SZ - 1:24] <= s_axi_lite_wdata[SCK_DIV_SZ - 1:24];
+                                                    spi_sck_div_h[SCK_DIV_SZ - 1:8] <= s_axi_lite_wdata[SCK_DIV_SZ + 15:24];
                                                 end
                                         end
                                 end
@@ -1020,37 +1045,43 @@ always @(posedge aclk)
                                         begin
                                             if(s_axi_lite_wstrb[0]) // s_axi_lite_wdata[7:0]
                                                 begin
-                                                    case(s_axi_lite_wdata[2:0])
+                                                    case(s_axi_lite_wdata[1:0])
                                                         QSPI_IO_MODE_SINGLE: spi_mmio_rd_instr_io_mode <= QSPI_IO_MODE_SINGLE;
+                                                        QSPI_IO_MODE_3W:     spi_mmio_rd_instr_io_mode <= QSPI_IO_MODE_3W;
                                                         QSPI_IO_MODE_DUAL:   spi_mmio_rd_instr_io_mode <= QSPI_IO_MODE_DUAL;
                                                         QSPI_IO_MODE_QUAD:   spi_mmio_rd_instr_io_mode <= QSPI_IO_MODE_QUAD;
                                                         default:             spi_mmio_rd_instr_io_mode <= spi_mmio_rd_instr_io_mode;
                                                     endcase
 
-                                                    case(s_axi_lite_wdata[6:4])
+                                                    case(s_axi_lite_wdata[3:2])
                                                         QSPI_IO_MODE_SINGLE: spi_mmio_addr_io_mode <= QSPI_IO_MODE_SINGLE;
+                                                        QSPI_IO_MODE_3W:     spi_mmio_addr_io_mode <= QSPI_IO_MODE_3W;
                                                         QSPI_IO_MODE_DUAL:   spi_mmio_addr_io_mode <= QSPI_IO_MODE_DUAL;
                                                         QSPI_IO_MODE_QUAD:   spi_mmio_addr_io_mode <= QSPI_IO_MODE_QUAD;
                                                         default:             spi_mmio_addr_io_mode <= spi_mmio_addr_io_mode;
                                                     endcase
-                                                end
 
-                                            if(s_axi_lite_wstrb[1]) // s_axi_lite_wdata[15:8]
-                                                begin
-                                                    case(s_axi_lite_wdata[10:8])
+                                                    case(s_axi_lite_wdata[5:4])
                                                         QSPI_IO_MODE_SINGLE: spi_mmio_dummy_io_mode <= QSPI_IO_MODE_SINGLE;
+                                                        QSPI_IO_MODE_3W:     spi_mmio_dummy_io_mode <= QSPI_IO_MODE_3W;
                                                         QSPI_IO_MODE_DUAL:   spi_mmio_dummy_io_mode <= QSPI_IO_MODE_DUAL;
                                                         QSPI_IO_MODE_QUAD:   spi_mmio_dummy_io_mode <= QSPI_IO_MODE_QUAD;
                                                         default:             spi_mmio_dummy_io_mode <= spi_mmio_dummy_io_mode;
                                                     endcase
 
-                                                    case(s_axi_lite_wdata[14:12])
+                                                    case(s_axi_lite_wdata[7:6])
                                                         QSPI_IO_MODE_SINGLE: spi_mmio_data_io_mode <= QSPI_IO_MODE_SINGLE;
+                                                        QSPI_IO_MODE_3W:     spi_mmio_data_io_mode <= QSPI_IO_MODE_3W;
                                                         QSPI_IO_MODE_DUAL:   spi_mmio_data_io_mode <= QSPI_IO_MODE_DUAL;
                                                         QSPI_IO_MODE_QUAD:   spi_mmio_data_io_mode <= QSPI_IO_MODE_QUAD;
                                                         default:             spi_mmio_data_io_mode <= spi_mmio_data_io_mode;
                                                     endcase
                                                 end
+
+                                            // if(s_axi_lite_wstrb[1]) // s_axi_lite_wdata[15:8]
+                                            //     begin
+                                            //
+                                            //     end
 
                                             if(s_axi_lite_wstrb[2]) // s_axi_lite_wdata[23:16]
                                                 begin

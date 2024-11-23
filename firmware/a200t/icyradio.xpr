@@ -211,20 +211,8 @@
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_adc_packer_reset_combiner_rx1_0/icyradio_adc_packer_reset_combiner_rx1_0.xci">
           <Proxy FileSetName="icyradio_adc_packer_reset_combiner_rx1_0"/>
         </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_auto_cc_0/icyradio_auto_cc_0.xci">
-          <Proxy FileSetName="icyradio_auto_cc_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_auto_cc_1/icyradio_auto_cc_1.xci">
-          <Proxy FileSetName="icyradio_auto_cc_1"/>
-        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_auto_ds_0/icyradio_auto_ds_0.xci">
           <Proxy FileSetName="icyradio_auto_ds_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_auto_pc_0/icyradio_auto_pc_0.xci">
-          <Proxy FileSetName="icyradio_auto_pc_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_auto_us_df_0/icyradio_auto_us_df_0.xci">
-          <Proxy FileSetName="icyradio_auto_us_df_0"/>
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_axi_ad9361_0/icyradio_axi_ad9361_0.xci">
           <Proxy FileSetName="icyradio_axi_ad9361_0"/>
@@ -279,9 +267,6 @@
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_axi_irq_controller_0_0/icyradio_axi_irq_controller_0_0.xci">
           <Proxy FileSetName="icyradio_axi_irq_controller_0_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_axi_pcie_0_0/icyradio_axi_pcie_0_0.xci">
-          <Proxy FileSetName="icyradio_axi_pcie_0_0"/>
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_axi_protocol_convert_0_0/icyradio_axi_protocol_convert_0_0.xci">
           <Proxy FileSetName="icyradio_axi_protocol_convert_0_0"/>
@@ -364,41 +349,8 @@
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_rx_enable_gate_rx1_0/icyradio_rx_enable_gate_rx1_0.xci">
           <Proxy FileSetName="icyradio_rx_enable_gate_rx1_0"/>
         </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s00_data_fifo_102/icyradio_s00_data_fifo_102.xci">
-          <Proxy FileSetName="icyradio_s00_data_fifo_102"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s00_data_fifo_103/icyradio_s00_data_fifo_103.xci">
-          <Proxy FileSetName="icyradio_s00_data_fifo_103"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s01_data_fifo_102/icyradio_s01_data_fifo_102.xci">
-          <Proxy FileSetName="icyradio_s01_data_fifo_102"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s01_data_fifo_103/icyradio_s01_data_fifo_103.xci">
-          <Proxy FileSetName="icyradio_s01_data_fifo_103"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s02_data_fifo_0/icyradio_s02_data_fifo_0.xci">
-          <Proxy FileSetName="icyradio_s02_data_fifo_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s03_data_fifo_0/icyradio_s03_data_fifo_0.xci">
-          <Proxy FileSetName="icyradio_s03_data_fifo_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s04_data_fifo_0/icyradio_s04_data_fifo_0.xci">
-          <Proxy FileSetName="icyradio_s04_data_fifo_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_s05_data_fifo_0/icyradio_s05_data_fifo_0.xci">
-          <Proxy FileSetName="icyradio_s05_data_fifo_0"/>
-        </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_startupe2_0_0/icyradio_startupe2_0_0.xci">
           <Proxy FileSetName="icyradio_startupe2_0_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_tier2_xbar_0_0/icyradio_tier2_xbar_0_0.xci">
-          <Proxy FileSetName="icyradio_tier2_xbar_0_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_tier2_xbar_1_0/icyradio_tier2_xbar_1_0.xci">
-          <Proxy FileSetName="icyradio_tier2_xbar_1_0"/>
-        </CompFileExtendedInfo>
-        <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_tier2_xbar_2_0/icyradio_tier2_xbar_2_0.xci">
-          <Proxy FileSetName="icyradio_tier2_xbar_2_0"/>
         </CompFileExtendedInfo>
         <CompFileExtendedInfo CompFileName="icyradio.bd" FileRelPathName="ip/icyradio_tx_dma_xfer_req_not_tx0_0/icyradio_tx_dma_xfer_req_not_tx0_0.xci">
           <Proxy FileSetName="icyradio_tx_dma_xfer_req_not_tx0_0"/>
@@ -723,12 +675,6 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="icyradio_axi_pcie_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_pcie_0_0" RelGenDir="$PGENDIR/icyradio_axi_pcie_0_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_axi_pcie_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="icyradio_axi_bram_ctrl_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_bram_ctrl_0_0" RelGenDir="$PGENDIR/icyradio_axi_bram_ctrl_0_0">
       <Config>
         <Option Name="TopModule" Val="icyradio_axi_bram_ctrl_0_0"/>
@@ -903,30 +849,6 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="icyradio_axi_qspi_mm_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_qspi_mm_0_0" RelGenDir="$PGENDIR/icyradio_axi_qspi_mm_0_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_axi_qspi_mm_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_axi_spi_1_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_spi_1_0" RelGenDir="$PGENDIR/icyradio_axi_spi_1_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_axi_spi_1_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_axi_spi_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_spi_0_0" RelGenDir="$PGENDIR/icyradio_axi_spi_0_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_axi_spi_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_axi_i2s_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_i2s_0" RelGenDir="$PGENDIR/icyradio_axi_i2s_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_axi_i2s_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="icyradio_axi_rf_timestamping_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_rf_timestamping_0" RelGenDir="$PGENDIR/icyradio_axi_rf_timestamping_0">
       <Config>
         <Option Name="TopModule" Val="icyradio_axi_rf_timestamping_0"/>
@@ -1035,99 +957,33 @@
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="icyradio_s01_data_fifo_103" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s01_data_fifo_103" RelGenDir="$PGENDIR/icyradio_s01_data_fifo_103">
+    <FileSet Name="icyradio_axi_spi_1_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_spi_1_0" RelGenDir="$PGENDIR/icyradio_axi_spi_1_0">
       <Config>
-        <Option Name="TopModule" Val="icyradio_s01_data_fifo_103"/>
+        <Option Name="TopModule" Val="icyradio_axi_spi_1_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="icyradio_tier2_xbar_1_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_tier2_xbar_1_0" RelGenDir="$PGENDIR/icyradio_tier2_xbar_1_0">
+    <FileSet Name="icyradio_axi_qspi_mm_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_qspi_mm_0_0" RelGenDir="$PGENDIR/icyradio_axi_qspi_mm_0_0">
       <Config>
-        <Option Name="TopModule" Val="icyradio_tier2_xbar_1_0"/>
+        <Option Name="TopModule" Val="icyradio_axi_qspi_mm_0_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="icyradio_tier2_xbar_2_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_tier2_xbar_2_0" RelGenDir="$PGENDIR/icyradio_tier2_xbar_2_0">
+    <FileSet Name="icyradio_axi_spi_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_spi_0_0" RelGenDir="$PGENDIR/icyradio_axi_spi_0_0">
       <Config>
-        <Option Name="TopModule" Val="icyradio_tier2_xbar_2_0"/>
+        <Option Name="TopModule" Val="icyradio_axi_spi_0_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
-    <FileSet Name="icyradio_auto_cc_1" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_auto_cc_1" RelGenDir="$PGENDIR/icyradio_auto_cc_1">
+    <FileSet Name="icyradio_axi_i2s_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_axi_i2s_0" RelGenDir="$PGENDIR/icyradio_axi_i2s_0">
       <Config>
-        <Option Name="TopModule" Val="icyradio_auto_cc_1"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_s00_data_fifo_103" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s00_data_fifo_103" RelGenDir="$PGENDIR/icyradio_s00_data_fifo_103">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_s00_data_fifo_103"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_auto_pc_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_auto_pc_0" RelGenDir="$PGENDIR/icyradio_auto_pc_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_auto_pc_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_s05_data_fifo_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s05_data_fifo_0" RelGenDir="$PGENDIR/icyradio_s05_data_fifo_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_s05_data_fifo_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_s04_data_fifo_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s04_data_fifo_0" RelGenDir="$PGENDIR/icyradio_s04_data_fifo_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_s04_data_fifo_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_s03_data_fifo_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s03_data_fifo_0" RelGenDir="$PGENDIR/icyradio_s03_data_fifo_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_s03_data_fifo_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_s02_data_fifo_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s02_data_fifo_0" RelGenDir="$PGENDIR/icyradio_s02_data_fifo_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_s02_data_fifo_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_s01_data_fifo_102" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s01_data_fifo_102" RelGenDir="$PGENDIR/icyradio_s01_data_fifo_102">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_s01_data_fifo_102"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_s00_data_fifo_102" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_s00_data_fifo_102" RelGenDir="$PGENDIR/icyradio_s00_data_fifo_102">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_s00_data_fifo_102"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_auto_us_df_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_auto_us_df_0" RelGenDir="$PGENDIR/icyradio_auto_us_df_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_auto_us_df_0"/>
+        <Option Name="TopModule" Val="icyradio_axi_i2s_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
     <FileSet Name="icyradio_auto_ds_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_auto_ds_0" RelGenDir="$PGENDIR/icyradio_auto_ds_0">
       <Config>
         <Option Name="TopModule" Val="icyradio_auto_ds_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_tier2_xbar_0_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_tier2_xbar_0_0" RelGenDir="$PGENDIR/icyradio_tier2_xbar_0_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_tier2_xbar_0_0"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="icyradio_auto_cc_0" Type="BlockSrcs" RelSrcDir="$PSRCDIR/icyradio_auto_cc_0" RelGenDir="$PGENDIR/icyradio_auto_cc_0">
-      <Config>
-        <Option Name="TopModule" Val="icyradio_auto_cc_0"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -1295,16 +1151,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="icyradio_adc_packer_reset_combiner_rx1_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_adc_packer_reset_combiner_rx1_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_adc_packer_reset_combiner_rx1_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_adc_packer_reset_combiner_rx1_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_adc_packer_reset_combiner_rx1_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_adc_packer_reset_combiner_rx1_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_pcie_0_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_pcie_0_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_pcie_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_pcie_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_pcie_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_pcie_0_0_synth_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
         <Step Id="synth_design"/>
@@ -1604,46 +1450,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_axi_qspi_mm_0_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_qspi_mm_0_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_qspi_mm_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_qspi_mm_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_spi_1_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_spi_1_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_1_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_spi_1_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_spi_0_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_spi_0_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_spi_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_i2s_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_i2s_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_i2s_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_i2s_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="icyradio_axi_rf_timestamping_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_rf_timestamping_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_rf_timestamping_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_rf_timestamping_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_rf_timestamping_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_rf_timestamping_0_synth_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
@@ -1824,9 +1630,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_s01_data_fifo_103_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s01_data_fifo_103" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s01_data_fifo_103" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s01_data_fifo_103_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_103_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_103_synth_1">
+    <Run Id="icyradio_axi_spi_1_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_spi_1_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_1_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_spi_1_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_synth_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -1834,9 +1642,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_tier2_xbar_1_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_tier2_xbar_1_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_tier2_xbar_1_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_tier2_xbar_1_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_1_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_1_0_synth_1">
+    <Run Id="icyradio_axi_qspi_mm_0_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_qspi_mm_0_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_qspi_mm_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_qspi_mm_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_synth_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -1844,9 +1654,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_tier2_xbar_2_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_tier2_xbar_2_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_tier2_xbar_2_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_tier2_xbar_2_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_2_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_2_0_synth_1">
+    <Run Id="icyradio_axi_spi_0_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_spi_0_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_spi_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_synth_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -1854,99 +1666,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_auto_cc_1_synth_1" Type="Ft3:Synth" SrcSet="icyradio_auto_cc_1" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_cc_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_auto_cc_1_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_1_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_1_synth_1">
+    <Run Id="icyradio_axi_i2s_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_axi_i2s_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_i2s_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_axi_i2s_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_synth_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s00_data_fifo_103_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s00_data_fifo_103" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s00_data_fifo_103" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s00_data_fifo_103_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_103_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_103_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_auto_pc_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_auto_pc_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_pc_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_auto_pc_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_pc_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_pc_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s05_data_fifo_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s05_data_fifo_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s05_data_fifo_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s05_data_fifo_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s05_data_fifo_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s05_data_fifo_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s04_data_fifo_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s04_data_fifo_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s04_data_fifo_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s04_data_fifo_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s04_data_fifo_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s04_data_fifo_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s03_data_fifo_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s03_data_fifo_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s03_data_fifo_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s03_data_fifo_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s03_data_fifo_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s03_data_fifo_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s02_data_fifo_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s02_data_fifo_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s02_data_fifo_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s02_data_fifo_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s02_data_fifo_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s02_data_fifo_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s01_data_fifo_102_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s01_data_fifo_102" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s01_data_fifo_102" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s01_data_fifo_102_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_102_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_102_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s00_data_fifo_102_synth_1" Type="Ft3:Synth" SrcSet="icyradio_s00_data_fifo_102" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s00_data_fifo_102" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_s00_data_fifo_102_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_102_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_102_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_auto_us_df_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_auto_us_df_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_us_df_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_auto_us_df_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_us_df_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_us_df_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -1956,27 +1680,9 @@
     </Run>
     <Run Id="icyradio_auto_ds_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_auto_ds_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_ds_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_auto_ds_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_ds_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_ds_0_synth_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_tier2_xbar_0_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_tier2_xbar_0_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_tier2_xbar_0_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_tier2_xbar_0_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_0_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_0_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_auto_cc_0_synth_1" Type="Ft3:Synth" SrcSet="icyradio_auto_cc_0" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_cc_0" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/icyradio_auto_cc_0_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_0_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_0_synth_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -2230,23 +1936,6 @@
       <RQSFiles/>
     </Run>
     <Run Id="icyradio_adc_packer_reset_combiner_rx1_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_adc_packer_reset_combiner_rx1_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_adc_packer_reset_combiner_rx1_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_adc_packer_reset_combiner_rx1_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_adc_packer_reset_combiner_rx1_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_pcie_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_pcie_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_pcie_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_pcie_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_pcie_0_0_impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
         <Step Id="init_design"/>
@@ -2756,74 +2445,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_axi_qspi_mm_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_qspi_mm_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_qspi_mm_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_spi_1_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_1_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_spi_1_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_spi_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_spi_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_axi_i2s_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_i2s_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_i2s_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
     <Run Id="icyradio_axi_rf_timestamping_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_rf_timestamping_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_rf_timestamping_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_rf_timestamping_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_rf_timestamping_0_impl_1">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
@@ -3130,9 +2751,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_s01_data_fifo_103_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s01_data_fifo_103" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s01_data_fifo_103_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_103_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_103_impl_1">
+    <Run Id="icyradio_axi_spi_1_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_1_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_spi_1_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_1_0_impl_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -3147,9 +2770,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_tier2_xbar_1_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_tier2_xbar_1_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_tier2_xbar_1_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_1_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_1_0_impl_1">
+    <Run Id="icyradio_axi_qspi_mm_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_qspi_mm_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_qspi_mm_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_qspi_mm_0_0_impl_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -3164,9 +2789,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_tier2_xbar_2_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_tier2_xbar_2_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_tier2_xbar_2_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_2_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_2_0_impl_1">
+    <Run Id="icyradio_axi_spi_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_spi_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_spi_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_spi_0_0_impl_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -3181,162 +2808,11 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>
     </Run>
-    <Run Id="icyradio_auto_cc_1_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_cc_1" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_auto_cc_1_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_1_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_1_impl_1">
+    <Run Id="icyradio_axi_i2s_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_axi_i2s_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_axi_i2s_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_axi_i2s_0_impl_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s00_data_fifo_103_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s00_data_fifo_103" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s00_data_fifo_103_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_103_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_103_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_auto_pc_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_pc_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_auto_pc_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_pc_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_pc_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s05_data_fifo_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s05_data_fifo_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s05_data_fifo_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s05_data_fifo_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s05_data_fifo_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s04_data_fifo_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s04_data_fifo_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s04_data_fifo_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s04_data_fifo_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s04_data_fifo_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s03_data_fifo_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s03_data_fifo_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s03_data_fifo_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s03_data_fifo_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s03_data_fifo_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s02_data_fifo_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s02_data_fifo_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s02_data_fifo_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s02_data_fifo_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s02_data_fifo_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s01_data_fifo_102_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s01_data_fifo_102" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s01_data_fifo_102_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_102_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s01_data_fifo_102_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_s00_data_fifo_102_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_s00_data_fifo_102" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_s00_data_fifo_102_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_102_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_s00_data_fifo_102_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_auto_us_df_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_us_df_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_auto_us_df_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_us_df_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_us_df_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
@@ -3353,41 +2829,9 @@
     </Run>
     <Run Id="icyradio_auto_ds_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_ds_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_auto_ds_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_ds_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_ds_0_impl_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_tier2_xbar_0_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_tier2_xbar_0_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_tier2_xbar_0_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_0_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_tier2_xbar_0_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2023"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-      <RQSFiles/>
-    </Run>
-    <Run Id="icyradio_auto_cc_0_impl_1" Type="Ft2:EntireDesign" Part="xc7a200tfbg484-2" ConstrsSet="icyradio_auto_cc_0" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="icyradio_auto_cc_0_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_0_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/icyradio_auto_cc_0_impl_1">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2023">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>

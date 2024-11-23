@@ -280,7 +280,7 @@ initial
         #12;
 
         // Configure registers
-        axi_lite_write(32'h10, 3); // (SCK divider) / 2 - 1
+        axi_lite_write(32'h10, (0 << 16) | (1 << 0)); // SCK Divider (HIGH duration 0, LOW duration 1)
     end
 
 always
@@ -312,22 +312,22 @@ always @(posedge aclk)
 
         if(sim_periods == 100)
             begin
-                axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 0, enable clock & serdes
+                axi_lite_write(32'h04, (0 << 8) | (0 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 0, enable clock & serdes
             end
 
         if(sim_periods == 600)
             begin
-                axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 1, enable clock & serdes
+                axi_lite_write(32'h04, (0 << 8) | (0 << 4) | (1 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 1, enable clock & serdes
             end
 
         if(sim_periods == 1100)
             begin
-                axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (2 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 2, enable clock & serdes
+                axi_lite_write(32'h04, (0 << 8) | (0 << 4) | (2 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 2, enable clock & serdes
             end
 
         if(sim_periods == 1600)
             begin
-                axi_lite_write(32'h04, (0 << 8) | (1 << 4) | (3 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 3, enable clock & serdes
+                axi_lite_write(32'h04, (0 << 8) | (0 << 4) | (3 << 2) | (1 << 1) | (1 << 0)); // MSB first, Single IO, Mode 3, enable clock & serdes
             end
 
         if(sim_periods == 2100)
@@ -337,14 +337,14 @@ always @(posedge aclk)
 
         if(sim_periods == 2600)
             begin
-                axi_lite_write(32'h04, (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
+                axi_lite_write(32'h04, (0 << 8) | (3 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
             end
 
         if(sim_periods == 5100)
             begin
                 // Multiple writes no pause
                 axi_lite_read(32'h18, dummy);
-                axi_lite_write(32'h04, (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
+                axi_lite_write(32'h04, (0 << 8) | (3 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
                 axi_lite_write(32'h14, 32'h000001A5);
                 axi_lite_write(32'h14, 32'h0000015A);
             end
@@ -353,7 +353,7 @@ always @(posedge aclk)
             begin
                 // Multiple reads no pause
                 axi_lite_read(32'h18, dummy);
-                axi_lite_write(32'h04, (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
+                axi_lite_write(32'h04, (0 << 8) | (3 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MSB first, Quad IO, Mode 0, enable clock & serdes
                 axi_lite_write(32'h14, (1 << 9));
                 axi_lite_write(32'h14, (1 << 9));
             end
@@ -361,9 +361,9 @@ always @(posedge aclk)
         if(sim_periods == 6000)
             begin
                 axi_lite_write(32'h24, (0 << 25) | (1 << 24) | (8'hF0 << 16) | (2 << 12) | (2 << 8) | (8'hEB << 0)); // 0xEB instruction, 3 address bytes, 2 dummy bytes, Mode A0, Mode bits enale, continuous read disabled
-                axi_lite_write(32'h28, (0 << 24) | (4 << 16) | (4 << 12) | (4 << 8) | (4 << 4) | (1 << 0)); // Single IO instruction, Quad IO addr, dummy and data, 4 CS high cycles, 0 CS low cycles
+                axi_lite_write(32'h28, (0 << 24) | (4 << 16) | (3 << 6) | (3 << 4) | (3 << 2) | (0 << 0)); // Single IO instruction, Quad IO addr, dummy and data, 4 CS high cycles, 0 CS low cycles
                 axi_lite_write(32'h30, (1 << 0)); // CS is only bit 0
-                axi_lite_write(32'h04, (1 << 12) | (0 << 8) | (4 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MMIO, MSB first, Quad IO, Mode 0, enable clock & serdes
+                axi_lite_write(32'h04, (1 << 12) | (0 << 8) | (3 << 4) | (0 << 2) | (1 << 1) | (1 << 0)); // MMIO, MSB first, Quad IO, Mode 0, enable clock & serdes
             end
 
         if(sim_periods == 6050)

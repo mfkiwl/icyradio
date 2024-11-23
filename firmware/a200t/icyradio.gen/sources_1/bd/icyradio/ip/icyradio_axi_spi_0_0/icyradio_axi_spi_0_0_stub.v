@@ -2,11 +2,11 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
-// Date        : Sun May 26 20:14:07 2024
+// Date        : Sat Nov 23 13:20:03 2024
 // Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
-// Command     : write_verilog -force -mode synth_stub -rename_top icyradio_axi_spi_0_0 -prefix
-//               icyradio_axi_spi_0_0_ icyradio_axi_spi_1_0_stub.v
-// Design      : icyradio_axi_spi_1_0
+// Command     : write_verilog -force -mode synth_stub
+//               /home/joao/icyradio/firmware/a200t/icyradio.gen/sources_1/bd/icyradio/ip/icyradio_axi_spi_0_0/icyradio_axi_spi_0_0_stub.v
+// Design      : icyradio_axi_spi_0_0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a200tfbg484-2
 // --------------------------------------------------------------------------------

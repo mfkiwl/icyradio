@@ -103,7 +103,6 @@ reg                       i2s_lrclk; // Left/right clock (Sample rate)
 reg                       i2s_sdata_out; // Serial data out
 reg                       i2s_sdata_out_int; // Internal serial data out
 wire                      i2s_sdata_in; // Serial data in
-reg                       i2s_sdata_in_q; // Registered serial data in
 reg                       i2s_sdata_in_int; // Internal serial data in
 reg                       i2s_en_a; // Enable I2S Serializer/Deseiralizer (SERDES) (AXI-Lite clock domain)
 reg                       i2s_en; // Enable I2S Serializer/Deseiralizer (SERDES)
@@ -285,7 +284,7 @@ always @(*)
 always @(*)
     begin
         case(i2s_lb_en)
-            1'b0: i2s_sdata_in_int <= i2s_sdata_in_q;
+            1'b0: i2s_sdata_in_int <= i2s_sdata_in;
             1'b1: i2s_sdata_in_int <= i2s_sdata_out_int;
         endcase
     end
@@ -301,7 +300,6 @@ always @(posedge i2s_src_clk)
                 s_axis_tready <= 1'b0;
 
                 i2s_sdata_out_int <= 1'b0;
-                i2s_sdata_in_q <= 1'b0;
 
                 i2s_paused <= i2s_pause;
                 i2s_fsm_state <= I2S_FSM_STATE_RD_FIRST;
@@ -314,8 +312,6 @@ always @(posedge i2s_src_clk)
             end
         else
             begin
-                i2s_sdata_in_q <= i2s_sdata_in;
-
                 if(s_axis_tready && s_axis_tvalid) // If S-AXIS has data, read it
                     begin
                         s_axis_tready <= 1'b0;

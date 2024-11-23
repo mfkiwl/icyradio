@@ -2,7 +2,7 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (lin64) Build 4029153 Fri Oct 13 20:13:54 MDT 2023
-// Date        : Mon Apr  1 20:29:08 2024
+// Date        : Fri Nov 22 16:57:02 2024
 // Host        : node4-dev running 64-bit Ubuntu 22.04.4 LTS
 // Command     : write_verilog -force -mode synth_stub -rename_top icyradio_axi_i2s_0 -prefix
 //               icyradio_axi_i2s_0_ icyradio_axi_i2s_0_stub.v
