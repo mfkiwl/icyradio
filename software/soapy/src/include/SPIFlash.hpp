@@ -118,7 +118,7 @@ public:
     std::string getDeviceName();
 
     bool busy();
-    void waitNotBusy(uint32_t timeout_ms = 10000);
+    void waitNotBusy(uint32_t timeout_ms = 1000);
 
     void writeEnable();
     void writeDisable();

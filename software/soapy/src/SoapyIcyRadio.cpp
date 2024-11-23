@@ -610,7 +610,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
                 bit_order = AXISPI::BitOrder::MSB_FIRST;
                 io_mode = AXISPI::IOMode::SINGLE;
                 input_freq = AXI_ACLK_FREQ;
-                sck_freq = 20000000UL;
+                sck_freq = 31250000UL;
             }
             break;
             case AXI_SPI_TRX_INST:
@@ -619,16 +619,16 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
                 bit_order = AXISPI::BitOrder::MSB_FIRST;
                 io_mode = AXISPI::IOMode::SINGLE;
                 input_freq = AXI_ACLK_FREQ;
-                sck_freq = 20000000UL;
+                sck_freq = 31250000UL;
             }
             break;
             case AXI_SPI_SYNTH_INST:
             {
                 mode = AXISPI::Mode::MODE_0;
                 bit_order = AXISPI::BitOrder::MSB_FIRST;
-                io_mode = AXISPI::IOMode::SINGLE;
+                io_mode = AXISPI::IOMode::SINGLE_3W;
                 input_freq = AXI_ACLK_FREQ;
-                sck_freq = 12500000UL;
+                sck_freq = 20000000UL;
             }
             break;
             default:
@@ -1207,6 +1207,19 @@ void SoapyIcyRadio::initPeripheralsPostClocks()
             DLOGF(SOAPY_SDR_DEBUG, "  Distance to integer boundary: %.6f %%", dist * 100);
         else
             DLOGF(SOAPY_SDR_DEBUG, "  PLL in integer mode");
+
+        DLOGF(SOAPY_SDR_DEBUG, "  PLL band selection is %sdone", this->mmw_synth->isBandSelectDone() ? "" : "NOT ");
+        DLOGF(SOAPY_SDR_DEBUG, "  PLL is %slocked", this->mmw_synth->isPLLLocked() ? "" : "NOT ");
+
+        DLOGF(SOAPY_SDR_DEBUG, "  Output A:");
+        DLOGF(SOAPY_SDR_DEBUG, "    Enabled: %s", this->mmw_synth->isRFOutputEnabled(IDT8V97003::RFOutput::RFOUT_A) ? "yes" : "no");
+        DLOGF(SOAPY_SDR_DEBUG, "    Muted: %s", this->mmw_synth->isMuted(IDT8V97003::RFOutput::RFOUT_A) ? "yes" : "no");
+        DLOGF(SOAPY_SDR_DEBUG, "    Power: %u", this->mmw_synth->getRFOutputPower(IDT8V97003::RFOutput::RFOUT_A));
+
+        DLOGF(SOAPY_SDR_DEBUG, "  Output B:");
+        DLOGF(SOAPY_SDR_DEBUG, "    Enabled: %s", this->mmw_synth->isRFOutputEnabled(IDT8V97003::RFOutput::RFOUT_B) ? "yes" : "no");
+        DLOGF(SOAPY_SDR_DEBUG, "    Muted: %s", this->mmw_synth->isMuted(IDT8V97003::RFOutput::RFOUT_B) ? "yes" : "no");
+        DLOGF(SOAPY_SDR_DEBUG, "    Power: %u", this->mmw_synth->getRFOutputPower(IDT8V97003::RFOutput::RFOUT_B));
     }
 
     this->mmw_synth->powerDown();

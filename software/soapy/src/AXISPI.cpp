@@ -22,21 +22,28 @@ AXISPI::AXISPI(void *base_address): AXIPeripheral(base_address)
     // Detect max clock divider
     this->writeReg(AXI_SPI_REG_SCK_DIV, 0xFFFFFFFF);
 
-    this->max_sck_div = ((uint64_t)this->readReg(AXI_SPI_REG_SCK_DIV) + 1) << 1;
+    uint32_t sck_div_l = this->readReg(AXI_SPI_REG_SCK_DIV);
+    uint32_t sck_div_h = (sck_div_l & 0xFFFF0000) >> 16;
+    sck_div_l &= 0x0000FFFF;
+
+    if(sck_div_l != sck_div_h)
+        throw std::runtime_error("AXI SPI: SCK divider high and low mismatch");
+
+    this->sck_div_mask = sck_div_l;
 
     // Detect capabilities
     uint32_t reg_restore = this->readReg(AXI_SPI_REG_CTRL);
 
     this->writeReg(AXI_SPI_REG_CTRL, AXI_SPI_REG_CTRL_IO_MODE_DUAL);
 
-    if(this->readReg(AXI_SPI_REG_CTRL) & AXI_SPI_REG_CTRL_IO_MODE_DUAL)
+    if((this->readReg(AXI_SPI_REG_CTRL) & 0x30) == AXI_SPI_REG_CTRL_IO_MODE_DUAL)
         this->capabilities.dual_io_supported = true;
     else
         this->capabilities.dual_io_supported = false;
 
     this->writeReg(AXI_SPI_REG_CTRL, AXI_SPI_REG_CTRL_IO_MODE_QUAD);
 
-    if(this->readReg(AXI_SPI_REG_CTRL) & AXI_SPI_REG_CTRL_IO_MODE_QUAD)
+    if((this->readReg(AXI_SPI_REG_CTRL) & 0x30) == AXI_SPI_REG_CTRL_IO_MODE_QUAD)
         this->capabilities.quad_io_supported = true;
     else
         this->capabilities.quad_io_supported = false;
@@ -143,6 +150,9 @@ void AXISPI::setIOMode(AXISPI::IOMode io_mode)
         case AXISPI::IOMode::SINGLE:
             val = AXI_SPI_REG_CTRL_IO_MODE_SINGLE;
         break;
+        case AXISPI::IOMode::SINGLE_3W:
+            val = AXI_SPI_REG_CTRL_IO_MODE_3W;
+        break;
         case AXISPI::IOMode::DUAL:
             if(!this->capabilities.dual_io_supported)
                 throw std::invalid_argument("AXI SPI: Dual IO mode not supported");
@@ -159,14 +169,16 @@ void AXISPI::setIOMode(AXISPI::IOMode io_mode)
             throw std::invalid_argument("AXI SPI: Invalid IO mode");
     }
 
-    this->writeReg(AXI_SPI_REG_CTRL, (this->readReg(AXI_SPI_REG_CTRL) & ~(AXI_SPI_REG_CTRL_IO_MODE_QUAD | AXI_SPI_REG_CTRL_IO_MODE_DUAL | AXI_SPI_REG_CTRL_IO_MODE_SINGLE)) | val);
+    this->writeReg(AXI_SPI_REG_CTRL, (this->readReg(AXI_SPI_REG_CTRL) & ~0x30) | val);
 }
 AXISPI::IOMode AXISPI::getIOMode()
 {
-    switch(this->readReg(AXI_SPI_REG_CTRL) & (AXI_SPI_REG_CTRL_IO_MODE_QUAD | AXI_SPI_REG_CTRL_IO_MODE_DUAL | AXI_SPI_REG_CTRL_IO_MODE_SINGLE))
+    switch(this->readReg(AXI_SPI_REG_CTRL) & 0x30)
     {
         case AXI_SPI_REG_CTRL_IO_MODE_SINGLE:
             return AXISPI::IOMode::SINGLE;
+        case AXI_SPI_REG_CTRL_IO_MODE_3W:
+            return AXISPI::IOMode::SINGLE_3W;
         case AXI_SPI_REG_CTRL_IO_MODE_DUAL:
             return AXISPI::IOMode::DUAL;
         case AXI_SPI_REG_CTRL_IO_MODE_QUAD:
@@ -192,6 +204,9 @@ void AXISPI::configMMIOMode(AXISPI::MMIOConfig &config)
         case AXISPI::IOMode::SINGLE:
             ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_SINGLE;
         break;
+        case AXISPI::IOMode::SINGLE_3W:
+            ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_3W;
+        break;
         case AXISPI::IOMode::DUAL:
             if(!this->capabilities.dual_io_supported)
                 throw std::invalid_argument("AXI SPI: Dual IO mode not supported");
@@ -214,6 +229,9 @@ void AXISPI::configMMIOMode(AXISPI::MMIOConfig &config)
     {
         case AXISPI::IOMode::SINGLE:
             ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_SINGLE;
+        break;
+        case AXISPI::IOMode::SINGLE_3W:
+            ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_3W;
         break;
         case AXISPI::IOMode::DUAL:
             if(!this->capabilities.dual_io_supported)
@@ -244,6 +262,9 @@ void AXISPI::configMMIOMode(AXISPI::MMIOConfig &config)
         case AXISPI::IOMode::SINGLE:
             ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_SINGLE;
         break;
+        case AXISPI::IOMode::SINGLE_3W:
+            ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_3W;
+        break;
         case AXISPI::IOMode::DUAL:
             if(!this->capabilities.dual_io_supported)
                 throw std::invalid_argument("AXI SPI: Dual IO mode not supported");
@@ -269,6 +290,9 @@ void AXISPI::configMMIOMode(AXISPI::MMIOConfig &config)
     {
         case AXISPI::IOMode::SINGLE:
             ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_SINGLE;
+        break;
+        case AXISPI::IOMode::SINGLE_3W:
+            ctrl2 |= AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_3W;
         break;
         case AXISPI::IOMode::DUAL:
             if(!this->capabilities.dual_io_supported)
@@ -309,31 +333,45 @@ AXISPI::MMIOStats AXISPI::getMMIOStats()
     return stats;
 }
 
-void AXISPI::setClockDivider(uint64_t sck_div)
+void AXISPI::setClockDivider(uint32_t sck_div)
 {
-    if(sck_div < 4 || sck_div > this->max_sck_div)
-        throw std::invalid_argument("AXI SPI: SCK divider must be between 4 and " + std::to_string(this->max_sck_div));
+    uint32_t max_sck_div = ((this->sck_div_mask + 1) << 1);
 
-    if(sck_div & 1)
-        throw std::invalid_argument("AXI SPI: SCK divider must be even");
+    if(sck_div < 3 || sck_div > max_sck_div)
+        throw std::invalid_argument("AXI SPI: SCK divider must be between 3 and " + std::to_string(max_sck_div));
 
-    if(this->clockEnabled())
+    uint32_t ctrl = this->readReg(AXI_SPI_REG_CTRL);
+
+    if(ctrl & AXI_SPI_REG_CTRL_SCK_DIV_EN)
         throw std::runtime_error("AXI SPI: Cannot configure clock dividers while enabled");
 
-    this->writeReg(AXI_SPI_REG_SCK_DIV, (sck_div >> 1) - 1);
+    sck_div -= 2;
+
+    uint16_t sck_div_l = sck_div >> 1;
+    uint16_t sck_div_h = sck_div_l;
+
+    if(sck_div & 1) // Odd divider, one half (high or low) must be longer than the other
+    {
+        // More margin to propagate the data before the sampling edge
+        if(ctrl & AXI_SPI_REG_CTRL_SPI_MODE(1)) // CPHA == 1
+            sck_div_l++;
+        else
+            sck_div_h++;
+    }
+
+    this->writeReg(AXI_SPI_REG_SCK_DIV, (sck_div_h << 16) | sck_div_l);
 }
-uint64_t AXISPI::getClockDivider()
+uint32_t AXISPI::getClockDivider()
 {
-    return (((uint64_t)this->readReg(AXI_SPI_REG_SCK_DIV) + 1) << 1);
+    uint32_t sck_div_l = this->readReg(AXI_SPI_REG_SCK_DIV);
+    uint32_t sck_div_h = (sck_div_l & 0xFFFF0000) >> 16;
+    sck_div_l &= 0x0000FFFF;
+
+    return sck_div_l + sck_div_h + 2;
 }
 void AXISPI::setClockFrequency(uint64_t input_freq, uint64_t sck_freq)
 {
-    uint64_t sck_div = input_freq / sck_freq;
-
-    if(sck_div & 1)
-        sck_div++; // Round up to nearest even number
-
-    this->setClockDivider(sck_div);
+    this->setClockDivider(input_freq / sck_freq);
 }
 uint64_t AXISPI::getClockFrequency(uint64_t input_freq)
 {

@@ -29,9 +29,10 @@
 #define AXI_SPI_REG_CTRL_CPHA                       BIT(2)
 #define AXI_SPI_REG_CTRL_CPOL                       BIT(3)
 #define AXI_SPI_REG_CTRL_SPI_MODE(n)                (((uint32_t)(n) & 0x03) << 2)
-#define AXI_SPI_REG_CTRL_IO_MODE_SINGLE             BIT(4)
-#define AXI_SPI_REG_CTRL_IO_MODE_DUAL               BIT(5)
-#define AXI_SPI_REG_CTRL_IO_MODE_QUAD               BIT(6)
+#define AXI_SPI_REG_CTRL_IO_MODE_SINGLE             0x00
+#define AXI_SPI_REG_CTRL_IO_MODE_3W                 0x10
+#define AXI_SPI_REG_CTRL_IO_MODE_DUAL               0x20
+#define AXI_SPI_REG_CTRL_IO_MODE_QUAD               0x30
 #define AXI_SPI_REG_CTRL_LSB_FIRST                  BIT(8)
 #define AXI_SPI_REG_CTRL_MMIO_EN_REQ                BIT(12)
 #define AXI_SPI_REG_CTRL_MMIO_EN                    BIT(13)
@@ -60,18 +61,22 @@
 #define AXI_SPI_REG_MMIO_CTRL_1_CONT_READ_EN        BIT(25)
 #define AXI_SPI_REG_MMIO_CTRL_1_CONT_READ_READY     BIT(26)
 
-#define AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_SINGLE     BIT(0)
-#define AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_DUAL       BIT(1)
-#define AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_QUAD       BIT(2)
-#define AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_SINGLE         BIT(4)
-#define AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_DUAL           BIT(5)
-#define AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_QUAD           BIT(6)
-#define AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_SINGLE        BIT(8)
-#define AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_DUAL          BIT(9)
-#define AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_QUAD          BIT(10)
-#define AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_SINGLE         BIT(12)
-#define AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_DUAL           BIT(13)
-#define AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_QUAD           BIT(14)
+#define AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_SINGLE     0x00
+#define AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_3W         0x01
+#define AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_DUAL       0x02
+#define AXI_SPI_REG_MMIO_CTRL_2_RD_INSTR_IO_MODE_QUAD       0x03
+#define AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_SINGLE         0x00
+#define AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_3W             0x04
+#define AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_DUAL           0x08
+#define AXI_SPI_REG_MMIO_CTRL_2_ADDR_IO_MODE_QUAD           0x0C
+#define AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_SINGLE        0x00
+#define AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_3W            0x10
+#define AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_DUAL          0x20
+#define AXI_SPI_REG_MMIO_CTRL_2_DUMMY_IO_MODE_QUAD          0x30
+#define AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_SINGLE         0x00
+#define AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_3W             0x40
+#define AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_DUAL           0x80
+#define AXI_SPI_REG_MMIO_CTRL_2_DATA_IO_MODE_QUAD           0xC0
 #define AXI_SPI_REG_MMIO_CTRL_2_CS_HIGH_WAIT(n)             (((uint32_t)(n) & 0xFF) << 16)
 #define AXI_SPI_REG_MMIO_CTRL_2_CS_LOW_WAIT(n)              (((uint32_t)(n) & 0xFF) << 24)
 
@@ -97,8 +102,9 @@ public:
     enum IOMode : uint8_t
     {
         SINGLE = 0,
-        DUAL = 1,
-        QUAD = 2
+        SINGLE_3W = 1,
+        DUAL = 2,
+        QUAD = 3
     };
     struct Capabilities
     {
@@ -146,8 +152,8 @@ public:
     void configMMIOMode(AXISPI::MMIOConfig &config);
     AXISPI::MMIOStats getMMIOStats();
 
-    void setClockDivider(uint64_t sck_div);
-    uint64_t getClockDivider();
+    void setClockDivider(uint32_t sck_div);
+    uint32_t getClockDivider();
     void setClockFrequency(uint64_t input_freq, uint64_t sck_freq);
     uint64_t getClockFrequency(uint64_t input_freq);
 
@@ -216,7 +222,7 @@ public:
 private:
     std::mutex mutex;
     AXISPI::Capabilities capabilities;
-    uint64_t max_sck_div;
+    uint32_t sck_div_mask;
     uint32_t ss_mask;
 };
 

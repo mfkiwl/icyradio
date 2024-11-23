@@ -89,7 +89,10 @@ IDT8V97003::IDT8V97003(IDT8V97003::SPIConfig spi, IDT8V97003::GPIOConfig ce_gpio
 
     this->reset();
 
-    this->writeReg(IDT8V97003_REG_INTF_CONFIG, IDT8V97003_REG_INTF_CONFIG_ADDR_ASC | IDT8V97003_REG_INTF_CONFIG_SDO_ACTIVE);
+    if(this->spi.controller->getIOMode() == AXISPI::IOMode::SINGLE_3W)
+        this->writeReg(IDT8V97003_REG_INTF_CONFIG, IDT8V97003_REG_INTF_CONFIG_ADDR_ASC);
+    else
+        this->writeReg(IDT8V97003_REG_INTF_CONFIG, IDT8V97003_REG_INTF_CONFIG_ADDR_ASC | IDT8V97003_REG_INTF_CONFIG_SDO_ACTIVE);
 
     uint8_t chip_type = this->readReg(IDT8V97003_REG_CHIP_TYPE);
 
@@ -118,7 +121,11 @@ void IDT8V97003::init()
 
     this->reset();
 
-    this->writeReg(IDT8V97003_REG_INTF_CONFIG, IDT8V97003_REG_INTF_CONFIG_ADDR_ASC | IDT8V97003_REG_INTF_CONFIG_SDO_ACTIVE);
+    if(this->spi.controller->getIOMode() == AXISPI::IOMode::SINGLE_3W)
+        this->writeReg(IDT8V97003_REG_INTF_CONFIG, IDT8V97003_REG_INTF_CONFIG_ADDR_ASC);
+    else
+        this->writeReg(IDT8V97003_REG_INTF_CONFIG, IDT8V97003_REG_INTF_CONFIG_ADDR_ASC | IDT8V97003_REG_INTF_CONFIG_SDO_ACTIVE);
+
     this->writeReg(IDT8V97003_REG_BUF_READ, 0x00); // Reads target the active register, not the buffer
     this->writeReg(IDT8V97003_REG_DSM_CTL, IDT8V97003_REG_DSM_CTL_SHAPE_DITHER_EN);
     this->writeReg(IDT8V97003_REG_MANUAL_VCO, 0x00);
@@ -367,6 +374,26 @@ void IDT8V97003::enableRFOutput(IDT8V97003::RFOutput output, bool enable)
 
     this->rmwReg(reg, (uint8_t)~IDT8V97003_REG_RFOUTA_ENA_RFOUTA_ENA, enable ? IDT8V97003_REG_RFOUTA_ENA_RFOUTA_ENA : 0);
 }
+bool IDT8V97003::isRFOutputEnabled(IDT8V97003::RFOutput output)
+{
+    uint8_t reg;
+
+    switch(output)
+    {
+        case IDT8V97003::RFOutput::RFOUT_A:
+            reg = IDT8V97003_REG_RFOUTA_ENA;
+            break;
+        case IDT8V97003::RFOutput::RFOUT_B:
+            reg = IDT8V97003_REG_RFOUTB_ENA;
+            break;
+        default:
+            throw std::runtime_error("8V97003: Invalid RF output");
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(this->mutex);
+
+    return !!(this->readReg(reg) & IDT8V97003_REG_RFOUTA_ENA_RFOUTA_ENA);
+}
 void IDT8V97003::setRFOutputPower(IDT8V97003::RFOutput output, uint8_t power)
 {
     if(power > 12)
@@ -511,7 +538,7 @@ void IDT8V97003::configReferenceInput(double freq, bool diff)
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    this->rmwReg(IDT8V97003_REG_RDIV_HIGH, (uint8_t)~(IDT8V97003_REG_RDIV_HIGH_REF_DBL_DELAY | IDT8V97003_REG_RDIV_HIGH_INPUT_TYPE), ((freq < 50000000UL) ? IDT8V97003_REG_RDIV_HIGH_REF_DBL_DELAY : 0) | (diff ? IDT8V97003_REG_RDIV_HIGH_INPUT_TYPE : 0));
+    this->rmwReg(IDT8V97003_REG_RDIV_HIGH, (uint8_t)~(IDT8V97003_REG_RDIV_HIGH_REF_DBL_DELAY | IDT8V97003_REG_RDIV_HIGH_INPUT_TYPE), ((freq < 50e6) ? IDT8V97003_REG_RDIV_HIGH_REF_DBL_DELAY : 0) | (diff ? IDT8V97003_REG_RDIV_HIGH_INPUT_TYPE : 0));
 
     this->ref_freq = freq;
 }
@@ -1086,7 +1113,7 @@ double IDT8V97003::getFeedbackDivider()
 }
 bool IDT8V97003::isFeedbackDividerFractional(double& dist)
 {
-    uint8_t buf[10];
+    uint8_t buf[8];
 
     this->readReg(IDT8V97003_REG_NFRAC_LOW, buf, 8);
 

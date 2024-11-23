@@ -485,6 +485,7 @@ public:
     {
         this->enableRFOutput(output, false);
     }
+    bool isRFOutputEnabled(IDT8V97003::RFOutput output);
     void setRFOutputPower(IDT8V97003::RFOutput output, uint8_t power);
     uint8_t getRFOutputPower(IDT8V97003::RFOutput output);
 
