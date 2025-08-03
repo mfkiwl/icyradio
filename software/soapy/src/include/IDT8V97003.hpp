@@ -8,6 +8,7 @@
 #include <mutex>
 #include <cmath>
 #include <math.h>
+#include <stdexcept>
 #include "AXISPI.hpp"
 #include "AXIGPIO.hpp"
 #include "Utils.hpp"

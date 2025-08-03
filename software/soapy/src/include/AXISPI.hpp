@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <mutex>
 #include <thread>
+#include <stdexcept>
 #include "AXIPeripheral.hpp"
 #include "Utils.hpp"
 

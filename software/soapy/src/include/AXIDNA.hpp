@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <stdexcept>
 #include "AXIPeripheral.hpp"
 #include "Utils.hpp"
 

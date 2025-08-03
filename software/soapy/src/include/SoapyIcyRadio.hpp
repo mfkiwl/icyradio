@@ -12,6 +12,7 @@
 #include <thread>
 #include <chrono>
 #include <fcntl.h>
+#include <stdexcept>
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
 #include <SoapySDR/ConverterRegistry.hpp>

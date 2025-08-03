@@ -7,6 +7,7 @@
 #include <chrono>
 #include <mutex>
 #include <cmath>
+#include <stdexcept>
 #include "AXIIIC.hpp"
 #include "AXIGPIO.hpp"
 #include "AXIIRQCtrl.hpp"

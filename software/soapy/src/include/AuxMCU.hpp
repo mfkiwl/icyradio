@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include <stdexcept>
 #include "AXIIIC.hpp"
 #include "Utils.hpp"
 

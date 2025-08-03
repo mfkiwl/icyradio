@@ -7,6 +7,7 @@
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include <stdexcept>
 #include "AXIPeripheral.hpp"
 #include "AD9361.hpp"
 #include "Utils.hpp"

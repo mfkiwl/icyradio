@@ -7,6 +7,7 @@
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include <stdexcept>
 #include "AXISPI.hpp"
 #include "Utils.hpp"
 

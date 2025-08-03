@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <stdexcept>
 #include "ioctl.hpp"
 #include "AXIPeripheral.hpp"
 #include "Utils.hpp"

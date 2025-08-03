@@ -7,6 +7,7 @@
 #include <chrono>
 #include <mutex>
 #include <atomic>
+#include <stdexcept>
 #include "AXIPeripheral.hpp"
 #include "AXIIRQCtrl.hpp"
 #include "Utils.hpp"
