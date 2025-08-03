@@ -408,14 +408,14 @@ void idt8v97003_set_lock_detect_precision(uint8_t ubPrecision);
 uint8_t idt8v97003_get_lock_detect_pin_mode();
 void idt8v97003_set_lock_detect_pin_mode(uint8_t ubMode);
 
-float idt8v97003_get_feedback_divider();
-uint8_t idt8v97003_is_feedback_divider_fractional(float *pfDist);
+double idt8v97003_get_feedback_divider();
+uint8_t idt8v97003_is_feedback_divider_fractional(double *pgDist);
 
-float idt8v97003_get_vco_frequency();
-float idt8v97003_get_frequency();
-void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTimeout, int32_t lLockTimeout);
+double idt8v97003_get_vco_frequency();
+double idt8v97003_get_frequency();
+void idt8v97003_set_frequency(double gFreq, uint8_t ubSetLoopBW, int32_t lCalTimeout, int32_t lLockTimeout);
 
-float idt8v97003_get_phase();
-void idt8v97003_set_phase(float fPhase);
+double idt8v97003_get_phase();
+void idt8v97003_set_phase(double gPhase);
 
 #endif // __IDT8V97003_H__

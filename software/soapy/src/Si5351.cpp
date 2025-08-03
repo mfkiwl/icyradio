@@ -617,7 +617,7 @@ void Si5351::configXTAL(double freq, Si5351::XTALCapacitance cap)
 
     std::lock_guard<std::recursive_mutex> lock(this->mutex);
 
-    this->writeReg(SI5351_REG_XTAL_CL, val);
+    this->writeReg(SI5351_REG_XTAL_CL, val | 0x12);
 
     this->xtal_freq = freq;
 }

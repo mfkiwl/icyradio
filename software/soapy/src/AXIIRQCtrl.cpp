@@ -118,6 +118,34 @@ uint32_t AXIIRQCtrl::getIPVersion()
     return this->readReg(AXI_IRQ_CTRL_REG_VERSION);
 }
 
+uint8_t AXIIRQCtrl::getMSIVectorCount()
+{
+    uint32_t reg = this->readReg(AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS);
+
+    if(!(reg & AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_ENABLED))
+        return 0;
+
+    switch(reg & 0x0000000E)
+    {
+        case AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_1:
+            return 1;
+        case AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_2:
+            return 2;
+        case AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_4:
+            return 4;
+        case AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_8:
+            return 8;
+        case AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_16:
+            return 16;
+        case AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_32:
+            return 32;
+        default:
+            return 0;
+    }
+
+    return 0;
+}
+
 void AXIIRQCtrl::configIRQ(AXIIRQCtrl::IRQNumber irq, AXIIRQCtrl::IRQMode mode, uint8_t dest, bool enable)
 {
     if(irq >= AXIIRQCtrl::IRQNumber::MAX)

@@ -9,14 +9,29 @@
 #include "AXIPeripheral.hpp"
 #include "Utils.hpp"
 
-#define AXI_IRQ_CTRL_REG_VERSION        0x00
-#define AXI_IRQ_CTRL_REG_IRQ_ENABLE     0x04
-#define AXI_IRQ_CTRL_REG_IRQ_ENABLE_SET 0x08
-#define AXI_IRQ_CTRL_REG_IRQ_ENABLE_CLR 0x0C
-#define AXI_IRQ_CTRL_REG_IRQ_PEND       0x10
-#define AXI_IRQ_CTRL_REG_IRQ_PEND_SET   0x14
-#define AXI_IRQ_CTRL_REG_IRQ_PEND_CLR   0x18
-#define AXI_IRQ_CTRL_REG_IRQ_CONFIG(n)  (0x80 + (n) * 4)
+#define AXI_IRQ_CTRL_REG_VERSION                    0x00
+#define AXI_IRQ_CTRL_REG_IRQ_ENABLE                 0x04
+#define AXI_IRQ_CTRL_REG_IRQ_ENABLE_SET             0x08
+#define AXI_IRQ_CTRL_REG_IRQ_ENABLE_CLR             0x0C
+#define AXI_IRQ_CTRL_REG_IRQ_PEND                   0x10
+#define AXI_IRQ_CTRL_REG_IRQ_PEND_SET               0x14
+#define AXI_IRQ_CTRL_REG_IRQ_PEND_CLR               0x18
+#define AXI_IRQ_CTRL_REG_IRQ_ACKED                  0x1C
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS            0x40
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_REQ_FIFO_WR_PTR   0x44
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_REQ_FIFO_RD_PTR   0x48
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_REQ_FIFO_COUNT    0x4C
+#define AXI_IRQ_CTRL_REG_IRQ_CONFIG(n)              (0x80 + (n) * 4)
+
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_ENABLED        BIT(0)
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_1     0x00000000
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_2     0x00000002
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_4     0x00000004
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_8     0x00000006
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_16    0x00000008
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_MSI_NUM_VECS_32    0x0000000A
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_REQ_FIFO_EMPTRY    BIT(8)
+#define AXI_IRQ_CTRL_REG_PCIE_MSI_STATUS_REQ_FIFO_FULL      BIT(9)
 
 #define AXI_IRQ_CTRL_REG_IRQ_CONFIG_IRQ_DEST(n)             (((n) & 0x3F) << 0)
 #define AXI_IRQ_CTRL_REG_IRQ_CONFIG_IRQ_DEST_PCIE_MSI(n)    AXI_IRQ_CTRL_REG_IRQ_CONFIG_IRQ_DEST((n) + 0)
@@ -81,6 +96,12 @@ public:
     void init(int fd);
 
     uint32_t getIPVersion();
+
+    uint8_t getMSIVectorCount();
+    inline bool isMSISupported()
+    {
+        return this->getMSIVectorCount() > 0;
+    }
 
     void configIRQ(AXIIRQCtrl::IRQNumber irq, AXIIRQCtrl::IRQMode mode, uint8_t dest, bool enable);
     void setISR(AXIIRQCtrl::IRQNumber irq, AXIIRQCtrl::ISR isr, void *arg = nullptr);

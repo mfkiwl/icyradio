@@ -66,7 +66,7 @@ void admv1014_power_up();
 void admv1014_reset();
 uint8_t admv1014_get_chip_id();
 uint8_t admv1014_get_revision();
-void admv1014_update_lo_filters(float fFreq);
+void admv1014_update_lo_filters(double gFreq);
 void admv1014_set_det_prog(uint8_t ubValue);
 uint8_t admv1014_get_det_prog();
 int32_t admv1014_get_det_prog_range_min(uint8_t ubValue);

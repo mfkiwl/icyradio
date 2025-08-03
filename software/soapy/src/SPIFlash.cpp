@@ -709,8 +709,9 @@ void SPIFlash::verify(uint32_t addr, uint8_t *src, uint32_t size, uint32_t chunk
 
         this->read(addr, buf, chunk);
 
-        if(std::memcmp(src, buf, chunk))
-            throw std::runtime_error("SPI Flash: Verification failed");
+        for(uint32_t i = 0; i < chunk; i++)
+            if(src[i] != buf[i])
+                throw std::runtime_error("SPI Flash: Verification failed at address " + std::to_string(addr + i) + " (expected " + std::to_string(src[i]) + ", got " + std::to_string(buf[i]) + ")");
 
         addr += chunk;
         src += chunk;
@@ -745,8 +746,9 @@ void SPIFlash::verify(uint32_t addr, std::ifstream &src, uint32_t size, uint32_t
 
         src.read((char *)src_buf, chunk);
 
-        if(std::memcmp(src_buf, buf, chunk))
-            throw std::runtime_error("SPI Flash: Verification failed");
+        for(uint32_t i = 0; i < chunk; i++)
+            if(src_buf[i] != buf[i])
+                throw std::runtime_error("SPI Flash: Verification failed at address " + std::to_string(addr + i) + " (expected " + std::to_string(src_buf[i]) + ", got " + std::to_string(buf[i]) + ")");
 
         addr += chunk;
         size -= chunk;
@@ -776,8 +778,9 @@ void SPIFlash::verifyDualIO(uint32_t addr, uint8_t *src, uint32_t size, uint32_t
 
         this->readDualIO(addr, buf, chunk, false, true);
 
-        if(std::memcmp(src, buf, chunk))
-            throw std::runtime_error("SPI Flash: Verification failed");
+        for(uint32_t i = 0; i < chunk; i++)
+            if(src[i] != buf[i])
+                throw std::runtime_error("SPI Flash: Verification failed at address " + std::to_string(addr + i) + " (expected " + std::to_string(src[i]) + ", got " + std::to_string(buf[i]) + ")");
 
         addr += chunk;
         src += chunk;
@@ -812,8 +815,9 @@ void SPIFlash::verifyDualIO(uint32_t addr, std::ifstream &src, uint32_t size, ui
 
         src.read((char *)src_buf, chunk);
 
-        if(std::memcmp(src_buf, buf, chunk))
-            throw std::runtime_error("SPI Flash: Verification failed");
+        for(uint32_t i = 0; i < chunk; i++)
+            if(src_buf[i] != buf[i])
+                throw std::runtime_error("SPI Flash: Verification failed at address " + std::to_string(addr + i) + " (expected " + std::to_string(src_buf[i]) + ", got " + std::to_string(buf[i]) + ")");
 
         addr += chunk;
         size -= chunk;
@@ -843,8 +847,9 @@ void SPIFlash::verifyQuadIO(uint32_t addr, uint8_t *src, uint32_t size, uint32_t
 
         this->readQuadIO(addr, buf, chunk, false, true);
 
-        if(std::memcmp(src, buf, chunk))
-            throw std::runtime_error("SPI Flash: Verification failed");
+        for(uint32_t i = 0; i < chunk; i++)
+            if(src[i] != buf[i])
+                throw std::runtime_error("SPI Flash: Verification failed at address " + std::to_string(addr + i) + " (expected " + std::to_string(src[i]) + ", got " + std::to_string(buf[i]) + ")");
 
         addr += chunk;
         src += chunk;
@@ -879,8 +884,9 @@ void SPIFlash::verifyQuadIO(uint32_t addr, std::ifstream &src, uint32_t size, ui
 
         src.read((char *)src_buf, chunk);
 
-        if(std::memcmp(src_buf, buf, chunk))
-            throw std::runtime_error("SPI Flash: Verification failed");
+        for(uint32_t i = 0; i < chunk; i++)
+            if(src_buf[i] != buf[i])
+                throw std::runtime_error("SPI Flash: Verification failed at address " + std::to_string(addr + i) + " (expected " + std::to_string(src_buf[i]) + ", got " + std::to_string(buf[i]) + ")");
 
         addr += chunk;
         size -= chunk;
@@ -899,7 +905,7 @@ void SPIFlash::eraseChip()
 
     this->spi.controller->selectSlave(this->spi.ss_mask, false); // This unlocks mutex
 
-    this->waitNotBusy();
+    this->waitNotBusy(30000);
 }
 void SPIFlash::eraseSector(uint32_t addr)
 {

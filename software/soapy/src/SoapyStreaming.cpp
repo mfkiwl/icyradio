@@ -120,12 +120,17 @@ SoapySDR::Stream *SoapyIcyRadio::setupStream(const int direction, const std::str
         if(direction == SOAPY_SDR_RX)
         {
             s->fmt_convert = SoapySDR::ConverterRegistry::getFunction(native, format);
-            s->fmt_scale = 1.0 / full_scale;
+
+            // When converting to float (complex), scale 12-bit packed into 16-bit (native) to [-1, 1]
+            if(format.find("CF") == 0)
+                s->fmt_scale = (double)SoapySDR::S16_FULL_SCALE / (double)full_scale;
+            else
+                s->fmt_scale = 1.0;
         }
         else if(direction == SOAPY_SDR_TX)
         {
             s->fmt_convert = SoapySDR::ConverterRegistry::getFunction(format, native);
-            s->fmt_scale = full_scale;
+            s->fmt_scale = 1.0;
         }
 
         if(s->fmt_convert == nullptr)

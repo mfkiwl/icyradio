@@ -6399,13 +6399,15 @@ design rules under a new name.</description>
 <attribute name="NAME" x="42.8" y="91.9" size="0.8" layer="25" font="vector" ratio="10" rot="SR90" align="center-left"/>
 <attribute name="VOLTAGE" value="" x="37.4" y="92.4" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="R611" library="Resistor" package="RES0402" value="49.9 Ohms" x="30.7" y="85.5" smashed="yes" rot="R90">
+<element name="R611" library="Resistor" package="RES0402" value="50 Ohms" x="30.7" y="85.5" smashed="yes" rot="R90">
 <attribute name="POWER" value="" x="30.7" y="85.5" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SERIES" value="FC0402" x="30.7" y="85.5" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="TOLERANCE" value="" x="30.7" y="85.5" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="R613" library="Resistor" package="RES0402" value="49.9 Ohms" x="30.7" y="83.5" smashed="yes" rot="R270">
+<element name="R613" library="Resistor" package="RES0402" value="50 Ohms" x="30.7" y="83.5" smashed="yes" rot="R270">
 <attribute name="NAME" x="29.7" y="82.4" size="0.8" layer="25" font="vector" ratio="10" rot="SR270" align="center-left"/>
 <attribute name="POWER" value="" x="31" y="83.6" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SERIES" value="FC0402" x="30.7" y="83.5" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="TOLERANCE" value="" x="31" y="83.6" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
 <element name="C601" library="Capacitor" package="CAP0402" value="100nF" x="46.3" y="86.7" smashed="yes" rot="R90">
@@ -7237,39 +7239,47 @@ design rules under a new name.</description>
 <attribute name="NAME" x="46.5" y="83.3" size="0.8" layer="25" font="vector" ratio="10" rot="SR0" align="center-left"/>
 <attribute name="VOLTAGE" value="" x="43.9" y="-1279.3" size="1.778" layer="27" display="off"/>
 </element>
-<element name="C626" library="Capacitor" package="CAP0402" value="20pF" x="29.2" y="85" smashed="yes" rot="R180">
+<element name="C626" library="Capacitor" package="CAP0402" value="10nF" x="29.2" y="85" smashed="yes" rot="R180">
 <attribute name="NAME" x="25.3" y="84" size="0.8" layer="25" font="vector" ratio="10" rot="SR0" align="center-left"/>
+<attribute name="SERIES" value="ATC520L" x="29.2" y="85" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="VOLTAGE" value="" x="29.7" y="1452" size="1.778" layer="27" rot="R180" display="off"/>
 </element>
-<element name="C624" library="Capacitor" package="CAP0402" value="20pF" x="29.2" y="84" smashed="yes" rot="R180">
+<element name="C624" library="Capacitor" package="CAP0402" value="10nF" x="29.2" y="84" smashed="yes" rot="R180">
 <attribute name="NAME" x="25.3" y="83" size="0.8" layer="25" font="vector" ratio="10" rot="SR0" align="center-left"/>
+<attribute name="SERIES" value="ATC520L" x="29.2" y="84" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="VOLTAGE" value="" x="29.7" y="1453.5" size="1.778" layer="27" rot="R180" display="off"/>
 </element>
-<element name="R615" library="Resistor" package="RES0402" value="49.9 Ohms" x="28.7" y="82.5" smashed="yes" rot="R90">
+<element name="R615" library="Resistor" package="RES0402" value="50 Ohms" x="28.7" y="82.5" smashed="yes" rot="R90">
 <attribute name="NAME" x="27.7" y="82.4" size="0.8" layer="25" font="vector" ratio="10" rot="SR270" align="center-left"/>
 <attribute name="POWER" value="" x="1400.7" y="82" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SERIES" value="FC0402" x="28.7" y="82.5" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="TOLERANCE" value="" x="1400.7" y="82" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="C625" library="Capacitor" package="CAP0402" value="20pF" x="29.2" y="88" smashed="yes" rot="R180">
+<element name="C625" library="Capacitor" package="CAP0402" value="10nF" x="29.2" y="88" smashed="yes" rot="R180">
 <attribute name="NAME" x="25.5" y="89.1" size="0.8" layer="25" font="vector" ratio="10" rot="SR0" align="center-left"/>
+<attribute name="SERIES" value="ATC520L" x="29.2" y="88" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="VOLTAGE" value="" x="29.7" y="1462.5" size="1.778" layer="27" rot="R180" display="off"/>
 </element>
-<element name="R614" library="Resistor" package="RES0402" value="49.9 Ohms" x="28.7" y="90.5" smashed="yes" rot="R270">
+<element name="R614" library="Resistor" package="RES0402" value="50 Ohms" x="28.7" y="90.5" smashed="yes" rot="R270">
 <attribute name="NAME" x="28.7" y="91.5" size="0.8" layer="25" font="vector" ratio="10" rot="SR90" align="center-left"/>
 <attribute name="POWER" value="" x="-1350.3" y="91" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SERIES" value="FC0402" x="28.7" y="90.5" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="TOLERANCE" value="" x="-1350.3" y="91" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
-<element name="C623" library="Capacitor" package="CAP0402" value="20pF" x="29.2" y="89" smashed="yes" rot="R180">
+<element name="C623" library="Capacitor" package="CAP0402" value="10nF" x="29.2" y="89" smashed="yes" rot="R180">
 <attribute name="NAME" x="25.5" y="90" size="0.8" layer="25" font="vector" ratio="10" rot="SR0" align="center-left"/>
+<attribute name="SERIES" value="ATC520L" x="29.2" y="89" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="VOLTAGE" value="" x="29.7" y="1468.5" size="1.778" layer="27" rot="R180" display="off"/>
 </element>
-<element name="R610" library="Resistor" package="RES0402" value="49.9 Ohms" x="30.7" y="87.5" smashed="yes" rot="R270">
+<element name="R610" library="Resistor" package="RES0402" value="50 Ohms" x="30.7" y="87.5" smashed="yes" rot="R270">
 <attribute name="POWER" value="" x="-1353.8" y="88" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="SERIES" value="FC0402" x="30.7" y="87.5" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="TOLERANCE" value="" x="-1353.8" y="88" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
-<element name="R612" library="Resistor" package="RES0402" value="49.9 Ohms" x="30.7" y="89.5" smashed="yes" rot="R90">
+<element name="R612" library="Resistor" package="RES0402" value="50 Ohms" x="30.7" y="89.5" smashed="yes" rot="R90">
 <attribute name="NAME" x="30.7" y="90.5" size="0.8" layer="25" font="vector" ratio="10" rot="SR90" align="center-left"/>
 <attribute name="POWER" value="" x="1414.7" y="89" size="1.778" layer="27" rot="R90" display="off"/>
+<attribute name="SERIES" value="FC0402" x="30.7" y="89.5" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="TOLERANCE" value="" x="1414.7" y="89" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="L601" library="Inductor" package="IND0402" value="18nH" x="33.2" y="90" smashed="yes" rot="R180">
@@ -7278,6 +7288,7 @@ design rules under a new name.</description>
 </element>
 <element name="C619" library="Capacitor" package="CAP0402" value="10nF" x="31.7" y="90.5" smashed="yes" rot="R90">
 <attribute name="NAME" x="31.7" y="91.5" size="0.8" layer="25" font="vector" ratio="10" rot="SR90" align="center-left"/>
+<attribute name="SERIES" value="ATC520L" x="31.7" y="90.5" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="VOLTAGE" value="" x="1420.7" y="90.5" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
 <element name="L602" library="Inductor" package="IND0402" value="18nH" x="33.2" y="83" smashed="yes" rot="R180">
@@ -7286,6 +7297,7 @@ design rules under a new name.</description>
 </element>
 <element name="C620" library="Capacitor" package="CAP0402" value="10nF" x="31.7" y="82.5" smashed="yes" rot="R270">
 <attribute name="NAME" x="30.6" y="82.4" size="0.8" layer="25" font="vector" ratio="10" rot="SR270" align="center-left"/>
+<attribute name="SERIES" value="ATC520L" x="31.7" y="82.5" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="VOLTAGE" value="" x="-1361.8" y="82.5" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
 <element name="R608" library="Resistor" package="RES0402" value="20 Ohms" x="40.5" y="80.6" smashed="yes" rot="R90">

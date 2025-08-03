@@ -673,7 +673,7 @@ int main()
     // UPD350_UNSELECT();
     // delay_ms(500);
 
-    // uint8_t buf[8];
+    // uint8_t buf[16];
 
     // UPD350_SELECT();
 
@@ -684,7 +684,7 @@ int main()
 
     // sercom0_spi_write_byte(0x00, 1);
 
-    // sercom0_spi_read(buf, 8, 0x00);
+    // sercom0_spi_read(buf, 16, 0x00);
 
     // UPD350_UNSELECT();
 

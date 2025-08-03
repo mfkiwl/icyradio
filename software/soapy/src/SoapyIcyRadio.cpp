@@ -416,6 +416,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
 
         DLOGF(SOAPY_SDR_TRACE, "AXI IRQ Controller:");
         DLOGF(SOAPY_SDR_TRACE, "  IP Version: v%u.%u.%u", AXI_CORE_VERSION_MAJOR(ver), AXI_CORE_VERSION_MINOR(ver), AXI_CORE_VERSION_PATCH(ver));
+        DLOGF(SOAPY_SDR_TRACE, "  Number of MSI vectors: %u", this->axi_irq_ctrl->getMSIVectorCount());
     }
 
     this->axi_irq_ctrl->configIRQ(AXIIRQCtrl::IRQNumber::AXI_DMAC_RF_TX0, AXIIRQCtrl::IRQMode::LEVEL_HIGH, AXI_IRQ_CTRL_REG_IRQ_CONFIG_IRQ_DEST_PCIE_MSI(0), false);
@@ -691,6 +692,7 @@ void SoapyIcyRadio::initPeripheralsPreClocks()
 
     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash JEDEC ID: 0x%06X", this->spi_flash->readJEDECID());
     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash Device Name: %s", this->spi_flash->getDeviceName().c_str());
+    DLOGF(SOAPY_SDR_DEBUG, "SPI Flash Device Size: %llu MiB", this->spi_flash->getDeviceSize() / 1024 / 1024);
     DLOGF(SOAPY_SDR_DEBUG, "SPI Flash Unique ID: %016lX", this->spi_flash->readUniqueID());
     DLOGF(SOAPY_SDR_TRACE, "SPI Flash Status registers (0, 1, 2): 0x%02X, 0x%02X, 0x%02X", this->spi_flash->readStatus(), this->spi_flash->readStatus2(), this->spi_flash->readStatus3());
 

@@ -6,31 +6,31 @@ static uint8_t ubCachedRFOutPwr[2];
 static idt8v97003_loop_filter_t sLoopFilter;
 static float fTargetLoopBw;
 
-float idt8v97003_get_gcd(float a, float b)
+double idt8v97003_get_gcd(double a, double b)
 {
     if((a == 0.0) || (b == 0.0))
         return MAX(a, b);
 
     while(b != 0.0)
     {
-        float _a = a;
+        double _a = a;
 
         a = b;
-        b = fmodf(_a, b);
+        b = fmod(_a, b);
     }
 
     return a;
 }
-float idt8v97003_get_mixed_number(float *a, float *b)
+double idt8v97003_get_mixed_number(double *a, double *b)
 {
-    float gcd = idt8v97003_get_gcd(*a, *b);
-    float _a = *a / gcd;
-    float _b = *b / gcd;
+    double gcd = idt8v97003_get_gcd(*a, *b);
+    double _a = *a / gcd;
+    double _b = *b / gcd;
 
-    *a = fmodf(_a, _b);
+    *a = fmod(_a, _b);
     *b = _b;
 
-    return floorf(_a / _b);
+    return floor(_a / _b);
 }
 
 static int8_t idt8v97003_validate_loop_filter(idt8v97003_loop_filter_t *pLoopFilter)
@@ -1051,7 +1051,7 @@ void idt8v97003_set_lock_detect_pin_mode(uint8_t ubMode)
     idt8v97003_rmw_register8(IDT8V97003_REG_LD_CTL1, ~0x30, ubMode);
 }
 
-float idt8v97003_get_feedback_divider()
+double idt8v97003_get_feedback_divider()
 {
     uint8_t ubReg[10];
 
@@ -1062,11 +1062,11 @@ float idt8v97003_get_feedback_divider()
     uint32_t c = ubReg[6] | ((uint32_t)ubReg[7] << 8) | ((uint32_t)ubReg[8] << 16) | ((uint32_t)ubReg[9] << 24);
 
     if(!b || !c || b >= c)
-        return (float)a;
+        return (double)a;
 
-    return (float)a + (float)b / (float)c;
+    return (double)a + (double)b / (double)c;
 }
-uint8_t idt8v97003_is_feedback_divider_fractional(float *pfDist)
+uint8_t idt8v97003_is_feedback_divider_fractional(double *pgDist)
 {
     uint8_t ubReg[8];
 
@@ -1078,20 +1078,20 @@ uint8_t idt8v97003_is_feedback_divider_fractional(float *pfDist)
     if(!b || !c || b >= c)
         return 0;
 
-    float fFrac = (float)b / (float)c;
+    double gFrac = (double)b / (double)c;
 
-    if(!pfDist)
+    if(!pgDist)
         return 1;
 
-    if(fFrac < 0.5)
-        *pfDist = fFrac;
+    if(gFrac < 0.5)
+        *pgDist = gFrac;
     else
-        *pfDist = 1.0 - fFrac;
+        *pgDist = 1.0 - gFrac;
 
     return 1;
 }
 
-float idt8v97003_get_vco_frequency()
+double idt8v97003_get_vco_frequency()
 {
     float fPFDFreq = idt8v97003_get_pfd_frequency();
 
@@ -1100,17 +1100,17 @@ float idt8v97003_get_vco_frequency()
 
     return fPFDFreq * idt8v97003_get_feedback_divider();
 }
-float idt8v97003_get_frequency()
+double idt8v97003_get_frequency()
 {
-    float fVCOFreq = idt8v97003_get_vco_frequency();
+    double gVCOFreq = idt8v97003_get_vco_frequency();
 
-    if(fVCOFreq == 0.0)
+    if(gVCOFreq == 0.0)
         return 0.0;
 
     uint8_t ubReg = idt8v97003_read_register8(IDT8V97003_REG_OUT_DIV_DBL);
 
     if(ubReg & IDT8V97003_REG_OUT_DIV_DBL_OUT_DBL_ENA)
-        return fVCOFreq * 2.0;
+        return gVCOFreq * 2.0;
 
     if(ubReg & IDT8V97003_REG_OUT_DIV_DBL_OUT_DIV_ENA)
     {
@@ -1119,17 +1119,17 @@ float idt8v97003_get_frequency()
         if(ubDiv == 0 || ubDiv > 5)
             return 0.0;
 
-        return fVCOFreq / BIT(ubDiv);
+        return gVCOFreq / BIT(ubDiv);
     }
 
-    return fVCOFreq;
+    return gVCOFreq;
 }
-void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTimeout, int32_t lLockTimeout)
+void idt8v97003_set_frequency(double gFreq, uint8_t ubSetLoopBW, int32_t lCalTimeout, int32_t lLockTimeout)
 {
-    if(fFreq < 171.875e6)
+    if(gFreq < 171.875e6)
         return;
 
-    if(fFreq > 18e9)
+    if(gFreq > 18e9)
         return;
 
     // VCO works from 5.5 GHz to 11 GHz
@@ -1137,15 +1137,15 @@ void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTime
     // For frequencies above 11 GHz, the VCO doubler must be used
     uint8_t ubM0Div = 0;
     uint8_t ubOutDoublerEn = 0;
-    float fVCOFreq;
+    double gVCOFreq;
 
-    if(fFreq < 5.5e9)
+    if(gFreq < 5.5e9)
     {
         for(uint8_t i = 1; i < 6; i++)
         {
-            fVCOFreq = fFreq * BIT(i);
+            gVCOFreq = gFreq * BIT(i);
 
-            if(fVCOFreq >= 5.5e9 && fVCOFreq <= 11e9) // VCO operating range
+            if(gVCOFreq >= 5.5e9 && gVCOFreq <= 11e9) // VCO operating range
             {
                 ubM0Div = i;
 
@@ -1156,14 +1156,14 @@ void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTime
         if(!ubM0Div)
             return;
     }
-    else if(fFreq > 11e9)
+    else if(gFreq > 11e9)
     {
-        fVCOFreq = fFreq / 2;
+        gVCOFreq = gFreq / 2;
         ubOutDoublerEn = 1;
     }
     else
     {
-        fVCOFreq = fFreq;
+        gVCOFreq = gFreq;
     }
 
     float fPFDFreq = idt8v97003_get_pfd_frequency();
@@ -1171,9 +1171,9 @@ void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTime
     if(fPFDFreq == 0.0)
         return;
 
-    float b = fVCOFreq;
-    float c = fPFDFreq;
-    float a = idt8v97003_get_mixed_number(&b, &c);
+    double b = gVCOFreq;
+    double c = fPFDFreq;
+    double a = idt8v97003_get_mixed_number(&b, &c);
 
     while(c >= 2e32)
     {
@@ -1181,9 +1181,9 @@ void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTime
         c /= 2.0;
     }
 
-    a = roundf(a);
-    b = roundf(b);
-    c = roundf(c);
+    a = round(a);
+    b = round(b);
+    c = round(c);
 
     if(b == c)
     {
@@ -1236,14 +1236,14 @@ void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTime
     {
         // Re-calculate the fPhase word since it depends and is limited by MOD
         uint32_t ulPrevMod = idt8v97003_read_register32(IDT8V97003_REG_NMOD_LOW); // Its ok to read after write because the register is buffered
-        uint64_t fPhase = idt8v97003_read_register32(IDT8V97003_REG_PHASE_LOW);
+        uint64_t ullPhase = idt8v97003_read_register32(IDT8V97003_REG_PHASE_LOW);
 
-        fPhase = ((fPhase * (uint64_t)c) / ulPrevMod);
+        ullPhase = ((ullPhase * (uint64_t)c) / ulPrevMod);
 
-        if(fPhase >= c)
-            fPhase = c - 1;
+        if(ullPhase >= c)
+            ullPhase = c - 1;
 
-        idt8v97003_write_register32(IDT8V97003_REG_PHASE_LOW, fPhase & 0xFFFFFFFF);
+        idt8v97003_write_register32(IDT8V97003_REG_PHASE_LOW, ullPhase & 0xFFFFFFFF);
 
         ubManCtlReg |= IDT8V97003_REG_MANUAL_CTL_PH_ADJ;
     }
@@ -1258,7 +1258,7 @@ void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTime
     {
         ubOutReg |= IDT8V97003_REG_OUT_DIV_DBL_OUT_DBL_ENA;
 
-        if(fVCOFreq < 7e9)
+        if(gVCOFreq < 7e9)
             ubOutReg |= IDT8V97003_REG_OUT_DIV_DBL_OUT_DBL_FREQ;
     }
 
@@ -1313,7 +1313,7 @@ void idt8v97003_set_frequency(float fFreq, uint8_t ubSetLoopBW, int32_t lCalTime
     }
 }
 
-float idt8v97003_get_phase()
+double idt8v97003_get_phase()
 {
     uint32_t b = idt8v97003_read_register32(IDT8V97003_REG_NFRAC_LOW);
 
@@ -1334,15 +1334,15 @@ float idt8v97003_get_phase()
     if(ulPhase > c)
         return 0.0;
 
-    return (float)ulPhase / (float)c * 360.0;
+    return (double)ulPhase / (double)c * 360.0;
 }
-void idt8v97003_set_phase(float fPhase)
+void idt8v97003_set_phase(double gPhase)
 {
-    while(fPhase >= 360.0)
-        fPhase -= 360.0;
+    while(gPhase >= 360.0)
+        gPhase -= 360.0;
 
-    while(fPhase < 0.0)
-        fPhase += 360.0;
+    while(gPhase < 0.0)
+        gPhase += 360.0;
 
     uint32_t b = idt8v97003_read_register32(IDT8V97003_REG_NFRAC_LOW);
 
@@ -1354,7 +1354,7 @@ void idt8v97003_set_phase(float fPhase)
     if(c < 2)
         return;
 
-    uint32_t ulPhase = (uint32_t)roundf((float)c * fPhase / 360.0);
+    uint32_t ulPhase = (uint32_t)roundf((double)c * gPhase / 360.0);
 
     idt8v97003_write_register32(IDT8V97003_REG_PHASE_LOW, ulPhase);
     idt8v97003_transfer_double_buffer();

@@ -18,130 +18,143 @@ static void sigHandler(const int)
     g_done = true;
 }
 
-bool loadSystemSoapyIcyRadio()
+void readFlash(SoapyIcyRadio *sdr, std::string filename)
 {
-    try
+    std::ifstream file(filename);
+
+    if(file.good())
     {
-        for(const auto &mod : SoapySDR::listModules())
+        std::cerr << "File \"" << filename << "\" already exists. Overwrite? [y/N] ";
+
+        char c = std::cin.get();
+
+        if(c != 'y' && c != 'Y')
         {
-            if(mod.find("/libIcyRadioSupport.so") == std::string::npos)
-                continue;
+            std::cout << "Aborting." << std::endl;
 
-            std::cout << "Loading system IcyRadio support module \"" << mod << "\"..." << std::endl;
-
-            std::string e = SoapySDR::loadModule(mod);
-
-            if(!e.empty())
-            {
-                std::cerr << "Error loading module: " << e << std::endl;
-
-                return false;
-            }
-
-            std::cout << "Loaded version " << SoapySDR::getModuleVersion(mod) << std::endl;
-
-            return true;
+            return;
         }
     }
-    catch (const std::exception& ex)
-    {
-        std::cerr << "Exception loading local IcyRadio support module: " << ex.what() << std::endl;
 
-        return false;
+    std::cout << "Saving flash dump to \"" << filename << "\"..." << std::endl;
+
+    std::ofstream out(filename, std::ios::binary);
+
+    const uint32_t size = sdr->spi_flash->getDeviceSize();
+    const auto t_start = std::chrono::high_resolution_clock::now();
+    sdr->spi_flash->readQuadIO(0x00000000, out, size);
+    const auto t_end = std::chrono::high_resolution_clock::now();
+
+    const auto dt = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start).count();
+    const double rate = (double)size * 8 / dt;
+
+    std::cout << "Read " << size << " bytes in " << (dt / 1e6) << " s (" << rate << " Mbps)" << std::endl;
+
+    out.close();
+}
+void writeFlash(SoapyIcyRadio *sdr, std::string filename)
+{
+    std::ifstream in(filename, std::ios::binary);
+
+    if(!in.good())
+    {
+        std::cerr << "Failed to open file \"" << filename << "\". Does the file exist?" << std::endl;
+
+        return;
     }
 
-    return false;
-}
-bool loadLocalSoapyIcyRadio()
-{
-    try
+    const uint32_t size = sdr->spi_flash->getDeviceSize();
+    in.seekg(0, std::ios::end);
+    const size_t fsize = in.tellg();
+    in.seekg(0, std::ios::beg);
+
+    if(fsize != size)
     {
-        char cwd[256] = {0};
+        std::cerr << "File size (" << fsize << " bytes) does not match flash size (" << size << " bytes)" << std::endl;
 
-        char* _ = getcwd(cwd, sizeof(cwd)); // Suppress unused warning
-        (void)_;
-
-        const std::string mod = std::string(cwd) + "/libIcyRadioSupport.so";
-
-        if(access(mod.c_str(), F_OK) == -1)
-            return false;
-
-        std::cout << "Loading local IcyRadio support module \"" << mod << "\"..." << std::endl;
-
-        std::string e = SoapySDR::loadModule(mod);
-
-        if(!e.empty())
-        {
-            std::cerr << "Error loading module: " << e << std::endl;
-
-            return false;
-        }
-
-        std::cout << "Loaded version " << SoapySDR::getModuleVersion(mod) << std::endl;
-
-        return true;
-    }
-    catch (const std::exception& ex)
-    {
-        std::cerr << "Exception loading local IcyRadio support module: " << ex.what() << std::endl;
-
-        return false;
+        return;
     }
 
-    return false;
+    std::cout << "Writing contents of \"" << filename << "\" to the flash..." << std::endl;
+
+    const auto t_start = std::chrono::high_resolution_clock::now();
+    sdr->spi_flash->write(0x00000000, in, size, true, true);
+    const auto t_end = std::chrono::high_resolution_clock::now();
+
+    const auto dt = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start).count();
+    const double rate = (double)size * 8 / dt;
+
+    std::cout << "Wrote " << size << " bytes in " << (dt / 1e6) << " s (" << rate << " Mbps)" << std::endl;
+
+    in.close();
 }
-bool loadSoapyIcyRadio()
+void verifyFlash(SoapyIcyRadio *sdr, std::string filename)
 {
-    if(loadLocalSoapyIcyRadio())
-        return true;
+    std::ifstream in(filename, std::ios::binary);
 
-    if(loadSystemSoapyIcyRadio())
-        return true;
+    if(!in.good())
+    {
+        std::cerr << "Failed to open file \"" << filename << "\". Does the file exist?" << std::endl;
 
-    return false;
+        return;
+    }
+
+    const uint32_t size = sdr->spi_flash->getDeviceSize();
+    in.seekg(0, std::ios::end);
+    const size_t fsize = in.tellg();
+    in.seekg(0, std::ios::beg);
+
+    if(fsize != size)
+    {
+        std::cerr << "File size (" << fsize << " bytes) does not match flash size (" << size << " bytes)" << std::endl;
+
+        return;
+    }
+
+    std::cout << "Verifying contents of \"" << filename << "\" with the flash..." << std::endl;
+
+    const auto t_start = std::chrono::high_resolution_clock::now();
+    sdr->spi_flash->verifyQuadIO(0x00000000, in, size);
+    const auto t_end = std::chrono::high_resolution_clock::now();
+
+    const auto dt = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start).count();
+    const double rate = (double)size * 8 / dt;
+
+    std::cout << "Verified " << size << " bytes in " << (dt / 1e6) << " s (" << rate << " Mbps)" << std::endl;
+
+    in.close();
 }
 
-void testToneTX(SoapyIcyRadio *sdr, double fc)
+void testToneTX(SoapyIcyRadio *sdr, double fc, double fs, uint8_t ant_0, uint8_t ant_1, double att_0, double att_1)
 {
-    sdr->setSampleRate(SOAPY_SDR_TX, 0, 16 * 1024 * 1024);
-    sdr->setBandwidth(SOAPY_SDR_TX, 0, 12e6);
+    sdr->setSampleRate(SOAPY_SDR_TX, 0, fs);
+    sdr->setBandwidth(SOAPY_SDR_TX, 0, 0.75 * fs);
     sdr->setFrequency(SOAPY_SDR_TX, 0, fc);
-    sdr->setAntenna(SOAPY_SDR_TX, 0, "TX1A");
-    sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -30);
-    sdr->setGain(SOAPY_SDR_TX, 1, "TX_RF", -30);
+    sdr->setAntenna(SOAPY_SDR_TX, 0, ant_0 ? "TX1B" : "TX1A");
+    sdr->setAntenna(SOAPY_SDR_TX, 1, ant_1 ? "TX2B" : "TX2A");
+    sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", att_0);
+    sdr->setGain(SOAPY_SDR_TX, 1, "TX_RF", att_1);
 
-    double full_scale = 0;
-    const std::string fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, full_scale);
-    const size_t samp_sz = SoapySDR::formatToSize(fmt);
-
-    auto s = sdr->setupStream(SOAPY_SDR_TX, fmt, {0, 1});
-
+    auto s = sdr->setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32, {0, 1});
     const size_t mtu = sdr->getStreamMTU(s);
 
-    std::vector<std::vector<uint8_t>> buf(2, std::vector<uint8_t>(samp_sz * mtu)); // Native
+    std::vector<std::vector<float>> buf(2, std::vector<float>(2 * mtu));
 
     // Tone - fs / 8 on channel 0, fs / 16 on channel 1
+    for(size_t i = 0; i < mtu; i++)
     {
-        std::vector<std::vector<float>> f_buf(2, std::vector<float>(2 * mtu));
+        buf[0][2 * i + 0] = std::cos(2 * M_PI * i / 8); // I
+        buf[0][2 * i + 1] = std::sin(2 * M_PI * i / 8); // Q
 
-        for(size_t i = 0; i < mtu; i++)
-        {
-            f_buf[0][2 * i + 0] = std::cos(2 * M_PI * i / 8);
-            f_buf[0][2 * i + 1] = std::sin(2 * M_PI * i / 8);
-
-            f_buf[1][2 * i + 0] = std::cos(2 * M_PI * i / 16);
-            f_buf[1][2 * i + 1] = std::sin(2 * M_PI * i / 16);
-        }
-
-        SoapySDR::ConverterRegistry::getFunction(SOAPY_SDR_CF32, fmt)(f_buf[0].data(), buf[0].data(), mtu, full_scale);
-        SoapySDR::ConverterRegistry::getFunction(SOAPY_SDR_CF32, fmt)(f_buf[1].data(), buf[1].data(), mtu, full_scale);
-
-        double f0 = sdr->getFrequency(SOAPY_SDR_TX, 0) + sdr->getSampleRate(SOAPY_SDR_TX, 0) / 8;
-        double f1 = sdr->getFrequency(SOAPY_SDR_TX, 0) + sdr->getSampleRate(SOAPY_SDR_TX, 0) / 16;
-
-        std::cout << "Channel 0: Tone with f = " << (size_t)f0 << " Hz" << std::endl;
-        std::cout << "Channel 1: Tone with f = " << (size_t)f1 << " Hz" << std::endl;
+        buf[1][2 * i + 0] = std::cos(2 * M_PI * i / 16); // I
+        buf[1][2 * i + 1] = std::sin(2 * M_PI * i / 16); // Q
     }
+
+    double f0 = sdr->getFrequency(SOAPY_SDR_TX, 0) + sdr->getSampleRate(SOAPY_SDR_TX, 0) / 8;
+    double f1 = sdr->getFrequency(SOAPY_SDR_TX, 1) + sdr->getSampleRate(SOAPY_SDR_TX, 1) / 16;
+
+    std::cout << "Channel 0: Tone with f = " << (size_t)f0 << " Hz" << std::endl;
+    std::cout << "Channel 1: Tone with f = " << (size_t)f1 << " Hz" << std::endl;
 
     std::vector<void *> bufs(2);
 
@@ -168,45 +181,33 @@ void testToneTX(SoapyIcyRadio *sdr, double fc)
 }
 void testTimedToneTX(SoapyIcyRadio *sdr, double fc)
 {
-    sdr->setSampleRate(SOAPY_SDR_TX, 0, 16 * 1024 * 1024);
+    sdr->setSampleRate(SOAPY_SDR_TX, 0, 16e6);
     sdr->setBandwidth(SOAPY_SDR_TX, 0, 12e6);
     sdr->setFrequency(SOAPY_SDR_TX, 0, fc);
     sdr->setAntenna(SOAPY_SDR_TX, 0, "TX1A");
     sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -30);
     sdr->setGain(SOAPY_SDR_TX, 1, "TX_RF", -30);
 
-    double full_scale = 0;
-    const std::string fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, full_scale);
-    const size_t samp_sz = SoapySDR::formatToSize(fmt);
-
-    auto s = sdr->setupStream(SOAPY_SDR_TX, fmt, {0, 1});
-
+    auto s = sdr->setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32, {0, 1});
     const size_t mtu = sdr->getStreamMTU(s);
 
-    std::vector<std::vector<uint8_t>> buf(2, std::vector<uint8_t>(samp_sz * mtu)); // Native
+    std::vector<std::vector<float>> buf(2, std::vector<float>(2 * mtu));
 
     // Tone - fs / 8 on channel 0, fs / 16 on channel 1
+    for(size_t i = 0; i < mtu; i++)
     {
-        std::vector<std::vector<float>> f_buf(2, std::vector<float>(2 * mtu));
+        buf[0][2 * i + 0] = std::cos(2 * M_PI * i / 8); // I
+        buf[0][2 * i + 1] = std::sin(2 * M_PI * i / 8); // Q
 
-        for(size_t i = 0; i < mtu; i++)
-        {
-            f_buf[0][2 * i + 0] = std::cos(2 * M_PI * i / 8);
-            f_buf[0][2 * i + 1] = std::sin(2 * M_PI * i / 8);
-
-            f_buf[1][2 * i + 0] = std::cos(2 * M_PI * i / 16);
-            f_buf[1][2 * i + 1] = std::sin(2 * M_PI * i / 16);
-        }
-
-        SoapySDR::ConverterRegistry::getFunction(SOAPY_SDR_CF32, fmt)(f_buf[0].data(), buf[0].data(), mtu, full_scale);
-        SoapySDR::ConverterRegistry::getFunction(SOAPY_SDR_CF32, fmt)(f_buf[1].data(), buf[1].data(), mtu, full_scale);
-
-        double f0 = sdr->getFrequency(SOAPY_SDR_TX, 0) + sdr->getSampleRate(SOAPY_SDR_TX, 0) / 8;
-        double f1 = sdr->getFrequency(SOAPY_SDR_TX, 0) + sdr->getSampleRate(SOAPY_SDR_TX, 0) / 16;
-
-        std::cout << "Channel 0: Tone with f = " << (size_t)f0 << " Hz and ~50% duty cycle" << std::endl;
-        std::cout << "Channel 1: Tone with f = " << (size_t)f1 << " Hz and ~50% duty cycle" << std::endl;
+        buf[1][2 * i + 0] = std::cos(2 * M_PI * i / 16); // I
+        buf[1][2 * i + 1] = std::sin(2 * M_PI * i / 16); // Q
     }
+
+    double f0 = sdr->getFrequency(SOAPY_SDR_TX, 0) + sdr->getSampleRate(SOAPY_SDR_TX, 0) / 8;
+    double f1 = sdr->getFrequency(SOAPY_SDR_TX, 1) + sdr->getSampleRate(SOAPY_SDR_TX, 1) / 16;
+
+    std::cout << "Channel 0: Tone with f = " << (size_t)f0 << " Hz and ~50% duty cycle" << std::endl;
+    std::cout << "Channel 1: Tone with f = " << (size_t)f1 << " Hz and ~50% duty cycle" << std::endl;
 
     std::vector<void *> bufs(2);
 
@@ -249,36 +250,24 @@ void testAWGNTX(SoapyIcyRadio *sdr, double fc, double fs)
     sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -30);
     sdr->setGain(SOAPY_SDR_TX, 1, "TX_RF", -30);
 
-    double full_scale = 0;
-    const std::string fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, full_scale);
-    const size_t samp_sz = SoapySDR::formatToSize(fmt);
-
-    auto s = sdr->setupStream(SOAPY_SDR_TX, fmt, {0, 1});
-
+    auto s = sdr->setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32, {0, 1});
     const size_t mtu = sdr->getStreamMTU(s);
 
-    std::vector<std::vector<uint8_t>> buf(2, std::vector<uint8_t>(samp_sz * mtu)); // Native
+    std::vector<std::vector<float>> buf(2, std::vector<float>(2 * mtu));
 
     // Random data on both channels
+    for(size_t i = 0; i < mtu; i++)
     {
-        std::vector<std::vector<float>> f_buf(2, std::vector<float>(2 * mtu));
+        // Scale to [-1.0, 1.0]
+        buf[0][2 * i + 0] = 2.0 * (double)std::rand() / RAND_MAX - 1.0; // I
+        buf[0][2 * i + 1] = 2.0 * (double)std::rand() / RAND_MAX - 1.0; // Q
 
-        for(size_t i = 0; i < mtu; i++)
-        {
-            // Scale to [-1.0, 1.0]
-            f_buf[0][2 * i + 0] = 2.0 * (double)std::rand() / RAND_MAX - 1.0;
-            f_buf[0][2 * i + 1] = 2.0 * (double)std::rand() / RAND_MAX - 1.0;
-
-            f_buf[1][2 * i + 0] = 2.0 * (double)std::rand() / RAND_MAX - 1.0;
-            f_buf[1][2 * i + 1] = 2.0 * (double)std::rand() / RAND_MAX - 1.0;
-        }
-
-        SoapySDR::ConverterRegistry::getFunction(SOAPY_SDR_CF32, fmt)(f_buf[0].data(), buf[0].data(), mtu, full_scale);
-        SoapySDR::ConverterRegistry::getFunction(SOAPY_SDR_CF32, fmt)(f_buf[1].data(), buf[1].data(), mtu, full_scale);
-
-        std::cout << "Channel 0: Random data (White noise) at fc = " << (size_t)fc << " Hz and bandwidth = " << (size_t)(0.5 * fs) << " Hz" << std::endl;
-        std::cout << "Channel 1: Random data (White noise) at fc = " << (size_t)fc << " Hz and bandwidth = " << (size_t)(0.5 * fs) << " Hz" << std::endl;
+        buf[1][2 * i + 0] = 2.0 * (double)std::rand() / RAND_MAX - 1.0; // I
+        buf[1][2 * i + 1] = 2.0 * (double)std::rand() / RAND_MAX - 1.0; // Q
     }
+
+    std::cout << "Channel 0: Random data (White noise) at fc = " << (size_t)fc << " Hz and bandwidth = " << (size_t)(0.5 * fs) << " Hz" << std::endl;
+    std::cout << "Channel 1: Random data (White noise) at fc = " << (size_t)fc << " Hz and bandwidth = " << (size_t)(0.5 * fs) << " Hz" << std::endl;
 
     std::vector<void *> bufs(2);
 
@@ -315,15 +304,8 @@ void testRFDelay(SoapyIcyRadio *sdr, double fc, double fs)
     sdr->setGain(SOAPY_SDR_TX, 0, "TX_RF", -10);
     sdr->setGain(SOAPY_SDR_RX, 0, "RX_RF", 0);
 
-    double tx_full_scale = 0;
-    const std::string tx_fmt = sdr->getNativeStreamFormat(SOAPY_SDR_TX, 0, tx_full_scale);
-    const size_t tx_samp_sz = SoapySDR::formatToSize(tx_fmt);
-    auto tx_s = sdr->setupStream(SOAPY_SDR_TX, tx_fmt, {0});
-
-    double rx_full_scale = 0;
-    const std::string rx_fmt = sdr->getNativeStreamFormat(SOAPY_SDR_RX, 0, rx_full_scale);
-    const size_t rx_samp_sz = SoapySDR::formatToSize(rx_fmt);
-    auto rx_s = sdr->setupStream(SOAPY_SDR_RX, rx_fmt, {0});
+    auto tx_s = sdr->setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32, {0});
+    auto rx_s = sdr->setupStream(SOAPY_SDR_RX, SOAPY_SDR_CF32, {0});
 
     const size_t tx_mtu = sdr->getStreamMTU(tx_s);
     const size_t rx_mtu = sdr->getStreamMTU(rx_s);
@@ -331,13 +313,11 @@ void testRFDelay(SoapyIcyRadio *sdr, double fc, double fs)
     const size_t tx_size = mtu / 2;
     const size_t rx_size = mtu;
 
-    std::vector<uint8_t> tx_buf(tx_samp_sz * tx_size); // Native
+    std::vector<float> tx_buf(2 * tx_size);
     void *tx_bufs[] = {tx_buf.data()};
 
-    std::vector<uint8_t> rx_buf(rx_samp_sz * rx_size); // Native
+    std::vector<float> rx_buf(2 * rx_size);
     void *rx_bufs[] = {rx_buf.data()};
-
-    std::vector<float> f_buf(2 * rx_size); // RX size is bigger, we will reuse the buffer
 
     // Generate sinc pulse
     for(size_t i = 0; i < tx_size; i++)
@@ -346,11 +326,9 @@ void testRFDelay(SoapyIcyRadio *sdr, double fc, double fs)
         float max = tx_size / 2;
         float x = 8 * (_i - max) / max;
 
-        f_buf[2 * i + 0] = (_i == max) ? 1.0 : (std::sin(M_PI * x) / (M_PI * x)); // I
-        f_buf[2 * i + 1] = 0; // Q
+        tx_buf[2 * i + 0] = (_i == max) ? 1.0 : (std::sin(M_PI * x) / (M_PI * x)); // I
+        tx_buf[2 * i + 1] = 0; // Q
     }
-
-    SoapySDR::ConverterRegistry::getFunction(SOAPY_SDR_CF32, tx_fmt)(f_buf.data(), tx_buf.data(), tx_size, tx_full_scale);
 
     // --------------|--------------|--------------|--------------|--------> Time
     //  rx starts -> | tx starts -> |   tx ends -> |   rx ends -> |
@@ -395,7 +373,7 @@ void testRFDelay(SoapyIcyRadio *sdr, double fc, double fs)
 
     for(size_t i = 0; i < tx_size; i++)
     {
-        float mag = std::sqrt(f_buf[2 * i + 0] * f_buf[2 * i + 0] + f_buf[2 * i + 1] * f_buf[2 * i + 1]);
+        float mag = std::sqrt(tx_buf[2 * i + 0] * tx_buf[2 * i + 0] + tx_buf[2 * i + 1] * tx_buf[2 * i + 1]);
 
         tf << mag;
 
@@ -404,14 +382,11 @@ void testRFDelay(SoapyIcyRadio *sdr, double fc, double fs)
     }
 
     tf << "])" << std::endl;
-
-    SoapySDR::ConverterRegistry::getFunction(rx_fmt, SOAPY_SDR_CF32)(rx_buf.data(), f_buf.data(), rx_size, 1.0 / rx_full_scale);
-
     tf << "rx = np.array([";
 
     for(size_t i = 0; i < rx_size; i++)
     {
-        float mag = std::sqrt(f_buf[2 * i + 0] * f_buf[2 * i + 0] + f_buf[2 * i + 1] * f_buf[2 * i + 1]);
+        float mag = std::sqrt(rx_buf[2 * i + 0] * rx_buf[2 * i + 0] + rx_buf[2 * i + 1] * rx_buf[2 * i + 1]);
 
         tf << mag;
 
@@ -951,18 +926,59 @@ void testMMWaveSynth(SoapyIcyRadio *sdr, double f_pfd, double lf_rs, double lf_c
     sdr->mmw_synth->powerDown();
 }
 
+void print_usage(const char *exec_name, const option *opts)
+{
+    std::cerr << "Usage: " << exec_name << " [-h] [-S <serial>] [--flash-read|--flash-write|--flash-verify --flash-file <file>] [-t <test> [-a <args>]]" << std::endl;
+    std::cerr << "Options:" << std::endl;
+
+    for(size_t i = 0; opts[i].name != nullptr; i++)
+    {
+        std::cerr << "  ";
+
+        if(opts[i].val)
+            std::cerr << "-" << (char)opts[i].val << ", ";
+
+        std::cerr << "--" << opts[i].name;
+
+        if(opts[i].has_arg == required_argument)
+            std::cerr << " <value>:";
+        else if(opts[i].has_arg == optional_argument)
+            std::cerr << " [<value>]:";
+        else
+            std::cerr << ":";
+
+        if(std::string(opts[i].name) == "help")
+            std::cerr << " Show this help";
+        else if(std::string(opts[i].name) == "serial")
+            std::cerr << " Set the device serial number";
+        else if(std::string(opts[i].name) == "flash-read")
+            std::cerr << " Read the contents from the device flash";
+        else if(std::string(opts[i].name) == "flash-write")
+            std::cerr << " Write the file contents to the device flash";
+        else if(std::string(opts[i].name) == "flash-verify")
+            std::cerr << " Verify the flash contents against the given file";
+        else if(std::string(opts[i].name) == "flash-file")
+            std::cerr << " Flash the given file to the device";
+        else if(std::string(opts[i].name) == "test")
+            std::cerr << " Run the given test";
+        else if(std::string(opts[i].name) == "test-args")
+            std::cerr << " Set the test arguments";
+
+        std::cerr << std::endl;
+    }
+}
 int main(int argc, char *argv[])
 {
     signal(SIGINT, sigHandler);
 
-    // if(!loadSoapyIcyRadio())
-    // {
-    //     std::cerr << "Could not find a suitable IcyRadio support module." << std::endl;
-
-    //     return EXIT_FAILURE;
-    // }
+    SoapySDR::Device::enumerate(); // To force automatic module loading
 
     SoapySDR::Kwargs args;
+
+    bool flash_read = false;
+    bool flash_write = false;
+    bool flash_verify = false;
+    std::string flash_file = "./icyradio_flash.bin";
 
     bool do_tone_test = false;
     bool do_timed_tone_test = false;
@@ -972,22 +988,40 @@ int main(int argc, char *argv[])
     bool do_mmw_synth_test = false;
     SoapySDR::Kwargs test_args;
 
-    static struct option long_options[] =
+    const struct option opts[] =
     {
+        {"help", no_argument, nullptr, 'h'},
         {"serial", required_argument, nullptr, 'S'},
-        {"flash-file", required_argument, nullptr, 'f'},
+        {"flash-read", no_argument, nullptr, 0},
+        {"flash-write", no_argument, nullptr, 0},
+        {"flash-verify", no_argument, nullptr, 0},
+        {"flash-file", required_argument, nullptr, 0},
         {"test", required_argument, nullptr, 't'},
         {"test-args", required_argument, nullptr, 'a'},
         {nullptr, no_argument, nullptr, '\0'}
     };
 
-    int c;
-    int option_index = 0;
-
-    while((c = getopt_long(argc, argv, "S:f:t:a:", long_options, &option_index)) != -1)
+    if(argc < 2)
     {
-        switch(c)
+        print_usage(argv[0], opts);
+
+        return EXIT_FAILURE;
+    }
+
+    int opt_c;
+    int opt_i = 0;
+
+    while((opt_c = getopt_long(argc, argv, "hS:t:a:", opts, &opt_i)) != -1)
+    {
+        switch(opt_c)
         {
+            case 'h':
+            {
+                print_usage(argv[0], opts);
+
+                return EXIT_SUCCESS;
+            }
+            break;
             case 'S':
             {
                 args["serial"] = optarg;
@@ -1032,8 +1066,61 @@ int main(int argc, char *argv[])
                 test_args = SoapySDR::KwargsFromString(optarg);
             }
             break;
+            case 0: // Long options only
+            {
+                if(std::string(opts[opt_i].name) == "flash-read")
+                {
+                    if(flash_write)
+                    {
+                        std::cerr << "Cannot read and write flash at the same time." << std::endl;
+
+                        return EXIT_FAILURE;
+                    }
+
+                    flash_read = true;
+                }
+                else if(std::string(opts[opt_i].name) == "flash-write")
+                {
+                    if(flash_read)
+                    {
+                        std::cerr << "Cannot read and write flash at the same time." << std::endl;
+
+                        return EXIT_FAILURE;
+                    }
+
+                    flash_write = true;
+                }
+                else if(std::string(opts[opt_i].name) == "flash-verify")
+                {
+                    if(flash_read)
+                    {
+                        std::cerr << "Cannot read and verify flash at the same time." << std::endl;
+
+                        return EXIT_FAILURE;
+                    }
+
+                    flash_verify = true;
+                }
+                else if(std::string(opts[opt_i].name) == "flash-file")
+                {
+                    flash_file = optarg;
+                }
+                else
+                {
+                    std::cerr << "Unknown option: " << opts[opt_i].name << std::endl;
+                    print_usage(argv[0], opts);
+
+                    return EXIT_FAILURE;
+                }
+            }
+            break;
             default:
+            {
+                std::cerr << "Unknown option: " << opt_c << std::endl;
+                print_usage(argv[0], opts);
+
                 return EXIT_FAILURE;
+            }
         }
     }
 
@@ -1067,13 +1154,39 @@ int main(int argc, char *argv[])
 
     std::cout << "IcyRadio device created." << std::endl;
 
+    if(flash_read)
+    {
+        std::cout << "Reading flash..." << std::endl;
+
+        readFlash(sdr, flash_file);
+    }
+
+    if(flash_write)
+    {
+        std::cout << "Writing flash..." << std::endl;
+
+        writeFlash(sdr, flash_file);
+    }
+
+    if(flash_verify)
+    {
+        std::cout << "Verifying flash..." << std::endl;
+
+        verifyFlash(sdr, flash_file);
+    }
+
     if(do_tone_test)
     {
         double fc = test_args.count("fc") > 0 ? std::stod(test_args.at("fc")) : 480e6;
+        double fs = test_args.count("fs") > 0 ? std::stod(test_args.at("fs")) : 16e6;
+        uint8_t ant_0 = test_args.count("ant_0") > 0 ? std::stoul(test_args.at("ant_0")) : 0;
+        uint8_t ant_1 = test_args.count("ant_1") > 0 ? std::stoul(test_args.at("ant_1")) : 0;
+        double att_0 = test_args.count("att_0") > 0 ? std::stod(test_args.at("att_0")) : -60;
+        double att_1 = test_args.count("att_1") > 0 ? std::stod(test_args.at("att_1")) : -60;
 
         std::cout << "Running tone test..." << std::endl;
 
-        testToneTX(sdr, fc);
+        testToneTX(sdr, fc, fs, ant_0, ant_1, att_0, att_1);
     }
 
     if(do_timed_tone_test)

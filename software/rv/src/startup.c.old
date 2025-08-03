@@ -1,0 +1,482 @@
+#include <stdint.h>
+#include "custom_ops.h"
+#include "irq.h"
+#include "utils.h"
+
+#define ENABLE_FAST_IRQ
+#define ENABLE_Q_REGS
+// #define ENABLE_IRQ_STACK
+
+extern void *_estack; // Stack pointer
+
+extern uint32_t _siiram1; // DDR3 code source
+extern uint32_t _siram1; // DDR3 code destination
+extern uint32_t _eiram1;
+
+extern uint32_t _sidram1; // DDR3 data source
+extern uint32_t _sdram1; // DDR3 data destination
+extern uint32_t _edram1;
+
+extern uint32_t _sbss; // BSS destination
+extern uint32_t _ebss;
+
+extern uint32_t _end;
+
+uint32_t __attribute__((section(".__irq_regs")))  __irq_regs[32] = {0};
+#ifdef ENABLE_IRQ_STACK
+uint32_t __attribute__((section(".__irq_stack"))) __irq_stack[128] = {0};
+#endif
+
+void _default_isr()
+{
+    while(1);
+}
+
+void __attribute__ ((weak)) __libc_init_array()
+{
+
+}
+
+extern int init();
+extern int main();
+
+#define DEFAULT_ISR "_default_isr"
+
+void BRAM_CODE __start()
+{
+    volatile uint32_t *src, *dst;
+
+    src = &_siiram1;
+    dst = &_siram1;
+
+    while (dst < &_eiram1) // Copy DDR3 code
+        *(dst++) = *(src++);
+
+    src = &_sidram1;
+    dst = &_sdram1;
+
+    while (dst < &_edram1) // Copy DDR3 data
+        *(dst++) = *(src++);
+
+    src = 0;
+    dst = &_sbss;
+
+    while (dst < &_ebss) // Zero BSS
+        *(dst++) = 0;
+
+    __libc_init_array();
+
+
+    __enable_irqs();
+
+    init();
+    main();
+
+    __disable_irqs();
+    while(1);
+}
+uint32_t * BRAM_CODE __irq_handler(uint32_t *regs, uint32_t irqs)
+{
+	static unsigned int ext_irq_4_count = 0;
+	static unsigned int ext_irq_5_count = 0;
+	static unsigned int timer_irq_count = 0;
+
+	// checking compressed isa q0 reg handling
+	if ((irqs & 6) != 0) {
+		uint32_t pc = (regs[0] & 1) ? regs[0] - 3 : regs[0] - 4;
+		uint32_t instr = *(uint16_t*)pc;
+
+		if ((instr & 3) == 3)
+			instr = instr | (*(uint16_t*)(pc + 2)) << 16;
+
+		if (((instr & 3) != 3) != (regs[0] & 1)) {
+			// print_str("Mismatch between q0 LSB and decoded instruction word! q0=0x");
+			// print_hex(regs[0], 8);
+			// print_str(", instr=0x");
+			// if ((instr & 3) == 3)
+			// 	print_hex(instr, 8);
+			// else
+			// 	print_hex(instr, 4);
+			// print_str("\n");
+			__asm__ volatile ("ebreak");
+		}
+	}
+
+	if ((irqs & (1<<4)) != 0) {
+		ext_irq_4_count++;
+		// print_str("[EXT-IRQ-4]");
+	}
+
+	if ((irqs & (1<<5)) != 0) {
+		ext_irq_5_count++;
+		// print_str("[EXT-IRQ-5]");
+	}
+
+	if ((irqs & 1) != 0) {
+		timer_irq_count++;
+		// print_str("[TIMER-IRQ]");
+	}
+
+	if ((irqs & 6) != 0)
+	{
+		uint32_t pc = (regs[0] & 1) ? regs[0] - 3 : regs[0] - 4;
+		uint32_t instr = *(uint16_t*)pc;
+
+		if ((instr & 3) == 3)
+			instr = instr | (*(uint16_t*)(pc + 2)) << 16;
+
+		// print_str("\n");
+		// print_str("------------------------------------------------------------\n");
+
+		if ((irqs & 2) != 0) {
+			if (instr == 0x00100073 || instr == 0x9002) {
+				// print_str("EBREAK instruction at 0x");
+				// print_hex(pc, 8);
+				// print_str("\n");
+			} else {
+				// print_str("Illegal Instruction at 0x");
+				// print_hex(pc, 8);
+				// print_str(": 0x");
+				// print_hex(instr, ((instr & 3) == 3) ? 8 : 4);
+				// print_str("\n");
+			}
+		}
+
+		if ((irqs & 4) != 0) {
+			// print_str("Bus error in Instruction at 0x");
+			// print_hex(pc, 8);
+			// print_str(": 0x");
+			// print_hex(instr, ((instr & 3) == 3) ? 8 : 4);
+			// print_str("\n");
+		}
+
+		for (int i = 0; i < 8; i++)
+		for (int k = 0; k < 4; k++)
+		{
+			int r = i + k*8;
+
+			if (r == 0) {
+				// print_str("pc  ");
+			} else
+			if (r < 10) {
+				// print_chr('x');
+				// print_chr('0' + r);
+				// print_chr(' ');
+				// print_chr(' ');
+			} else
+			if (r < 20) {
+				// print_chr('x');
+				// print_chr('1');
+				// print_chr('0' + r - 10);
+				// print_chr(' ');
+			} else
+			if (r < 30) {
+				// print_chr('x');
+				// print_chr('2');
+				// print_chr('0' + r - 20);
+				// print_chr(' ');
+			} else {
+				// print_chr('x');
+				// print_chr('3');
+				// print_chr('0' + r - 30);
+				// print_chr(' ');
+			}
+
+			// print_hex(regs[r], 8);
+			// print_str(k == 3 ? "\n" : "    ");
+		}
+
+		// print_str("------------------------------------------------------------\n");
+
+		// print_str("Number of fast external IRQs counted: ");
+		// print_dec(ext_irq_4_count);
+		// print_str("\n");
+
+		// print_str("Number of slow external IRQs counted: ");
+		// print_dec(ext_irq_5_count);
+		// print_str("\n");
+
+		// print_str("Number of timer IRQs counted: ");
+		// print_dec(timer_irq_count);
+		// print_str("\n");
+
+		__asm__ volatile ("ebreak");
+	}
+
+	return regs;
+}
+
+void __attribute__ ((naked, section(".__reset_vec"))) __reset_vec()
+{
+    __start();
+}
+void __attribute__ ((naked, section(".__irq_vec")))   __irq_vec()
+{
+#ifdef ENABLE_Q_REGS
+    __asm__ volatile(picorv32_setq_insn(q2, x1) "\n");
+    __asm__ volatile(picorv32_setq_insn(q3, x2) "\n");
+
+    __asm__ volatile("lui x1, %%hi(%[offset])" "\n" :: [offset] "i" (__irq_regs));
+    __asm__ volatile("addi x1, x1, %%lo(%[offset])" "\n" :: [offset] "i" (__irq_regs));
+
+    __asm__ volatile(picorv32_getq_insn(x2, q0) "\n");
+    __asm__ volatile("sw x2, 0*4(x1)" "\n");
+
+    __asm__ volatile(picorv32_getq_insn(x2, q2) "\n");
+    __asm__ volatile("sw x2, 1*4(x1)" "\n");
+
+    __asm__ volatile(picorv32_getq_insn(x2, q3) "\n");
+    __asm__ volatile("sw x2, 2*4(x1)" "\n");
+
+#ifdef ENABLE_FAST_IRQ
+    __asm__ volatile("sw x5, 5*4(x1)" "\n");
+    __asm__ volatile("sw x6, 6*4(x1)" "\n");
+    __asm__ volatile("sw x7, 7*4(x1)" "\n");
+    __asm__ volatile("sw x10, 10*4(x1)" "\n");
+    __asm__ volatile("sw x11, 11*4(x1)" "\n");
+    __asm__ volatile("sw x12, 12*4(x1)" "\n");
+    __asm__ volatile("sw x13, 13*4(x1)" "\n");
+    __asm__ volatile("sw x14, 14*4(x1)" "\n");
+    __asm__ volatile("sw x15, 15*4(x1)" "\n");
+    __asm__ volatile("sw x16, 16*4(x1)" "\n");
+    __asm__ volatile("sw x17, 17*4(x1)" "\n");
+    __asm__ volatile("sw x28, 28*4(x1)" "\n");
+    __asm__ volatile("sw x29, 29*4(x1)" "\n");
+    __asm__ volatile("sw x30, 30*4(x1)" "\n");
+    __asm__ volatile("sw x31, 31*4(x1)" "\n");
+#else
+    __asm__ volatile("sw x3, 3*4(x1)" "\n");
+    __asm__ volatile("sw x4, 4*4(x1)" "\n");
+    __asm__ volatile("sw x5, 5*4(x1)" "\n");
+    __asm__ volatile("sw x6, 6*4(x1)" "\n");
+    __asm__ volatile("sw x7, 7*4(x1)" "\n");
+    __asm__ volatile("sw x8, 8*4(x1)" "\n");
+    __asm__ volatile("sw x9, 9*4(x1)" "\n");
+    __asm__ volatile("sw x10, 10*4(x1)" "\n");
+    __asm__ volatile("sw x11, 11*4(x1)" "\n");
+    __asm__ volatile("sw x12, 12*4(x1)" "\n");
+    __asm__ volatile("sw x13, 13*4(x1)" "\n");
+    __asm__ volatile("sw x14, 14*4(x1)" "\n");
+    __asm__ volatile("sw x15, 15*4(x1)" "\n");
+    __asm__ volatile("sw x16, 16*4(x1)" "\n");
+    __asm__ volatile("sw x17, 17*4(x1)" "\n");
+    __asm__ volatile("sw x18, 18*4(x1)" "\n");
+    __asm__ volatile("sw x19, 19*4(x1)" "\n");
+    __asm__ volatile("sw x20, 20*4(x1)" "\n");
+    __asm__ volatile("sw x21, 21*4(x1)" "\n");
+    __asm__ volatile("sw x22, 22*4(x1)" "\n");
+    __asm__ volatile("sw x23, 23*4(x1)" "\n");
+    __asm__ volatile("sw x24, 24*4(x1)" "\n");
+    __asm__ volatile("sw x25, 25*4(x1)" "\n");
+    __asm__ volatile("sw x26, 26*4(x1)" "\n");
+    __asm__ volatile("sw x27, 27*4(x1)" "\n");
+    __asm__ volatile("sw x28, 28*4(x1)" "\n");
+    __asm__ volatile("sw x29, 29*4(x1)" "\n");
+    __asm__ volatile("sw x30, 30*4(x1)" "\n");
+    __asm__ volatile("sw x31, 31*4(x1)" "\n");
+#endif
+#else
+#ifdef ENABLE_FAST_IRQ
+    __asm__ volatile("sw gp, %[offset]" "\n" :: [offset] "m" (__irq_regs[0]));
+    __asm__ volatile("sw x1, %[offset]" "\n" :: [offset] "m" (__irq_regs[1]));
+#ifndef ENABLE_IRQ_STACK
+    __asm__ volatile("sw x2, %[offset]" "\n" :: [offset] "m" (__irq_regs[2]));
+#endif
+    __asm__ volatile("sw x5, %[offset]" "\n" :: [offset] "m" (__irq_regs[5]));
+    __asm__ volatile("sw x6, %[offset]" "\n" :: [offset] "m" (__irq_regs[6]));
+    __asm__ volatile("sw x7, %[offset]" "\n" :: [offset] "m" (__irq_regs[7]));
+    __asm__ volatile("sw x10, %[offset]" "\n" :: [offset] "m" (__irq_regs[10]));
+    __asm__ volatile("sw x11, %[offset]" "\n" :: [offset] "m" (__irq_regs[11]));
+    __asm__ volatile("sw x12, %[offset]" "\n" :: [offset] "m" (__irq_regs[12]));
+    __asm__ volatile("sw x13, %[offset]" "\n" :: [offset] "m" (__irq_regs[13]));
+    __asm__ volatile("sw x14, %[offset]" "\n" :: [offset] "m" (__irq_regs[14]));
+    __asm__ volatile("sw x15, %[offset]" "\n" :: [offset] "m" (__irq_regs[15]));
+    __asm__ volatile("sw x16, %[offset]" "\n" :: [offset] "m" (__irq_regs[16]));
+    __asm__ volatile("sw x17, %[offset]" "\n" :: [offset] "m" (__irq_regs[17]));
+    __asm__ volatile("sw x28, %[offset]" "\n" :: [offset] "m" (__irq_regs[28]));
+    __asm__ volatile("sw x29, %[offset]" "\n" :: [offset] "m" (__irq_regs[29]));
+    __asm__ volatile("sw x30, %[offset]" "\n" :: [offset] "m" (__irq_regs[30]));
+    __asm__ volatile("sw x31, %[offset]" "\n" :: [offset] "m" (__irq_regs[31]));
+#else
+    __asm__ volatile("sw gp, %[offset]" "\n" :: [offset] "m" (__irq_regs[0]));
+    __asm__ volatile("sw x1, %[offset]" "\n" :: [offset] "m" (__irq_regs[1]));
+#ifndef ENABLE_IRQ_STACK
+    __asm__ volatile("sw x2, %[offset]" "\n" :: [offset] "m" (__irq_regs[2]));
+#endif
+    __asm__ volatile("sw x3, %[offset]" "\n" :: [offset] "m" (__irq_regs[3]));
+    __asm__ volatile("sw x4, %[offset]" "\n" :: [offset] "m" (__irq_regs[4]));
+    __asm__ volatile("sw x5, %[offset]" "\n" :: [offset] "m" (__irq_regs[5]));
+    __asm__ volatile("sw x6, %[offset]" "\n" :: [offset] "m" (__irq_regs[6]));
+    __asm__ volatile("sw x7, %[offset]" "\n" :: [offset] "m" (__irq_regs[7]));
+    __asm__ volatile("sw x8, %[offset]" "\n" :: [offset] "m" (__irq_regs[8]));
+    __asm__ volatile("sw x9, %[offset]" "\n" :: [offset] "m" (__irq_regs[9]));
+    __asm__ volatile("sw x10, %[offset]" "\n" :: [offset] "m" (__irq_regs[10]));
+    __asm__ volatile("sw x11, %[offset]" "\n" :: [offset] "m" (__irq_regs[11]));
+    __asm__ volatile("sw x12, %[offset]" "\n" :: [offset] "m" (__irq_regs[12]));
+    __asm__ volatile("sw x13, %[offset]" "\n" :: [offset] "m" (__irq_regs[13]));
+    __asm__ volatile("sw x14, %[offset]" "\n" :: [offset] "m" (__irq_regs[14]));
+    __asm__ volatile("sw x15, %[offset]" "\n" :: [offset] "m" (__irq_regs[15]));
+    __asm__ volatile("sw x16, %[offset]" "\n" :: [offset] "m" (__irq_regs[16]));
+    __asm__ volatile("sw x17, %[offset]" "\n" :: [offset] "m" (__irq_regs[17]));
+    __asm__ volatile("sw x18, %[offset]" "\n" :: [offset] "m" (__irq_regs[18]));
+    __asm__ volatile("sw x19, %[offset]" "\n" :: [offset] "m" (__irq_regs[19]));
+    __asm__ volatile("sw x20, %[offset]" "\n" :: [offset] "m" (__irq_regs[20]));
+    __asm__ volatile("sw x21, %[offset]" "\n" :: [offset] "m" (__irq_regs[21]));
+    __asm__ volatile("sw x22, %[offset]" "\n" :: [offset] "m" (__irq_regs[22]));
+    __asm__ volatile("sw x23, %[offset]" "\n" :: [offset] "m" (__irq_regs[23]));
+    __asm__ volatile("sw x24, %[offset]" "\n" :: [offset] "m" (__irq_regs[24]));
+    __asm__ volatile("sw x25, %[offset]" "\n" :: [offset] "m" (__irq_regs[25]));
+    __asm__ volatile("sw x26, %[offset]" "\n" :: [offset] "m" (__irq_regs[26]));
+    __asm__ volatile("sw x27, %[offset]" "\n" :: [offset] "m" (__irq_regs[27]));
+    __asm__ volatile("sw x28, %[offset]" "\n" :: [offset] "m" (__irq_regs[28]));
+    __asm__ volatile("sw x29, %[offset]" "\n" :: [offset] "m" (__irq_regs[29]));
+    __asm__ volatile("sw x30, %[offset]" "\n" :: [offset] "m" (__irq_regs[30]));
+    __asm__ volatile("sw x31, %[offset]" "\n" :: [offset] "m" (__irq_regs[31]));
+#endif
+#endif
+
+#ifdef ENABLE_IRQ_STACK
+    __asm__ volatile("lui sp, %%hi(%[offset])" "\n" :: [offset] "i" (__irq_stack));
+    __asm__ volatile("addi sp, sp, %%lo(%[offset])" "\n" :: [offset] "i" (__irq_stack));
+#endif
+
+    __asm__ volatile("lui a0, %%hi(%[offset])" "\n" :: [offset] "i" (__irq_regs));
+    __asm__ volatile("addi a0, a0, %%lo(%[offset])" "\n" :: [offset] "i" (__irq_regs));
+
+#ifdef ENABLE_Q_REGS
+    __asm__ volatile(picorv32_getq_insn(a1, q1) "\n");
+#else
+    __asm__ volatile("addi a1, tp, 0" "\n");
+#endif
+
+    __asm__ volatile("lui x1, %%hi(%[offset])" "\n" :: [offset] "i" (__irq_handler));
+    __asm__ volatile("addi x1, x1, %%lo(%[offset])" "\n" :: [offset] "i" (__irq_handler));
+    __asm__ volatile("jalr ra, x1, 0" "\n");
+
+#ifdef ENABLE_Q_REGS
+    __asm__ volatile("addi x1, a0, 0" "\n");
+
+    __asm__ volatile("lw x2, 0*4(x1)" "\n");
+    __asm__ volatile(picorv32_setq_insn(q0, x2) "\n");
+
+    __asm__ volatile("lw x2, 1*4(x1)" "\n");
+    __asm__ volatile(picorv32_setq_insn(q1, x2) "\n");
+
+    __asm__ volatile("lw x2, 2*4(x1)" "\n");
+    __asm__ volatile(picorv32_setq_insn(q2, x2) "\n");
+
+#ifdef ENABLE_FAST_IRQ
+    __asm__ volatile("lw x5, 5*4(x1)" "\n");
+    __asm__ volatile("lw x6, 6*4(x1)" "\n");
+    __asm__ volatile("lw x7, 7*4(x1)" "\n");
+    __asm__ volatile("lw x10, 10*4(x1)" "\n");
+    __asm__ volatile("lw x11, 11*4(x1)" "\n");
+    __asm__ volatile("lw x12, 12*4(x1)" "\n");
+    __asm__ volatile("lw x13, 13*4(x1)" "\n");
+    __asm__ volatile("lw x14, 14*4(x1)" "\n");
+    __asm__ volatile("lw x15, 15*4(x1)" "\n");
+    __asm__ volatile("lw x16, 16*4(x1)" "\n");
+    __asm__ volatile("lw x17, 17*4(x1)" "\n");
+    __asm__ volatile("lw x28, 28*4(x1)" "\n");
+    __asm__ volatile("lw x29, 29*4(x1)" "\n");
+    __asm__ volatile("lw x30, 30*4(x1)" "\n");
+    __asm__ volatile("lw x31, 31*4(x1)" "\n");
+#else
+    __asm__ volatile("lw x3, 3*4(x1)" "\n");
+    __asm__ volatile("lw x4, 4*4(x1)" "\n");
+    __asm__ volatile("lw x5, 5*4(x1)" "\n");
+    __asm__ volatile("lw x6, 6*4(x1)" "\n");
+    __asm__ volatile("lw x7, 7*4(x1)" "\n");
+    __asm__ volatile("lw x8, 8*4(x1)" "\n");
+    __asm__ volatile("lw x9, 9*4(x1)" "\n");
+    __asm__ volatile("lw x10, 10*4(x1)" "\n");
+    __asm__ volatile("lw x11, 11*4(x1)" "\n");
+    __asm__ volatile("lw x12, 12*4(x1)" "\n");
+    __asm__ volatile("lw x13, 13*4(x1)" "\n");
+    __asm__ volatile("lw x14, 14*4(x1)" "\n");
+    __asm__ volatile("lw x15, 15*4(x1)" "\n");
+    __asm__ volatile("lw x16, 16*4(x1)" "\n");
+    __asm__ volatile("lw x17, 17*4(x1)" "\n");
+    __asm__ volatile("lw x18, 18*4(x1)" "\n");
+    __asm__ volatile("lw x19, 19*4(x1)" "\n");
+    __asm__ volatile("lw x20, 20*4(x1)" "\n");
+    __asm__ volatile("lw x21, 21*4(x1)" "\n");
+    __asm__ volatile("lw x22, 22*4(x1)" "\n");
+    __asm__ volatile("lw x23, 23*4(x1)" "\n");
+    __asm__ volatile("lw x24, 24*4(x1)" "\n");
+    __asm__ volatile("lw x25, 25*4(x1)" "\n");
+    __asm__ volatile("lw x26, 26*4(x1)" "\n");
+    __asm__ volatile("lw x27, 27*4(x1)" "\n");
+    __asm__ volatile("lw x28, 28*4(x1)" "\n");
+    __asm__ volatile("lw x29, 29*4(x1)" "\n");
+    __asm__ volatile("lw x30, 30*4(x1)" "\n");
+    __asm__ volatile("lw x31, 31*4(x1)" "\n");
+#endif
+
+    __asm__ volatile(picorv32_getq_insn(x1, q1) "\n");
+    __asm__ volatile(picorv32_getq_insn(x2, q2) "\n");
+#else
+#ifdef ENABLE_FAST_IRQ
+    __asm__ volatile("lw gp, %[offset]" "\n" :: [offset] "m" (__irq_regs[0]));
+    __asm__ volatile("lw x1, %[offset]" "\n" :: [offset] "m" (__irq_regs[1]));
+#ifndef ENABLE_IRQ_STACK
+    __asm__ volatile("lw x2, %[offset]" "\n" :: [offset] "m" (__irq_regs[2]));
+#endif
+    __asm__ volatile("lw x5, %[offset]" "\n" :: [offset] "m" (__irq_regs[5]));
+    __asm__ volatile("lw x6, %[offset]" "\n" :: [offset] "m" (__irq_regs[6]));
+    __asm__ volatile("lw x7, %[offset]" "\n" :: [offset] "m" (__irq_regs[7]));
+    __asm__ volatile("lw x10, %[offset]" "\n" :: [offset] "m" (__irq_regs[10]));
+    __asm__ volatile("lw x11, %[offset]" "\n" :: [offset] "m" (__irq_regs[11]));
+    __asm__ volatile("lw x12, %[offset]" "\n" :: [offset] "m" (__irq_regs[12]));
+    __asm__ volatile("lw x13, %[offset]" "\n" :: [offset] "m" (__irq_regs[13]));
+    __asm__ volatile("lw x14, %[offset]" "\n" :: [offset] "m" (__irq_regs[14]));
+    __asm__ volatile("lw x15, %[offset]" "\n" :: [offset] "m" (__irq_regs[15]));
+    __asm__ volatile("lw x16, %[offset]" "\n" :: [offset] "m" (__irq_regs[16]));
+    __asm__ volatile("lw x17, %[offset]" "\n" :: [offset] "m" (__irq_regs[17]));
+    __asm__ volatile("lw x28, %[offset]" "\n" :: [offset] "m" (__irq_regs[28]));
+    __asm__ volatile("lw x29, %[offset]" "\n" :: [offset] "m" (__irq_regs[29]));
+    __asm__ volatile("lw x30, %[offset]" "\n" :: [offset] "m" (__irq_regs[30]));
+    __asm__ volatile("lw x31, %[offset]" "\n" :: [offset] "m" (__irq_regs[31]));
+#else
+    __asm__ volatile("lw gp, %[offset]" "\n" :: [offset] "m" (__irq_regs[0]));
+    __asm__ volatile("lw x1, %[offset]" "\n" :: [offset] "m" (__irq_regs[1]));
+#ifndef ENABLE_IRQ_STACK
+    __asm__ volatile("lw x2, %[offset]" "\n" :: [offset] "m" (__irq_regs[2]));
+#endif
+    __asm__ volatile("lw x3, %[offset]" "\n" :: [offset] "m" (__irq_regs[3]));
+    __asm__ volatile("lw x4, %[offset]" "\n" :: [offset] "m" (__irq_regs[4]));
+    __asm__ volatile("lw x5, %[offset]" "\n" :: [offset] "m" (__irq_regs[5]));
+    __asm__ volatile("lw x6, %[offset]" "\n" :: [offset] "m" (__irq_regs[6]));
+    __asm__ volatile("lw x7, %[offset]" "\n" :: [offset] "m" (__irq_regs[7]));
+    __asm__ volatile("lw x8, %[offset]" "\n" :: [offset] "m" (__irq_regs[8]));
+    __asm__ volatile("lw x9, %[offset]" "\n" :: [offset] "m" (__irq_regs[9]));
+    __asm__ volatile("lw x10, %[offset]" "\n" :: [offset] "m" (__irq_regs[10]));
+    __asm__ volatile("lw x11, %[offset]" "\n" :: [offset] "m" (__irq_regs[11]));
+    __asm__ volatile("lw x12, %[offset]" "\n" :: [offset] "m" (__irq_regs[12]));
+    __asm__ volatile("lw x13, %[offset]" "\n" :: [offset] "m" (__irq_regs[13]));
+    __asm__ volatile("lw x14, %[offset]" "\n" :: [offset] "m" (__irq_regs[14]));
+    __asm__ volatile("lw x15, %[offset]" "\n" :: [offset] "m" (__irq_regs[15]));
+    __asm__ volatile("lw x16, %[offset]" "\n" :: [offset] "m" (__irq_regs[16]));
+    __asm__ volatile("lw x17, %[offset]" "\n" :: [offset] "m" (__irq_regs[17]));
+    __asm__ volatile("lw x18, %[offset]" "\n" :: [offset] "m" (__irq_regs[18]));
+    __asm__ volatile("lw x19, %[offset]" "\n" :: [offset] "m" (__irq_regs[19]));
+    __asm__ volatile("lw x20, %[offset]" "\n" :: [offset] "m" (__irq_regs[20]));
+    __asm__ volatile("lw x21, %[offset]" "\n" :: [offset] "m" (__irq_regs[21]));
+    __asm__ volatile("lw x22, %[offset]" "\n" :: [offset] "m" (__irq_regs[22]));
+    __asm__ volatile("lw x23, %[offset]" "\n" :: [offset] "m" (__irq_regs[23]));
+    __asm__ volatile("lw x24, %[offset]" "\n" :: [offset] "m" (__irq_regs[24]));
+    __asm__ volatile("lw x25, %[offset]" "\n" :: [offset] "m" (__irq_regs[25]));
+    __asm__ volatile("lw x26, %[offset]" "\n" :: [offset] "m" (__irq_regs[26]));
+    __asm__ volatile("lw x27, %[offset]" "\n" :: [offset] "m" (__irq_regs[27]));
+    __asm__ volatile("lw x28, %[offset]" "\n" :: [offset] "m" (__irq_regs[28]));
+    __asm__ volatile("lw x29, %[offset]" "\n" :: [offset] "m" (__irq_regs[29]));
+    __asm__ volatile("lw x30, %[offset]" "\n" :: [offset] "m" (__irq_regs[30]));
+    __asm__ volatile("lw x31, %[offset]" "\n" :: [offset] "m" (__irq_regs[31]));
+#endif
+#endif
+
+    __asm__ volatile(picorv32_retirq_insn() "\n");
+};
+
+void _nmi_isr()                           __attribute__ ((weak,  alias (DEFAULT_ISR)));
+

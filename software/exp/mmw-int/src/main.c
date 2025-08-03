@@ -671,6 +671,14 @@ int init()
     else
         DBGPRINTLN_CTX("MCP4728 init NOK!");
 
+    double mmw_test_if_freq = 3e9;
+    double mmw_test_rf_freq = 40e9;
+    double mmw_test_lo_freq = (mmw_test_rf_freq - mmw_test_if_freq) / 4;
+    // double mmw_test_lo_freq = 10.25e9;
+    // double mmw_test_rf_freq = mmw_test_lo_freq * 4 + mmw_test_if_freq;
+
+    DBGPRINTLN_CTX("RF %.3f GHz, IF %.3f GHz, LO (fundam.) %.3f GHz", mmw_test_rf_freq / 1e9, mmw_test_if_freq / 1e9, mmw_test_lo_freq / 1e9);
+
     // mmWave Upconverter
     TX_DIG_PWR_EN();
     TX_ANA_PWR_EN();
@@ -680,7 +688,42 @@ int init()
     {
         delay_ms(10);
         admv1013_power_down();
-        // admv1013_update_lo_filters(6e9);
+        admv1013_update_lo_filters(CLAMP(mmw_test_lo_freq, 5.4e9, 10.25e9));
+
+        // admv1013_set_i_offset(108, 114); // LO = 6 GHz (Synth Power 4)
+        // admv1013_set_q_offset(116, 125); // LO = 6 GHz (Synth Power 4)
+        // admv1013_set_i_phase(29); // LO = 6 GHz
+        // admv1013_set_q_phase(32); // LO = 6 GHz
+
+        // admv1013_set_i_offset(115, 111); // LO = 9.375 GHz (Synth Power 7)
+        // admv1013_set_q_offset(122, 124); // LO = 9.375 GHz (Synth Power 7)
+        // admv1013_set_i_phase(5); // LO = 9.375 GHz
+        // admv1013_set_q_phase(26); // LO = 9.375 GHz
+
+        // if(mmw_test_lo_freq < 6.4e9)
+        // {
+        //     admv1013_set_i_offset(127, 114); // LO = 5.4 GHz
+        //     admv1013_set_q_offset(118, 125); // LO = 5.4 GHz
+        //     admv1013_set_i_phase(39); // LO = 5.4 GHz
+        //     admv1013_set_q_phase(30); // LO = 5.4 GHz
+        //     DBGPRINTLN_CTX("Using TX Quad correction for 5.4 GHz");
+        // }
+        // else if(mmw_test_lo_freq < 8.4e9)
+        // {
+        //     admv1013_set_i_offset(117, 113); // LO = 7.4 GHz
+        //     admv1013_set_q_offset(124, 125); // LO = 7.4 GHz
+        //     admv1013_set_i_phase(25); // LO = 7.4 GHz
+        //     admv1013_set_q_phase(45); // LO = 7.4 GHz
+        //     DBGPRINTLN_CTX("Using TX Quad correction for 7.4 GHz");
+        // }
+        // else
+        // {
+        //     admv1013_set_i_offset(117, 113); // LO = 9.6 GHz
+        //     admv1013_set_q_offset(123, 125); // LO = 9.6 GHz
+        //     admv1013_set_i_phase(25); // LO = 9.6 GHz
+        //     admv1013_set_q_phase(45); // LO = 9.6 GHz
+        //     DBGPRINTLN_CTX("Using TX Quad correction for 9.6 GHz");
+        // }
 
         DBGPRINTLN_CTX("ADMV1013 rev. %hhu init OK!", admv1013_get_revision());
     }
@@ -701,7 +744,69 @@ int init()
     {
         delay_ms(10);
         admv1014_power_down();
-        // admv1014_update_lo_filters(6e9);
+        admv1014_update_lo_filters(CLAMP(mmw_test_lo_freq, 5.4e9, 10.25e9));
+
+        //// CALIB FOR MIN IF GAIN
+        // admv1014_set_if_i_gain(0); // LO = 5 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(14); // LO = 5 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(66); // LO = 5 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 5 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(0); // LO = 5.875 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(8); // LO = 5.975 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(66); // LO = 5.875 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 5.875 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(0); // LO = 7.5 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(9); // LO = 7.5 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(61); // LO = 7.5 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 7.5 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(10); // LO = 9.375 GHz, IF = 2.5 GHz
+        // admv1014_set_if_q_gain(7); // LO = 9.375 GHz, IF = 2.5 GHz
+        // admv1014_set_i_phase(62); // LO = 9.375 GHz, IF = 2.5 GHz
+        // admv1014_set_q_phase(64); // LO = 9.375 GHz, IF = 2.5 GHz
+
+        // admv1014_set_if_i_gain(0); // LO = 9.25 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(7); // LO = 9.25 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(58); // LO = 9.25 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 9.25 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(1); // LO = 9.125 GHz, IF = 3.5 GHz
+        // admv1014_set_if_q_gain(5); // LO = 9.125 GHz, IF = 3.5 GHz
+        // admv1014_set_i_phase(59); // LO = 9.125 GHz, IF = 3.5 GHz
+        // admv1014_set_q_phase(64); // LO = 9.125 GHz, IF = 3.5 GHz
+
+        //// CALIB FOR MAX IF GAIN
+        // admv1014_set_if_i_gain(49); // LO = 5 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(54); // LO = 5 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(49); // LO = 5 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 5 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(50); // LO = 5.875 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(54); // LO = 5.975 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(52); // LO = 5.875 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 5.875 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(50); // LO = 7.5 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(54); // LO = 7.5 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(38); // LO = 7.5 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 7.5 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(54); // LO = 9.375 GHz, IF = 2.5 GHz
+        // admv1014_set_if_q_gain(47); // LO = 9.375 GHz, IF = 2.5 GHz
+        // admv1014_set_i_phase(54); // LO = 9.375 GHz, IF = 2.5 GHz
+        // admv1014_set_q_phase(64); // LO = 9.375 GHz, IF = 2.5 GHz
+
+        // admv1014_set_if_i_gain(47); // LO = 9.25 GHz, IF = 3 GHz
+        // admv1014_set_if_q_gain(54); // LO = 9.25 GHz, IF = 3 GHz
+        // admv1014_set_i_phase(25); // LO = 9.25 GHz, IF = 3 GHz
+        // admv1014_set_q_phase(64); // LO = 9.25 GHz, IF = 3 GHz
+
+        // admv1014_set_if_i_gain(48); // LO = 9.125 GHz, IF = 3.5 GHz
+        // admv1014_set_if_q_gain(54); // LO = 9.125 GHz, IF = 3.5 GHz
+        // admv1014_set_i_phase(28); // LO = 9.125 GHz, IF = 3.5 GHz
+        // admv1014_set_q_phase(64); // LO = 9.125 GHz, IF = 3.5 GHz
 
         DBGPRINTLN_CTX("ADMV1014 rev. %hhu init OK!", admv1014_get_revision());
     }
@@ -718,15 +823,15 @@ int init()
     delay_ms(10);
 
     //// RX LO path selection
-    RX_LO_DST_SEL0(); // u.FL
-    // RX_LO_DST_SEL1(); // Downconverter
+    // RX_LO_DST_SEL0(); // u.FL
+    RX_LO_DST_SEL1(); // Downconverter
     RX_LO_SRC_SEL0(); // Internal Synthesizer
     // RX_LO_SRC_SEL1(); // EXT LO
 
     //// TX LO path selection
-    // TX_LO_DST_SEL0(); // Upconverter
-    TX_LO_DST_SEL1(); // u.FL
-    // TX_LO_SRC_SEL0(); // EXT
+    TX_LO_DST_SEL0(); // Upconverter
+    // TX_LO_DST_SEL1(); // u.FL
+    // TX_LO_SRC_SEL0(); // EXT LO
     TX_LO_SRC_SEL1(); // Internal Synthesizer
 
     //// External LO conditioning
@@ -773,7 +878,7 @@ int init()
         sLoopFilter.fC3 = 2.2e-9;
 
         idt8v97003_set_loop_filter(&sLoopFilter);
-        idt8v97003_set_target_loop_bandwidth(100e3);
+        idt8v97003_set_target_loop_bandwidth(25e3);
 
         idt8v97003_charge_pump_config_t sChargePump;
 
@@ -783,12 +888,12 @@ int init()
 
         idt8v97003_set_charge_pump_config(&sChargePump);
 
-        idt8v97003_set_frequency(8e9, 1, 10, 100);
+        idt8v97003_set_frequency(mmw_test_lo_freq, 1, 10, 100);
 
-        idt8v97003_set_rf_output_power(0, 3);
-        idt8v97003_enable_rf_output(0, 1);
-        idt8v97003_set_rf_output_power(1, 3);
-        idt8v97003_enable_rf_output(1, 1);
+        idt8v97003_set_rf_output_power(0, 4);
+        idt8v97003_enable_rf_output(0, 0); // TX
+        idt8v97003_set_rf_output_power(1, 7);
+        idt8v97003_enable_rf_output(1, 1); // RX
 
         idt8v97003_set_mute_until_locked(0);
         idt8v97003_mute(-1, 0); // Unmute all channels
@@ -836,7 +941,7 @@ int init()
             DBGPRINTLN_CTX("  VCO Frequency: %.6f MHz", idt8v97003_get_vco_frequency() * 1e-6);
             DBGPRINTLN_CTX("  Output Frequency: %.6f MHz", idt8v97003_get_frequency() * 1e-6);
 
-            float dist = 0;
+            double dist = 0;
             uint8_t frac = idt8v97003_is_feedback_divider_fractional(&dist);
 
             if(frac)
@@ -865,7 +970,7 @@ int init()
             DBGPRINTLN_CTX("    Power: %hhu", idt8v97003_get_rf_output_power(1));
         }
 
-        // idt8v97003_power_down(IDT8V97003_PWR_ALL);
+        idt8v97003_power_down(IDT8V97003_PWR_ALL);
     }
     else
     {
@@ -890,9 +995,87 @@ int main()
     // Gain DAC
     rf_gain_vctrl_init();
 
-    // rf_gain_set_tx_vctrl(0, 1.8);
-    // rf_gain_set_tx_vctrl(1, 1.8);
-    // rf_gain_set_rx_vctrl(0.0);
+    // Min gain
+    // rf_gain_set_tx_vctrl(0, 0.0);
+    // rf_gain_set_tx_vctrl(1, 0.0);
+    // rf_gain_set_rx_vctrl(1.8);
+
+    // Mid gain
+    // rf_gain_set_tx_vctrl(0, 0.9);
+    // rf_gain_set_tx_vctrl(1, 0.9);
+    // rf_gain_set_rx_vctrl(0.9);
+
+    // Max gain
+    rf_gain_set_tx_vctrl(0, 1.8);
+    rf_gain_set_tx_vctrl(1, 1.8);
+    rf_gain_set_rx_vctrl(0.0);
+
+    // for(double f = 1e9; f <= 13e9; f += 0.025e9)
+    // {
+    //     wdog_feed();
+    //     idt8v97003_set_frequency(f, 1, 10, 100);
+    //     delay_ms(150);
+    //     DBGPRINTLN_CTX("Set frequency to %.3f GHz (Lock %hhu) LO VPwr (TX, RX): %.2f, %.2f mV", f * 1e-9, SYNTH_LOCKED(), adc_get_tx_lo_vpwr(), adc_get_rx_lo_vpwr());
+    //     delay_ms(150);
+    // }
+
+    //// UPCONV LO LEAKAGE CALIB
+    // uint8_t i_pos = 115;
+    // uint8_t i_neg = 111;
+    // uint8_t q_pos = 122;
+    // uint8_t q_neg = 124;
+
+    // admv1013_set_i_offset(i_pos, i_neg);
+    // admv1013_set_q_offset(q_pos, q_neg);
+
+    // for(q_neg = 100; q_neg < 128; q_neg++)
+    // {
+    //     DBGPRINTLN_CTX("Setting offset to %hhu", q_neg);
+    //     admv1013_set_i_offset(i_pos, i_neg);
+    //     admv1013_set_q_offset(q_pos, q_neg);
+    // }
+
+    //// UPCONV QUAD PHASE CALIB
+    // uint8_t i_p = 5;
+    // uint8_t q_p = 26;
+
+    // admv1013_set_i_phase(i_p);
+    // admv1013_set_q_phase(q_p);
+
+    // for(q_p = 0; q_p < 128; q_p++)
+    // {
+    //     DBGPRINTLN_CTX("Setting phase to %hhu", q_p);
+    //     admv1013_set_i_phase(i_p);
+    //     admv1013_set_q_phase(q_p);
+    // }
+
+    //// DOWNCONV QUAD AMPL CALIB
+    // uint8_t i_a = 54;
+    // uint8_t q_a = 54;
+
+    // admv1014_set_if_i_gain(i_a);
+    // admv1014_set_if_q_gain(q_a);
+
+    // for(i_a = 54; i_a >= 0; i_a--)
+    // {
+    //     DBGPRINTLN_CTX("Setting amp to %hhu", i_a);
+    //     admv1014_set_if_i_gain(i_a);
+    //     admv1014_set_if_q_gain(q_a);
+    // }
+
+    //// DOWNCONV QUAD PHASE CALIB
+    // uint8_t i_p = 64;
+    // uint8_t q_p = 64;
+
+    // admv1014_set_i_phase(i_p);
+    // admv1014_set_q_phase(q_p);
+
+    // for(i_p = 0; i_p < 128; i_p++)
+    // {
+    //     DBGPRINTLN_CTX("Setting phase to %hhu", i_p);
+    //     admv1014_set_i_phase(i_p);
+    //     admv1014_set_q_phase(q_p);
+    // }
 
     while(1)
     {
@@ -981,6 +1164,12 @@ int main()
                 DBGPRINTLN_CTX("Board temperature #%hhu: %.2f C", i, (int16_t)usBoardTemp[i] / 256.0);
             DBGPRINTLN_CTX("RTCC time: %lu s", rtcc_get_time());
             DBGPRINTLN_CTX("Synth locked: %s", SYNTH_LOCKED() ? "YES" : "NO");
+
+            // if(!SYNTH_LOCKED())
+            // {
+            //     idt8v97003_config_pfd_freq(234e6, IDT8V97003_REG_PFD_PULSE_WIDTH_PW_260ps);
+            //     idt8v97003_set_frequency(idt8v97003_get_frequency(), 1, 10, 100);
+            // }
         }
     }
 

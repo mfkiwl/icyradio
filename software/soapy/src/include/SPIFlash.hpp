@@ -116,6 +116,10 @@ public:
     SPIFlash(SPIFlash::SPIConfig spi);
 
     std::string getDeviceName();
+    uint32_t getDeviceSize()
+    {
+        return this->dev_size;
+    }
 
     bool busy();
     void waitNotBusy(uint32_t timeout_ms = 1000);

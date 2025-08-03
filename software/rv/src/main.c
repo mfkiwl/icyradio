@@ -23,9 +23,9 @@ int main()
 
 	__set_irq_mask(r); // Restore the previous IRQ mask
 
-	// char c = sqrtf(*((float *)0x80000000));
+	char c = sqrtf(*((float *)0x80000000));
 
-	// print_chr(c);
+	_putchar(c);
 
 	return 0;
 }

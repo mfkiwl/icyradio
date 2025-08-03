@@ -15287,8 +15287,12 @@ Button commonly used for reset or general input. Spark Fun Electronics SKU : COM
 <part name="GND277" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="C606" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="22uF"/>
 <part name="GND278" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="R611" library="Resistor" deviceset="RESISTOR" device="-0402" value="49.9 Ohms"/>
-<part name="R613" library="Resistor" deviceset="RESISTOR" device="-0402" value="49.9 Ohms"/>
+<part name="R611" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
+<part name="R613" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
 <part name="C601" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="100nF"/>
 <part name="R604" library="Resistor" deviceset="RESISTOR" device="-0402" value="1K Ohms"/>
 <part name="R605" library="Resistor" deviceset="RESISTOR" device="-0402" value="1K Ohms"/>
@@ -15759,21 +15763,41 @@ Button commonly used for reset or general input. Spark Fun Electronics SKU : COM
 <part name="FB601" library="Inductor" deviceset="FERRITE" device="-0603" value="1uH"/>
 <part name="C615" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="1uF"/>
 <part name="GND427" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="C626" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="20pF"/>
-<part name="C624" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="20pF"/>
-<part name="R615" library="Resistor" deviceset="RESISTOR" device="-0402" value="49.9 Ohms"/>
+<part name="C626" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
+<attribute name="SERIES" value="ATC520L"/>
+</part>
+<part name="C624" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
+<attribute name="SERIES" value="ATC520L"/>
+</part>
+<part name="R615" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
 <part name="GND428" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="C625" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="20pF"/>
-<part name="R614" library="Resistor" deviceset="RESISTOR" device="-0402" value="49.9 Ohms"/>
+<part name="C625" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
+<attribute name="SERIES" value="ATC520L"/>
+</part>
+<part name="R614" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
 <part name="GND429" library="Supply Symbol" deviceset="GND" device=""/>
-<part name="C623" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="20pF"/>
-<part name="R610" library="Resistor" deviceset="RESISTOR" device="-0402" value="49.9 Ohms"/>
-<part name="R612" library="Resistor" deviceset="RESISTOR" device="-0402" value="49.9 Ohms"/>
+<part name="C623" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
+<attribute name="SERIES" value="ATC520L"/>
+</part>
+<part name="R610" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
+<part name="R612" library="Resistor" deviceset="RESISTOR" device="-0402" value="50 Ohms">
+<attribute name="SERIES" value="FC0402"/>
+</part>
 <part name="L601" library="Inductor" deviceset="INDUCTOR" device="-0402" value="18nH"/>
-<part name="C619" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF"/>
+<part name="C619" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
+<attribute name="SERIES" value="ATC520L"/>
+</part>
 <part name="GND430" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="L602" library="Inductor" deviceset="INDUCTOR" device="-0402" value="18nH"/>
-<part name="C620" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF"/>
+<part name="C620" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="10nF">
+<attribute name="SERIES" value="ATC520L"/>
+</part>
 <part name="GND431" library="Supply Symbol" deviceset="GND" device=""/>
 <part name="R608" library="Resistor" deviceset="RESISTOR" device="-0402" value="20 Ohms"/>
 <part name="C616" library="Capacitor" deviceset="CAPACITOR" device="-0402" value="1uF"/>
@@ -25725,12 +25749,14 @@ enabled on transceiver reset!</text>
 <attribute name="NAME" x="376.1486" y="205.74" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="368.0714" y="205.74" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="POWER" x="365.5314" y="205.74" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="373.38" y="205.74" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="R613" gate="G$1" x="386.08" y="205.74" smashed="yes" rot="R270">
 <attribute name="VALUE" x="383.3114" y="205.74" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="388.8486" y="205.74" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="380.7714" y="205.74" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="POWER" x="378.2314" y="205.74" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="386.08" y="205.74" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="C601" gate="G$1" x="137.16" y="139.7" smashed="yes">
 <attribute name="VALUE" x="137.16" y="136.9314" size="1.778" layer="96" ratio="10" rot="SR0" align="top-left"/>
@@ -25840,17 +25866,20 @@ enabled on transceiver reset!</text>
 <attribute name="VALUE" x="434.34" y="180.1114" size="1.778" layer="96" ratio="10" rot="SR0" align="top-left"/>
 <attribute name="NAME" x="434.34" y="185.6486" size="1.778" layer="95" ratio="10" rot="SR0"/>
 <attribute name="VOLTAGE" x="434.34" y="177.5714" size="1.778" layer="97" ratio="10" rot="SR0" align="top-left"/>
+<attribute name="SERIES" x="434.34" y="182.88" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="C624" gate="G$1" x="419.1" y="177.8" smashed="yes">
 <attribute name="VALUE" x="419.1" y="175.0314" size="1.778" layer="96" ratio="10" rot="SR0" align="top-left"/>
 <attribute name="NAME" x="419.1" y="180.5686" size="1.778" layer="95" ratio="10" rot="SR0"/>
 <attribute name="VOLTAGE" x="419.1" y="172.4914" size="1.778" layer="97" ratio="10" rot="SR0" align="top-left"/>
+<attribute name="SERIES" x="419.1" y="177.8" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="R615" gate="G$1" x="431.8" y="172.72" smashed="yes" rot="R270">
 <attribute name="VALUE" x="429.0314" y="172.72" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="434.5686" y="172.72" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="426.4914" y="172.72" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="POWER" x="423.9514" y="172.72" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="431.8" y="172.72" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="GND428" gate="G$1" x="431.8" y="154.94" smashed="yes">
 <attribute name="VALUE" x="431.8" y="149.86" size="1.778" layer="96" align="bottom-center"/>
@@ -25859,12 +25888,14 @@ enabled on transceiver reset!</text>
 <attribute name="VALUE" x="434.34" y="230.9114" size="1.778" layer="96" ratio="10" rot="SR0" align="top-left"/>
 <attribute name="NAME" x="434.34" y="236.4486" size="1.778" layer="95" ratio="10" rot="SR0"/>
 <attribute name="VOLTAGE" x="434.34" y="228.3714" size="1.778" layer="97" ratio="10" rot="SR0" align="top-left"/>
+<attribute name="SERIES" x="434.34" y="233.68" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="R614" gate="G$1" x="431.8" y="223.52" smashed="yes" rot="R270">
 <attribute name="VALUE" x="429.0314" y="223.52" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="434.5686" y="223.52" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="426.4914" y="223.52" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="POWER" x="423.9514" y="223.52" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="431.8" y="223.52" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="GND429" gate="G$1" x="431.8" y="205.74" smashed="yes">
 <attribute name="VALUE" x="431.8" y="200.66" size="1.778" layer="96" align="bottom-center"/>
@@ -25873,18 +25904,21 @@ enabled on transceiver reset!</text>
 <attribute name="VALUE" x="419.1" y="225.8314" size="1.778" layer="96" ratio="10" rot="SR0" align="top-left"/>
 <attribute name="NAME" x="419.1" y="231.3686" size="1.778" layer="95" ratio="10" rot="SR0"/>
 <attribute name="VOLTAGE" x="419.1" y="223.2914" size="1.778" layer="97" ratio="10" rot="SR0" align="top-left"/>
+<attribute name="SERIES" x="419.1" y="228.6" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="R610" gate="G$1" x="373.38" y="256.54" smashed="yes" rot="R270">
 <attribute name="VALUE" x="370.6114" y="256.54" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="376.1486" y="256.54" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="368.0714" y="256.54" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="POWER" x="365.5314" y="256.54" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="373.38" y="256.54" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="R612" gate="G$1" x="386.08" y="256.54" smashed="yes" rot="R270">
 <attribute name="VALUE" x="383.3114" y="256.54" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="388.8486" y="256.54" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="TOLERANCE" x="380.7714" y="256.54" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="POWER" x="378.2314" y="256.54" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="386.08" y="256.54" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="L601" gate="G$1" x="353.06" y="266.7" smashed="yes">
 <attribute name="VALUE" x="353.06" y="265.7094" size="1.778" layer="96" ratio="10" rot="SR0" align="top-left"/>
@@ -25895,6 +25929,7 @@ enabled on transceiver reset!</text>
 <attribute name="VALUE" x="396.0114" y="261.62" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="401.5486" y="261.62" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="VOLTAGE" x="393.4714" y="261.62" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="398.78" y="261.62" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="GND430" gate="G$1" x="398.78" y="248.92" smashed="yes">
 <attribute name="VALUE" x="398.78" y="243.84" size="1.778" layer="96" align="bottom-center"/>
@@ -25908,6 +25943,7 @@ enabled on transceiver reset!</text>
 <attribute name="VALUE" x="396.0114" y="213.36" size="1.778" layer="96" ratio="10" rot="SR270" align="top-left"/>
 <attribute name="NAME" x="401.5486" y="213.36" size="1.778" layer="95" ratio="10" rot="SR270"/>
 <attribute name="VOLTAGE" x="393.4714" y="213.36" size="1.778" layer="97" ratio="10" rot="SR270" align="top-left"/>
+<attribute name="SERIES" x="398.78" y="213.36" size="1.778" layer="96" rot="R270" display="off"/>
 </instance>
 <instance part="GND431" gate="G$1" x="398.78" y="200.66" smashed="yes">
 <attribute name="VALUE" x="398.78" y="195.58" size="1.778" layer="96" align="bottom-center"/>

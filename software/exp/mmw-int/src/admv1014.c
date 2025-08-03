@@ -116,18 +116,18 @@ uint8_t admv1014_get_revision()
 {
     return admv1014_read_register(ADMV1014_REG_SPI_CONTROL) & 0x0F;
 }
-void admv1014_update_lo_filters(float fFreq)
+void admv1014_update_lo_filters(double gFreq)
 {
-    if(fFreq < 5.4e9 || fFreq > 10.25e9)
+    if(gFreq < 5.4e9 || gFreq > 10.25e9)
         return;
 
     uint16_t usValue;
 
-    if(fFreq >= 5.4e9 && fFreq <= 7e9)
+    if(gFreq >= 5.4e9 && gFreq <= 7e9)
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_5G4_7G0;
-    else if(fFreq >= 5.4e9 && fFreq <= 8e9)
+    else if(gFreq >= 5.4e9 && gFreq <= 8e9)
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_5G4_8G0;
-    else if(fFreq >= 8e9 && fFreq <= 9.2e9)
+    else if(gFreq >= 8e9 && gFreq <= 9.2e9)
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_6G6_9G2;
     else
         usValue = ADMV1014_REG_QUAD_QUAD_FILTERS_8G625_10G25;

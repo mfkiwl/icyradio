@@ -53,7 +53,7 @@ void admv1013_power_up();
 void admv1013_reset();
 uint8_t admv1013_get_chip_id();
 uint8_t admv1013_get_revision();
-void admv1013_update_lo_filters(float fFreq);
+void admv1013_update_lo_filters(double gFreq);
 void admv1013_set_mixer_vgate(uint32_t ulValueUv);
 void admv1013_set_i_phase(uint8_t ubValue);
 uint8_t admv1013_get_i_phase();

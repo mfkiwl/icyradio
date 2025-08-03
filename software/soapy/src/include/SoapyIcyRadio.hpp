@@ -15,6 +15,7 @@
 #include <SoapySDR/Device.hpp>
 #include <SoapySDR/Types.hpp>
 #include <SoapySDR/ConverterRegistry.hpp>
+#include <SoapySDR/ConverterPrimitives.hpp>
 #include <SoapySDR/Time.hpp>
 #include "Log.hpp"
 #include "ioctl.hpp"
